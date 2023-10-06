@@ -7,8 +7,8 @@ import matplotlib.colors as mcolors
 import plotly.colors
 import numpy as np
 import mplcursors
-from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap
-from ..plot_features import tag_background, plot_background, plot_border, title_dict_plt
+from core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap
+from plot_features import tag_background, plot_background, plot_border, title_dict_plt
 
 
 
@@ -22,14 +22,13 @@ arrow_style = "round"
 arrow_size_max = 0.3
 arrow_size_min = 0.1
 intron_threshold = 0.3
-title_dict = title_dict_plt
 
 
 
 
 # PLOT_EXONS FUNCTIONS 
 
-def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, custom_coords = None):
+def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap, custom_coords = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -67,11 +66,11 @@ def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, cu
     Examples
     --------
     
-    >>> plot_exons(df, max_ngenes=25, colormap='Set3')
+    >>> plot_exons_plt(df, max_ngenes=25, colormap='Set3')
     
-    >>> plot_exons(df, color_column='Strand', colormap={'+': 'green', '-': 'red'})
+    >>> plot_exons_plt(df, color_column='Strand', colormap={'+': 'green', '-': 'red'})
     
-    >>> plot_exons(df, custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
+    >>> plot_exons_plt(df, custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
     	
 
     """
@@ -173,6 +172,7 @@ def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, cu
     # 3- Use dict to assign color to gene
     if type(colormap) == dict: 
         genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)  ## NOTE: when specifying color by dict, careful with color_column
+        genesmd_df['color'].fillna('black', inplace=True) # not specified in dict will be colored as black
 
 
     # Create figure and axes
@@ -188,7 +188,7 @@ def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, cu
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         #Adjust plot display
-        ax.set_title("Chromosome %s" % chrom, fontdict=title_dict)
+        ax.set_title("Chromosome %s" % chrom, fontdict=title_dict_plt)
         ax.set_facecolor(plot_background)
         plt.setp(ax.spines.values(), color=plot_border)
         plt.setp([ax.get_xticklines(), ax.get_yticklines()], color=plot_border)
