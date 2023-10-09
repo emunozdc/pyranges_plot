@@ -5,6 +5,19 @@ import matplotlib.cm as cm
 import plotly.colors as pc
 
 # CORE FUNCTIONS
+def set_engine(name):
+    """xxx"""
+
+    engine = name
+    return engine
+
+def get_engine():
+    """xxx"""
+
+    return engine
+
+
+
 def coord2inches(fig, ax, X0, X1, Y0, Y1):
     """Provides the inches length from the points given. Plt friendly"""
     

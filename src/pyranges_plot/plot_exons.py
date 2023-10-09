@@ -59,25 +59,20 @@ def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, cu
 
     """
     
+    engine = get_engine()
+    
     try:
     	if engine == 'plt' or engine == 'matplotlib':
     	    plot_exons_plt(df, max_ngenes=max_ngenes, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
     	elif engine == 'ply' or engine == 'plotly':
     	    plot_exons_ply(df, max_ngenes=max_ngenes, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
     	else:
-            raise Exception("Please define engine.")
+            raise Exception("Please define engine with set_engine().")
     except SystemExit as e:
         print("An error occured:", e)
 
 
 
-if __name__ == '__main__':
-    infile = "../../../data/example_files/mus_musculus.gtf"
-    import pyranges as pr
-    genes = pr.read_gtf(infile)
-    df = genes.df[["Chromosome", "Start", "End", "Strand", "gene_id"]]
-    
-    plot_exons(df, color_column = 'Strand', colormap={'+': 'green'})
         
         
         
