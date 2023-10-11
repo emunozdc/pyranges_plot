@@ -5,17 +5,31 @@ import matplotlib.cm as cm
 import plotly.colors as pc
 
 # CORE FUNCTIONS
+engine = None
 def set_engine(name):
-    """xxx"""
+    """
+    Defines the engine for the plots
+    
+    Parameters
+    ----------
+    name: str 
+        Indicates if Matplotlib ('plt', 'matplotlib') or Plotly ('ply', 'plotly') should be used.
+        
+    Examples
+    --------
+    >>> pyranges_plot.set_engine('plt')
+    
+    """
 
+    global engine
     engine = name
-    return engine
+
 
 def get_engine():
-    """xxx"""
+    
+    """Shows the current defined engine."""
 
     return engine
-
 
 
 def coord2inches(fig, ax, X0, X1, Y0, Y1):

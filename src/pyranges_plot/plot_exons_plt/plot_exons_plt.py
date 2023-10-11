@@ -7,8 +7,8 @@ import matplotlib.colors as mcolors
 import plotly.colors
 import numpy as np
 import mplcursors
-from core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap
-from plot_features import tag_background, plot_background, plot_border, title_dict_plt
+from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap
+from ..plot_features import get_default
 
 
 
@@ -28,7 +28,7 @@ intron_threshold = 0.3
 
 # PLOT_EXONS FUNCTIONS 
 
-def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap, custom_coords = None):
+def plot_exons_plt(df, max_ngenes = 25, color_column = None, colormap = colormap, custom_coords = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -75,6 +75,14 @@ def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap
 
     """
     
+    
+    # Get default plot features    
+    tag_background = get_default('tag_background')
+    plot_background = get_default('plot_background')
+    plot_border = get_default('plot_border')
+    title_dict_plt = get_default('title_dict_plt')
+    
+    
     # Make DataFrame subset if needed
     # create a cloumn indexing all the genes in the df
     genesix_l = [i for i in enumerate(df["gene_id"].drop_duplicates())]
@@ -102,7 +110,7 @@ def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap
                    inplace=True)
     # consider custom coordinates
     #create min_max column containing (plot min, plot max)
-    if custom_coords == None:
+    if custom_coords is None:
     	chrmd_df['min_max'] = [(np.nan, np.nan)] * len(chrmd_df)
     else:
     	chrmd_df['min_max'] = [custom_coords.get(index) for index in chrmd_df.index] # fills with None the ones not specified
@@ -110,14 +118,14 @@ def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap
     def fill_min_max(row):
     	minmax_t = row['min_max']
     	#deal with empty rows
-    	if minmax_t == None: 
+    	if minmax_t is None: 
     	    minmax_t = (np.nan, np.nan)
     
     	#check both items and put default if necessary
     	minmax_l = list(minmax_t) 
-    	if minmax_l[0] == None or np.isnan(minmax_l[0]):
+    	if minmax_l[0] is None or np.isnan(minmax_l[0]):
             minmax_l[0] = row['min']
-    	if minmax_l[1] == None or np.isnan(minmax_l[1]):
+    	if minmax_l[1] is None or np.isnan(minmax_l[1]):
             minmax_l[1] = row['max']
     
     	#put plot coordinates in min_max
@@ -128,7 +136,7 @@ def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap
     	
 
     # Create genes metadata DataFrame
-    if color_column == None:
+    if color_column is None:
         color_column = 'gene_id'
 
     # start df with chromosome and the column defining color
@@ -180,6 +188,7 @@ def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap
     y = sum(chrmd_df.n_genes) + 4*len(chrmd_df)
     fig = plt.figure(figsize=(x, y)) # height according to genes and add 2 per each chromosome
     gs = gridspec.GridSpec(len(chrmd_df), 1, height_ratios=chrmd_df.n_genes) #size of chromosome subplot according to number of genes contained
+    plt.rcParams.update({'font.family': 'sans-serif'})
     
     # one plot per chromosome
     axes = [] 
@@ -215,17 +224,20 @@ def plot_exons_plt(df, max_ngenes = 20, color_column = None, colormap = colormap
         ax.set_yticklabels(y_ticks_name)
 	
     plt.subplots_adjust(hspace=0.5, bottom=0.2, left=0.2) # space between plots and room for slider
-    
+    if max_ngenes > 25:
+        plt.suptitle("Warning! The plot integity might be compromised when displaying too many genes.", color='red',
+        x=0.05, y=0.95)
+  
     
     # Plot genes
-    subdf.groupby("gene_id").apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, ))
+    subdf.groupby("gene_id").apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, tag_background))
     #plt.tight_layout()
     plt.show()   
     
     
     
     
-def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df):
+def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, tag_background):
 
     """Plot elements corresponding to the df rows of one gene."""
     
@@ -243,7 +255,7 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df):
         strand = ''
     
     # Plot the gene rows
-    df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons), axis=1)
+    df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background), axis=1)
             
     # Plot the LINE binding the exons    
     gene_line = ax.plot([min(df.Start), max(df.End)], [gene_ix, gene_ix], color=exon_color, linewidth=1, zorder=1)
@@ -307,12 +319,10 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df):
                         color=arrow_color, linewidth = arrow_width, 
                         solid_capstyle = arrow_style, alpha = 0.75)  
     
-    print("Gene %s in chromosome %s containing %i exons." % (genename, chrom, n_exons))
     
     
     
-    
-def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons):
+def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background):
 
     """Plot elements corresponding to one row of one gene."""
     

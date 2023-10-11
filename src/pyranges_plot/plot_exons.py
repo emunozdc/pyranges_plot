@@ -1,10 +1,11 @@
 import plotly.colors
-from plot_exons_plt import plot_exons_plt
-from plot_exons_ply import plot_exons_ply
+from .core import get_engine
+from .plot_exons_plt.plot_exons_plt import plot_exons_plt
+from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 
 colormap = plotly.colors.sequential.thermal
 
-def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, custom_coords = None, engine = None):
+def plot_exons(df, max_ngenes = 25, color_column = None, colormap = colormap, custom_coords = None, engine = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -58,8 +59,8 @@ def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, cu
     	
 
     """
-    
-    engine = get_engine()
+    if engine is None:
+        engine = get_engine()
     
     try:
     	if engine == 'plt' or engine == 'matplotlib':
@@ -73,10 +74,7 @@ def plot_exons(df, max_ngenes = 20, color_column = None, colormap = colormap, cu
 
 
 
-        
-        
-        
-        
+
         
         
         
