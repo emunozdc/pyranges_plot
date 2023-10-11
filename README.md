@@ -1,5 +1,5 @@
 # pyranges_plot
-Gene visualization package for dataframe objects generated with `PyRanges <https://pandas.pydata.org/>`_.
+Gene visualization package for dataframe objects generated with [PyRanges](https://pyranges.readthedocs.io/en/latest/index.html).
 
 
 ## Overview
@@ -35,8 +35,9 @@ pip install pyranges-plot
 
 
 ## Examples
-Next we will test pyranges_plot visualization options, using some data provided in PyRanges 
-tutorial. Download and unpack tutorial data with:
+Next we will test pyranges_plot visualization options, using some data provided in 
+[PyRanges tutorial](https://pyranges.readthedocs.io/en/latest/tutorial.html). Download 
+and unpack tutorial data with:
 
 ```
 curl -O https://mariottigenomicslab.bio.ub.edu/pyranges_data/pyranges_tutorial_data.tar.gz
@@ -94,7 +95,7 @@ and for Plotly.
 
 
 We can try to color the genes according to strand and providing a dictionary for the colors, 
-for that we will subset the dataframe to see  15 genes from each strands. In order to see all 
+for that we will subset the dataframe to see  15 genes from each strand. In order to see all 
 those genes we will set the max_ngenes to 30, since it is more than 25 genes a warning will appear:
 
 ```python
