@@ -124,4 +124,5 @@ prplot.plot_exons(df)
 
 ## Coming soon
 * Bases will be displayed along coordinates
+* Colorblind friendly
 
