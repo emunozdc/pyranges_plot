@@ -48,6 +48,23 @@ p = pr.from_dict({"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3],
              	"transcript_id":["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4"] })
 p
 ```
+```
++--------------+--------------+-----------+-----------+-----------------+
+|   Chromosome | Strand       |     Start |       End | transcript_id   |
+|   (category) | (category)   |   (int64) |   (int64) | (object)        |
+|--------------+--------------+-----------+-----------+-----------------|
+|            1 | +            |         1 |        11 | t1              |
+|            1 | +            |        40 |        60 | t1              |
+|            2 | +            |        75 |       100 | t3              |
+|            2 | +            |       110 |       115 | t3              |
+|            2 | +            |       150 |       180 | t3              |
+|            2 | -            |        10 |        25 | t2              |
+|            2 | -            |        70 |        80 | t2              |
+|            3 | +            |       140 |       152 | t4              |
++--------------+--------------+-----------+-----------+-----------------+
+Stranded PyRanges object has 8 rows and 5 columns from 3 chromosomes.
+For printing, the PyRanges was sorted on Chromosome and Strand.
+```
 
 The generated data is a stranded PyRanges object containing 4 genes in 3 chromosomes as shown above. Having this example data in the variable ``p`` we are able to start exploring pyranges_plot options.
 We can get a plot in a single line:
