@@ -68,7 +68,7 @@ to provide the data, the engine and the name of the id column. However the engin
 prplot.set_engine('plotly')
 ```
 
-Since the data has only 4 genes all of them are plotted, but the function has a default limit of 25 genes, so in a case where the data has more than 25 genes it will only show the top 25 unless the max_ngenes parameter is specified. For example we can set the maximum number of genes as 2. Note that in the case of more than 25 genes are specified a warning about the plot’s integrity will appear.
+Since the data has only 4 genes all of them are plotted, but the function has a default limit of 25 genes, so in a case where the data has more than 25 genes it will only show the top 25 unless the ``max_ngenes`` parameter is specified. For example we can set the maximum number of genes as 2. Note that in the case of more than 25 genes are specified a warning about the plot’s integrity will appear.
 
 ```python
 prplot.plot_exons(p, id_column="transcript_id", max_ngenes=2)
