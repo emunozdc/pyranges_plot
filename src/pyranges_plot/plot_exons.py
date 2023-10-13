@@ -1,3 +1,4 @@
+import pyranges
 import plotly.colors
 from .core import get_engine
 from .plot_exons_plt.plot_exons_plt import plot_exons_plt
@@ -5,16 +6,16 @@ from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 
 colormap = plotly.colors.sequential.thermal
 
-def plot_exons(df, max_ngenes = 25, color_column = None, colormap = colormap, custom_coords = None, engine = None):
+def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, custom_coords = None):
 
     """
     Create genes plot from PyRanges object DataFrame
     
     Parameters
     ----------
-    df: pandas.DataFrame 
+    df: {pyranges.pyranges_main.PyRanges, pandas.DataFrame}
     	
-    	Dataframe with genes.
+    	Pyranges or derived dataframe with genes' data.
     	
     engine: str, default None
     
@@ -24,6 +25,10 @@ def plot_exons(df, max_ngenes = 25, color_column = None, colormap = colormap, cu
     max_ngenes: int, default 20
     	
     	Maximum number of genes plotted in the dataframe order.
+    
+    id_column: str, default 'gene_id'
+        
+        Name of the column containing gene ID.
     
     color_column: str, default None
     	
@@ -59,14 +64,29 @@ def plot_exons(df, max_ngenes = 25, color_column = None, colormap = colormap, cu
     	
 
     """
+    
+    # Get dataframe if the provided object is pyranges
+    if type(df) == pyranges.pyranges_main.PyRanges:
+        df = df.df
+    
+    
+    # Deal with column id
+    try:
+        if id_column not in df.columns:
+            raise Exception("Please specify the name of the ID column with plot_exons(..., id_column = 'your_id_column')")
+    except SystemExit as e:
+        print("An error occured:", e)
+        
+    
+    # Deal with engine
     if engine is None:
         engine = get_engine()
     
     try:
     	if engine == 'plt' or engine == 'matplotlib':
-    	    plot_exons_plt(df, max_ngenes=max_ngenes, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
+    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
     	elif engine == 'ply' or engine == 'plotly':
-    	    plot_exons_ply(df, max_ngenes=max_ngenes, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
+    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
     	else:
             raise Exception("Please define engine with set_engine().")
     except SystemExit as e:

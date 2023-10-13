@@ -28,7 +28,7 @@ intron_threshold = 0.3
 
 # PLOT_EXONS FUNCTIONS 
 
-def plot_exons_plt(df, max_ngenes = 25, color_column = None, colormap = colormap, custom_coords = None):
+def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, custom_coords = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -43,6 +43,10 @@ def plot_exons_plt(df, max_ngenes = 25, color_column = None, colormap = colormap
     	
     	Maximum number of genes plotted in the dataframe order.
     
+    id_column: str, default 'gene_id'
+        
+        Name of the column containing gene ID.
+
     color_column: str, default None
     	
     	Name of the column used to color the genes.
@@ -85,11 +89,11 @@ def plot_exons_plt(df, max_ngenes = 25, color_column = None, colormap = colormap
     
     # Make DataFrame subset if needed
     # create a cloumn indexing all the genes in the df
-    genesix_l = [i for i in enumerate(df["gene_id"].drop_duplicates())]
+    genesix_l = [i for i in enumerate(df[id_column].drop_duplicates())]
     genesix_d = {}
     for ix, gene in genesix_l:
         genesix_d[gene] = ix
-    df["gene_index"] = df["gene_id"].map(genesix_d) # create a cloumn indexing all the genes in the df
+    df["gene_index"] = df[id_column].map(genesix_d) # create a cloumn indexing all the genes in the df
     
     # select maximun number of genes
     if max(df.gene_index) <= max_ngenes:
@@ -102,9 +106,9 @@ def plot_exons_plt(df, max_ngenes = 25, color_column = None, colormap = colormap
     
     
     # Create chromosome metadata DataFrame
-    chrmd_df = subdf.groupby("Chromosome").agg({'Start': 'min', 'End': 'max', 'gene_id': 'nunique'})
+    chrmd_df = subdf.groupby("Chromosome").agg({'Start': 'min', 'End': 'max', id_column: 'nunique'})
     chrmd_df.dropna(inplace=True) # remove chr not present in subset (NaN)
-    chrmd_df.rename(columns={'gene_id': 'n_genes',
+    chrmd_df.rename(columns={id_column: 'n_genes',
                             'Start': 'min',
                             'End': 'max'}, 
                    inplace=True)
@@ -137,10 +141,10 @@ def plot_exons_plt(df, max_ngenes = 25, color_column = None, colormap = colormap
 
     # Create genes metadata DataFrame
     if color_column is None:
-        color_column = 'gene_id'
+        color_column = id_column
 
     # start df with chromosome and the column defining color
-    genesmd_df = subdf.groupby("gene_id").agg({'Chromosome': 'first', color_column: 'first'})
+    genesmd_df = subdf.groupby(id_column).agg({'Chromosome': 'first', color_column: 'first'})
     genesmd_df.dropna(inplace=True) # remove genes not present in subset (NaN)
     genesmd_df.rename(columns={color_column: 'color_tag'}, inplace=True)
     genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('Chromosome').cumcount()
@@ -230,19 +234,19 @@ def plot_exons_plt(df, max_ngenes = 25, color_column = None, colormap = colormap
   
     
     # Plot genes
-    subdf.groupby("gene_id").apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, tag_background))
+    subdf.groupby(id_column).apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, id_column, tag_background))
     #plt.tight_layout()
     plt.show()   
     
     
     
     
-def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, tag_background):
+def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_column, tag_background):
 
     """Plot elements corresponding to the df rows of one gene."""
     
     # Gene parameters
-    genename = df.gene_id.iloc[0]
+    genename = df[id_column].iloc[0]
     gene_ix = genesmd_df.loc[genename]["gene_ix_xchrom"] + 0.5
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].Chromosome
