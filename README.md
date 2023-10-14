@@ -54,7 +54,7 @@ p = pr.from_dict({"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3],
 p
 
 ```
-```buttonless
+```
 +--------------+--------------+-----------+-----------+-----------------+
 |   Chromosome | Strand       |     Start |       End | transcript_id   |
 |   (category) | (category)   |   (int64) |   (int64) | (object)        |
@@ -136,7 +136,7 @@ appear as default.
 prplot.plot_exons(
     p,
     id_column="transcript_id",
-    custom_coords={"1": (None, 100), "2": (60, 200), "3": None},
+    custom_coords={"1": (None, 100), "2": (60, 200), "3": None}
 )
 ```
 <p align="center">
@@ -159,14 +159,14 @@ prplot.plot_exons(p, id_column="transcript_id", color_column="Strand")
 
 This way we see the "+" strand genes in one color and the "-" in another color. Additionally these 
 colors can be customized through the ``colormap`` parameter. For this case we can specify it as 
-a dictionary in the following way:
+a dictionary to see it more clearly in the following way:
 
 ```python
 prplot.plot_exons(
     p,
     id_column="transcript_id",
     color_column="Strand",
-    colormap={"+": "green", "-": "red"},
+    colormap={"+": "green", "-": "red"}
 )
 ```
 <p align="center">
