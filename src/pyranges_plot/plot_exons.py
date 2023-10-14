@@ -66,7 +66,7 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     """
     
     # Get dataframe if the provided object is pyranges
-    if type(df) == pyranges.pyranges_main.PyRanges:
+    if type(df) is pyranges.pyranges_main.PyRanges:
         df = df.df
     
     

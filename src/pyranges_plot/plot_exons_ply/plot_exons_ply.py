@@ -92,7 +92,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     df["gene_index"] = df[id_column].map(genesix_d) 
     
     # select maximun number of genes
-    if max(df.gene_index) <= max_ngenes:
+    if max(df.gene_index)+1 <= max_ngenes:
         subdf = df
     else:
         subdf = df[df.gene_index < max_ngenes]
