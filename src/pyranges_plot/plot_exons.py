@@ -6,7 +6,8 @@ from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 
 colormap = plotly.colors.sequential.thermal
 
-def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, custom_coords = None):
+def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, 
+		custom_coords = None, disposition = 'packed'):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -51,6 +52,11 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     	have to be present and some coordinates can be indicated as None leading to the use of the 
     	default value.
     	
+    disposition: str, default 'packed'
+    
+    	Select wether the genes should be presented in full display (one row each) using the 'full' option,
+    	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
+    	
     Examples
     --------
     
@@ -61,6 +67,8 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     >>> plot_exons(df, engine='ply', custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
     
     >>> plot_exons(df, engine='plotly', colormap=plt.get_cmap('Dark2'))
+    
+    >>> plot_exons(df, engine='plt', color_column='Strand', disposition='full')
     	
 
     """
@@ -84,9 +92,11 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     
     try:
     	if engine == 'plt' or engine == 'matplotlib':
-    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
+    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, 
+    	    		custom_coords = custom_coords, disposition = disposition)
     	elif engine == 'ply' or engine == 'plotly':
-    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, custom_coords = custom_coords)
+    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, 
+    	    		custom_coords = custom_coords, disposition = disposition)
     	else:
             raise Exception("Please define engine with set_engine().")
     except SystemExit as e:

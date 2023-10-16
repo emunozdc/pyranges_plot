@@ -6,7 +6,7 @@ import plotly.colors
 import matplotlib.pyplot as plt  ## priorizar no depender de las 2?
 import matplotlib.colors as mcolors
 import numpy as np
-from ..core import coord2percent, percent2coord, is_pltcolormap, is_plycolormap, get_plycolormap
+from ..core import coord2percent, percent2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd
 from ..plot_features import  get_default
 
 
@@ -25,7 +25,8 @@ intron_threshold = 0.03
 
 # PLOT_EXONS FUNCTIONS 
 
-def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, custom_coords = None):
+def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, 
+		custom_coords = None, disposition = 'packed'):
     """
     Create genes plot from PyRanges object DataFrame
     
@@ -62,6 +63,11 @@ def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     	chr_name2: (min_coord, max_coord), ...}. Note that in the dictionary not all the chromosomes 
     	have to be present and some coordinates can be indicated as None leading to the use of the 
     	default value.
+    	
+    disposition: str, default 'packed'
+    
+    	Select wether the genes should be presented in full display (one row each) using the 'full' option,
+    	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
     	
     Examples
     --------
@@ -142,11 +148,22 @@ def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
         color_column = id_column
 
     # start df with chromosome and the column defining color
-    genesmd_df = subdf.groupby(id_column).agg({'Chromosome': 'first', color_column: 'first'})
+    genesmd_df = subdf.groupby(id_column).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max', color_column: 'first'})
     genesmd_df.dropna(inplace=True) # remove genes not present in subset (NaN)
     genesmd_df.rename(columns={color_column: 'color_tag'}, inplace=True)
     genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('Chromosome').cumcount()
     
+    #Assign y-coordinate
+    if disposition == 'packed':
+        genesmd_df['ycoord'] = -1
+        genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column using intervaltree
+        genesmd_df = genesmd_df.reset_index(level='Chromosome', drop=True)
+    elif disposition == 'full':
+        genesmd_df['ycoord'] = genesmd_df['gene_ix_xchrom']
+    
+    #Store plot y height
+    chrmd_df['y_height'] = genesmd_df.groupby('Chromosome').ycoord.max()
+
     #Assign colors to genes
     color_tags = genesmd_df.color_tag.drop_duplicates()
     n_color_tags = len(color_tags)
@@ -206,10 +223,12 @@ def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
         
         # set y axis limits
         y_min = 0
-        y_max = chrmd_df.iloc[i].n_genes
-        y_ticks_val = [i + 0.5 for i in range(int(y_max))]
-        y_ticks_name = genesmd_df.groupby('Chromosome').groups[chrom]
-        fig.update_yaxes(range=[y_min, y_max], tickvals=y_ticks_val, ticktext=y_ticks_name, showgrid=False, row=i+1, col=1)
+        y_max = chrmd_df.iloc[i].y_height
+        fig.update_yaxes(range=[y_min, y_max], showgrid=False, row=i+1, col=1)
+        if disposition == 'full':
+            y_ticks_val = [i + 0.5 for i in range(int(y_max))]
+            y_ticks_name = genesmd_df.groupby(genesmd_df['Chromosome']).groups[chrom]
+            fig.update_yaxes(tickvals=y_ticks_val, ticktext=y_ticks_name, row=i+1, col=1)
 
 
     # Plot genes
@@ -234,7 +253,7 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_column, tag_background):
     # Gene parameters
     genename = df[id_column].iloc[0]
     genelabel = genename ### select label info
-    gene_ix = genesmd_df.loc[genename]["gene_ix_xchrom"] + 0.5
+    gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].Chromosome
     chrom_ix = chrmd_df.index.get_loc(chrom)

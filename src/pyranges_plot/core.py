@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import plotly.subplots as sp
 import matplotlib.cm as cm
 import plotly.colors as pc
+from intervaltree import Interval, IntervalTree
 
 # CORE FUNCTIONS
 engine = None
@@ -30,6 +31,34 @@ def get_engine():
     """Shows the current defined engine."""
 
     return engine
+
+
+
+
+
+def packed_for_genesmd(genesmd_df):
+    """xxx"""
+
+    # Sort the dataframe by Start values
+    genesmd_df = genesmd_df.sort_values(by='Start')
+
+    # Initialize IntervalTree and used y-coordinates list
+    trees = [IntervalTree()]
+
+    def find_tree(row):
+        for tree in trees:
+            if not tree.overlaps(row['Start'], row['End']):
+                return tree
+        trees.append(IntervalTree())
+        return trees[-1]
+
+    # Assign y-coordinates
+    for idx, row in genesmd_df.iterrows():
+        tree = find_tree(row)
+        tree.addi(row['Start'], row['End'], idx)
+        genesmd_df.at[idx, 'ycoord'] = trees.index(tree)
+
+    return genesmd_df
 
 
 def coord2inches(fig, ax, X0, X1, Y0, Y1):
