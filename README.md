@@ -81,7 +81,7 @@ pyranges_plot options. We can get a plot in a single line:
 prplot.plot_exons(p, engine="plt", id_column="transcript_id")
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example01.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex01.png">
 </p>
 
 
@@ -105,7 +105,7 @@ integrity will appear.
 prplot.plot_exons(p, id_column="transcript_id", max_ngenes=2)
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example02.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex02.png">
 </p>
 
 
@@ -113,12 +113,12 @@ prplot.plot_exons(p, id_column="transcript_id", max_ngenes=2)
 Now the plot is based in Plotly because we set it as the engine, though it looks the same as the 
 Matplotlib one. Also, both libraries offer interactive zoom options. For Matplotlib…
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example03.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex03.png">
 </p>
 
 and for Plotly.
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example04.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex04.png">
 </p>
 
 
@@ -140,7 +140,7 @@ prplot.plot_exons(
 )
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example05.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex05.png">
 </p>
 
 
@@ -152,7 +152,7 @@ that the ``color_column`` parameter should be used.
 prplot.plot_exons(p, id_column="transcript_id", color_column="Strand")
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example06.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex06.png">
 </p>
 
 
@@ -170,7 +170,7 @@ prplot.plot_exons(
 )
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example07.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex07.png">
 </p>
 
 
@@ -184,7 +184,7 @@ even if the plot is based on Plotly:
 prplot.plot_exons(p, id_column="transcript_id", colormap="Dark2")
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example08.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex08.png">
 </p>
 
 
@@ -206,7 +206,7 @@ prplot.set_default('title_dict_ply.color', 'magenta')
 prplot.plot_exons(p, id_column="transcript_id")
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_example09.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex09.png">
 </p>
 
 
