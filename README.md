@@ -198,7 +198,7 @@ default colors can be checked and customized in the following way:
 prplot.get_default('plot_background')
 
 # Change the default values
-prplot.set_default('plot_background', 'black')
+prplot.set_default('plot_background', '#808080')
 prplot.set_default('plot_border', 'lightblue')
 prplot.set_default('title_dict_ply.color', 'magenta')
 
