@@ -159,10 +159,11 @@ def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
         genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column using intervaltree
         genesmd_df = genesmd_df.reset_index(level='Chromosome', drop=True)
     elif disposition == 'full':
-        genesmd_df['ycoord'] = genesmd_df['gene_ix_xchrom']
+        genesmd_df['ycoord'] = genesmd_df.loc[:, 'gene_ix_xchrom']
     
     #Store plot y height
-    chrmd_df['y_height'] = genesmd_df.groupby('Chromosome').ycoord.max()
+    chrmd_df['y_height'] = genesmd_df.groupby('Chromosome').ycoord.max() 
+    chrmd_df['y_height'] += 1# count from 1
 
     #Assign colors to genes
     color_tags = genesmd_df.color_tag.drop_duplicates()
@@ -205,7 +206,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     
     # Create figure and chromosome plots
     titles = ["Chromosome %s" % chrom for chrom in chrmd_df.index]
-    fig = sp.make_subplots(rows=nchrs, cols=1, row_heights=chrmd_df.n_genes.to_list(), subplot_titles=titles)
+    fig = sp.make_subplots(rows=nchrs, cols=1, row_heights=chrmd_df.y_height.to_list(), subplot_titles=titles)
     
     # one subplot per chromosome
     for i in range(nchrs):
@@ -224,11 +225,12 @@ def plot_exons_ply(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
         # set y axis limits
         y_min = 0
         y_max = chrmd_df.iloc[i].y_height
-        fig.update_yaxes(range=[y_min, y_max], showgrid=False, row=i+1, col=1)
+        y_ticks_val = []
+        y_ticks_name = []
         if disposition == 'full':
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
             y_ticks_name = genesmd_df.groupby(genesmd_df['Chromosome']).groups[chrom]
-            fig.update_yaxes(tickvals=y_ticks_val, ticktext=y_ticks_name, row=i+1, col=1)
+        fig.update_yaxes(range=[y_min, y_max], tickvals=y_ticks_val, ticktext=y_ticks_name, showgrid=False, row=i+1, col=1)
 
 
     # Plot genes

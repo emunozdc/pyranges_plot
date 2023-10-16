@@ -161,10 +161,11 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
         genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column>
         genesmd_df = genesmd_df.reset_index(level='Chromosome', drop=True)
     elif disposition == 'full':
-        genesmd_df['ycoord'] = genesmd_df['gene_ix_xchrom']
+        genesmd_df['ycoord'] = genesmd_df.loc[:, 'gene_ix_xchrom']
 
     #Store plot y height
     chrmd_df['y_height'] = genesmd_df.groupby('Chromosome').ycoord.max()
+    chrmd_df['y_height'] += 1 # count from 1
     
     #Assign colors to genes
     color_tags = genesmd_df.color_tag.drop_duplicates()
@@ -208,7 +209,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     x = 10
     y = sum(chrmd_df.n_genes) + 4*len(chrmd_df)
     fig = plt.figure(figsize=(x, y)) # height according to genes and add 2 per each chromosome
-    gs = gridspec.GridSpec(len(chrmd_df), 1, height_ratios=chrmd_df.n_genes) #size of chromosome subplot according to number of genes contained
+    gs = gridspec.GridSpec(len(chrmd_df), 1, height_ratios=chrmd_df.y_height) #size of chromosome subplot according to number of gene rows
     plt.rcParams.update({'font.family': 'sans-serif'})
     
     # one plot per chromosome
@@ -239,11 +240,14 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
         y_max = chrmd_df.iloc[i].y_height
         ax.set_ylim(y_min, y_max)
         #gene name as y labels
+        y_ticks_val = []
+        y_ticks_name = []
         if disposition == 'full':
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
             y_ticks_name = genesmd_df.groupby(genesmd_df['Chromosome']).groups[chrom]
-            ax.set_yticks(y_ticks_val)
-            ax.set_yticklabels(y_ticks_name)
+        print(y_min, y_max, y_ticks_val, y_ticks_name)
+        ax.set_yticks(y_ticks_val)
+        ax.set_yticklabels(y_ticks_name)
 	
     plt.subplots_adjust(hspace=0.5, bottom=0.2, left=0.2) # space between plots and room for slider
     if max_ngenes > 25:
