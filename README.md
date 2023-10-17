@@ -48,7 +48,7 @@ import pyranges_plot as prplot
 
 p = pr.from_dict({"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3],
              	"Strand": ["+", "+", "-", "-", "+", "+", "+", "+"],
-             	"Start": [1, 40, 10, 70, 75, 110, 150, 140],
+             	"Start": [1, 40, 10, 70, 85, 110, 150, 140],
              	"End": [11, 60, 25, 80, 100, 115, 180, 152],
              	"transcript_id":["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4"] })
 p
@@ -61,7 +61,7 @@ p
 |--------------+--------------+-----------+-----------+-----------------|
 |            1 | +            |         1 |        11 | t1              |
 |            1 | +            |        40 |        60 | t1              |
-|            2 | +            |        75 |       100 | t3              |
+|            2 | +            |        85 |       100 | t3              |
 |            2 | +            |       110 |       115 | t3              |
 |            2 | +            |       150 |       180 | t3              |
 |            2 | -            |        10 |        25 | t2              |
@@ -113,12 +113,12 @@ prplot.plot_exons(p, id_column="transcript_id", max_ngenes=2)
 Now the plot is based in Plotly because we set it as the engine, though it looks the same as the 
 Matplotlib one. Also, both libraries offer interactive zoom options. For Matplotlib…
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex03.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_fixex03.png">
 </p>
 
 and for Plotly.
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex04.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_fixex04.png">
 </p>
 
 
@@ -189,6 +189,18 @@ prplot.plot_exons(p, id_column="transcript_id", colormap="Dark2")
 
 
 
+The disposition of the genes is by default a packed disposition, so the genes are preferentially 
+placed one beside the other preferentially. But this ``disposition`` parameter can be set as 'full' 
+if the user wants to display each gene under the other.
+
+```python
+prplot.plot_exons(p, id_column="transcript_id", disposition='full')
+```
+<p align="center">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex09.png">
+</p>
+
+
 Lastly, some features of the plot appearance can also be customized. The way to change 
 the default features is using the ``set_default`` function. The background, plot border or title
 default colors can be checked and customized in the following way:
@@ -199,14 +211,14 @@ prplot.get_default('plot_background')
 
 # Change the default values
 prplot.set_default('plot_background', '#808080')
-prplot.set_default('plot_border', 'lightblue')
+prplot.set_default('plot_border', 'rgb(173, 216, 230)')
 prplot.set_default('title_dict_ply.color', 'magenta')
 
 # Make the customized plot
 prplot.plot_exons(p, id_column="transcript_id")
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex09.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex10.png">
 </p>
 
 
