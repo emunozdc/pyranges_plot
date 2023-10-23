@@ -3,7 +3,7 @@ plot_background = "white"
 plot_border = "black"
 #{'family': title_font, 'color': title_color, 'size': title_size}
 title_dict_ply = {'family': 'Arial', 'color': 'goldenrod', 'size': 18} 
-title_dict_plt = {'family': 'sans-serif', 'color': 'goldenrod', 'size': 12}
+title_dict_plt = {'family': 'sans-serif', 'color': 'goldenrod', 'size': 13}
 
 
 def set_default(varname, value):

@@ -1,3 +1,3 @@
-from .core import set_engine, get_engine
-from .plot_exons import plot_exons
+from .core import set_engine, get_engine, set_idcol, get_idcol
+from .plot_generic import plot_generic
 from .plot_features import get_default, set_default

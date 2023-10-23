@@ -28,8 +28,8 @@ intron_threshold = 0.3
 
 # PLOT_EXONS FUNCTIONS 
 
-def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, 
-		custom_coords = None, disposition = 'packed'):
+def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
+		custom_coords = None, showinfo = None, disposition = 'packed', outfmt = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -44,11 +44,11 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     	
     	Maximum number of genes plotted in the dataframe order.
     
-    id_column: str, default 'gene_id'
+    id_col: str, default 'gene_id'
         
         Name of the column containing gene ID.
 
-    color_column: str, default None
+    color_col: str, default None
     	
     	Name of the column used to color the genes.
     
@@ -67,18 +67,28 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     	chr_name2: (min_coord, max_coord), ...}. Note that in the dictionary not all the chromosomes 
     	have to be present and some coordinates can be indicated as None leading to the use of the 
     	default value.
+
+    showinfo: list, default None
+    
+    	Dataframe information to show when placing the mouse over a gene. This must be provided as a list 
+    	of column names. By default it shows the ID of the gene followed by its start and end position.
     	
     disposition: str, default 'packed'
     
     	Select wether the genes should be presented in full display (one row each) using the 'full' option,
     	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
     	
+    outfmt: str, default None
+    
+    	Format of the function's output. It could be None, being the output an interactive Matplotlib ot Plotly
+    	window. It also could be 'pdf' or 'png', so the output would be a file named after the provided object.	
+    
     Examples
     --------
     
     >>> plot_exons_plt(df, max_ngenes=25, colormap='Set3')
     
-    >>> plot_exons_plt(df, color_column='Strand', colormap={'+': 'green', '-': 'red'})
+    >>> plot_exons_plt(df, color_col='Strand', colormap={'+': 'green', '-': 'red'})
     
     >>> plot_exons_plt(df, custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
     	
@@ -95,11 +105,11 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     
     # Make DataFrame subset if needed
     # create a cloumn indexing all the genes in the df
-    genesix_l = [i for i in enumerate(df[id_column].drop_duplicates())]
+    genesix_l = [i for i in enumerate(df[id_col].drop_duplicates())]
     genesix_d = {}
     for ix, gene in genesix_l:
         genesix_d[gene] = ix
-    df["gene_index"] = df[id_column].map(genesix_d) # create a cloumn indexing all the genes in the df
+    df["gene_index"] = df[id_col].map(genesix_d) # create a cloumn indexing all the genes in the df
     
     # select maximun number of genes
     if max(df.gene_index)+1 <= max_ngenes:
@@ -112,9 +122,9 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     
     
     # Create chromosome metadata DataFrame
-    chrmd_df = subdf.groupby("Chromosome").agg({'Start': 'min', 'End': 'max', id_column: 'nunique'})
+    chrmd_df = subdf.groupby("Chromosome").agg({'Start': 'min', 'End': 'max', id_col: 'nunique'})
     chrmd_df.dropna(inplace=True) # remove chr not present in subset (NaN)
-    chrmd_df.rename(columns={id_column: 'n_genes',
+    chrmd_df.rename(columns={id_col: 'n_genes',
                             'Start': 'min',
                             'End': 'max'}, 
                    inplace=True)
@@ -146,19 +156,19 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     	
 
     # Create genes metadata DataFrame
-    if color_column is None:
-        color_column = id_column
+    if color_col is None:
+        color_col = id_col
 
     # start df with chromosome and the column defining color
-    genesmd_df = subdf.groupby(id_column).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max', color_column: 'first'})
+    genesmd_df = subdf.groupby(id_col).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max', color_col: 'first'})
     genesmd_df.dropna(inplace=True) # remove genes not present in subset (NaN)
-    genesmd_df.rename(columns={color_column: 'color_tag'}, inplace=True)
+    genesmd_df.rename(columns={color_col: 'color_tag'}, inplace=True)
     genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('Chromosome').cumcount()
     
-    #Assign y-coordinate
+    #Assign y-coordinate to genes
     if disposition == 'packed':
         genesmd_df['ycoord'] = -1
-        genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column>
+        genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column
         genesmd_df = genesmd_df.reset_index(level='Chromosome', drop=True)
     elif disposition == 'full':
         genesmd_df['ycoord'] = genesmd_df.loc[:, 'gene_ix_xchrom']
@@ -201,13 +211,14 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
     
     # 3- Use dict to assign color to gene
     if type(colormap) == dict: 
-        genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)  ## NOTE: when specifying color by dict, careful with color_column
+        genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)  ## NOTE: when specifying color by dict, careful with color_col
         genesmd_df['color'].fillna('black', inplace=True) # not specified in dict will be colored as black
 
 
     # Create figure and axes
-    x = 10
-    y = sum(chrmd_df.n_genes) + 4*len(chrmd_df)
+    x = 20
+    y = (sum(chrmd_df.y_height) + 4*len(chrmd_df)) / 2
+    print('\n\n\n' + str(y) + '\n\n\n')
     fig = plt.figure(figsize=(x, y)) # height according to genes and add 2 per each chromosome
     gs = gridspec.GridSpec(len(chrmd_df), 1, height_ratios=chrmd_df.y_height) #size of chromosome subplot according to number of gene rows
     plt.rcParams.update({'font.family': 'sans-serif'})
@@ -248,26 +259,30 @@ def plot_exons_plt(df, max_ngenes = 25, id_column = 'gene_id', color_column = No
         ax.set_yticks(y_ticks_val)
         ax.set_yticklabels(y_ticks_name)
 	
-    plt.subplots_adjust(hspace=0.5, bottom=0.2, left=0.2) # space between plots and room for slider
+    plt.subplots_adjust(hspace=0.7) 
     if max_ngenes > 25:
         plt.suptitle("Warning! The plot integity might be compromised when displaying too many genes.", color='red',
         x=0.05, y=0.95)
   
     
     # Plot genes
-    subdf.groupby(id_column).apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, id_column, tag_background))
-    #plt.tight_layout()
-    plt.show()   
+    subdf.groupby(id_col).apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background))
+    
+    
+    # Provide output
+    if outfmt is None:
+        plt.show()   
+    elif outfmt in ['pdf', 'png']:
+        plt.savefig('prplot_yourplot.' + outfmt, format = outfmt)
     
     
     
-    
-def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_column, tag_background):
+def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background):
 
     """Plot elements corresponding to the df rows of one gene."""
     
     # Gene parameters
-    genename = df[id_column].iloc[0]
+    genename = df[id_col].iloc[0]
     gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].Chromosome
@@ -279,8 +294,16 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_column, tag_backgrou
     else:
         strand = ''
     
+    # Get the gene information to print on hover
+    geneinfo = f"Coordinates: ({min(df.Start)}, {max(df.End)})\nID: {genename}" #default
+    showinfo_data = []
+    if showinfo:
+        for i in range(len(showinfo)):
+                showinfo_data.append(df[showinfo[i]].iloc[0])
+                geneinfo += f"\n{showinfo[i]}: {showinfo_data[i]}"
+                
     # Plot the gene rows
-    df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background), axis=1)
+    df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo), axis=1)
             
     # Plot the LINE binding the exons    
     gene_line = ax.plot([min(df.Start), max(df.End)], [gene_ix, gene_ix], color=exon_color, linewidth=1, zorder=1)
@@ -297,7 +320,7 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_column, tag_backgrou
         visible = annotation.get_visible()
         contains_line, _ = gene_line[0].contains(event)  # Check if mouse is over the gene line
         if contains_line:
-            annotation.set_text(f"Gene: {genename}")
+            annotation.set_text(geneinfo)
             annotation.xy = (event.xdata, event.ydata)
             annotation.set_visible(True)
             fig.canvas.draw()
@@ -347,7 +370,7 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_column, tag_backgrou
     
     
     
-def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background):
+def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo):
 
     """Plot elements corresponding to one row of one gene."""
     
@@ -402,9 +425,8 @@ def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chro
     # Add tooltips to gene objects using mplcursors
     # create annotation and make it not visible
     annotation = ax.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
-                              bbox=dict(boxstyle="round", edgecolor=tag_background, facecolor=tag_background,
-                                        color="white"),
-                              arrowprops=dict(arrowstyle="->"))
+                              bbox=dict(boxstyle="round", edgecolor=tag_background, facecolor=tag_background,),
+                              arrowprops=dict(arrowstyle="->"), color='white')
 
     annotation.set_visible(False)
     
@@ -413,7 +435,7 @@ def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chro
         visible = annotation.get_visible()
         contains, _ = exon_rect.contains(event)
         if contains:
-            annotation.set_text(f"Gene: {genename}")
+            annotation.set_text(geneinfo)
             annotation.xy = (event.xdata, event.ydata)
             annotation.set_visible(True)
             fig.canvas.draw()

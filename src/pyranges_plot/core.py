@@ -34,6 +34,34 @@ def get_engine():
 
 
 
+id_col = None
+def set_idcol(name):
+    """
+    Defines the ID column for the data.
+    
+    Parameters
+    ----------
+    name: str 
+
+         Indicates the name of the ID column to be used when dealing with data.
+
+    Examples
+    --------
+    >>> pyranges_plot.set_idcol('gene_id')
+    
+    """
+
+    global id_col
+    id_col = name
+
+
+def get_idcol():
+    """Shows the current defined ID column (id_col)."""
+
+    return id_col
+
+
+
 
 
 def packed_for_genesmd(genesmd_df):

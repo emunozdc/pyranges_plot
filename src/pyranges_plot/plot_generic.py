@@ -1,13 +1,13 @@
 import pyranges
 import plotly.colors
-from .core import get_engine
+from .core import get_engine, get_idcol
 from .plot_exons_plt.plot_exons_plt import plot_exons_plt
 from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 
 colormap = plotly.colors.sequential.thermal
 
-def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_column = None, colormap = colormap, 
-		custom_coords = None, disposition = 'packed'):
+def plot_generic(df, engine = None, max_ngenes = 25, id_col = None, color_col = None, colormap = colormap, 
+		custom_coords = None, showinfo = None, disposition = 'packed', outfmt = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -27,11 +27,11 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     	
     	Maximum number of genes plotted in the dataframe order.
     
-    id_column: str, default 'gene_id'
+    id_col: str, default 'gene_id'
         
         Name of the column containing gene ID.
     
-    color_column: str, default None
+    color_col: str, default None
     	
     	Name of the column used to color the genes.
     
@@ -41,7 +41,7 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     	a Plotly color sequence (built as lists), a string naming the previously mentioned
     	color objects from Matplotlib and Plotly, or a dictionary with the following 
     	structure {color_column_value1: color1, color_column_value2: color2, ...}. When a specific
-    	color_column value is not specified in the dictionary it will be colored in black.
+    	color_col value is not specified in the dictionary it will be colored in black.
     	
     custom_coords: {None, dict}, default None
     
@@ -52,23 +52,33 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     	have to be present and some coordinates can be indicated as None leading to the use of the 
     	default value.
     	
+    showinfo: list, default None
+    
+    	Dataframe information to show when placing the mouse over a gene. This must be provided as a list 
+    	of column names. By default it shows the ID of the gene followed by its start and end position.
+    
     disposition: str, default 'packed'
     
     	Select wether the genes should be presented in full display (one row each) using the 'full' option,
     	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
     	
+    outfmt: str, default None
+    
+    	Format of the function's output. It could be None, being the output an interactive Matplotlib ot Plotly
+    	window. It also could be 'pdf' or 'png', so the output would be a file named after the provided object.
+    	
     Examples
     --------
     
-    >>> plot_exons(df, engine='plt', max_ngenes=25, colormap='Set3')
+    >>> plot_generic(df, engine='plt', max_ngenes=25, colormap='Set3')
     
-    >>> plot_exons(df, engine='matplotlib', color_column='Strand', colormap={'+': 'green', '-': 'red'})
+    >>> plot_generic(df, engine='matplotlib', color_col='Strand', colormap={'+': 'green', '-': 'red'})
     
-    >>> plot_exons(df, engine='ply', custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
+    >>> plot_generic(df, engine='ply', custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
     
-    >>> plot_exons(df, engine='plotly', colormap=plt.get_cmap('Dark2'))
+    >>> plot_generic(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = ['feature1', 'feature3'])
     
-    >>> plot_exons(df, engine='plt', color_column='Strand', disposition='full')
+    >>> plot_generic(df, engine='plt', color_col='Strand', disposition='full')
     	
 
     """
@@ -78,10 +88,13 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
         df = df.df
     
     
-    # Deal with column id
+    # Deal with id column
+    if id_col is None:
+        id_col = get_idcol()
+    
     try:
-        if id_column not in df.columns:
-            raise Exception("Please specify the name of the ID column with plot_exons(..., id_column = 'your_id_column')")
+        if id_col is None or id_col not in df.columns:
+            raise Exception("Please define the name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')")
     except SystemExit as e:
         print("An error occured:", e)
         
@@ -92,20 +105,14 @@ def plot_exons(df, engine = None, max_ngenes = 25, id_column = 'gene_id', color_
     
     try:
     	if engine == 'plt' or engine == 'matplotlib':
-    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, 
-    	    		custom_coords = custom_coords, disposition = disposition)
+    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, colormap = colormap, 
+    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, outfmt = outfmt)
     	elif engine == 'ply' or engine == 'plotly':
-    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_column = id_column, color_column = color_column, colormap = colormap, 
-    	    		custom_coords = custom_coords, disposition = disposition)
+    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, colormap = colormap, 
+    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, outfmt = outfmt)
     	else:
             raise Exception("Please define engine with set_engine().")
     except SystemExit as e:
         print("An error occured:", e)
 
 
-
-
-        
-        
-        
-        
