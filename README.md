@@ -43,20 +43,20 @@ pip install pyranges-plot
 
 
 ## Examples
-Next we will test pyranges_plot visualization options, using a PyRanges object generated 
-from a dictionary.
+Next we will test pyranges\_plot visualization options using the ``plot_generic`` function. 
+For that we will be using a PyRanges object generated from a dictionary.
 
 ```python
 import pyranges as pr
 import pyranges_plot as prplot
 
 p = pr.from_dict({"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3],
-             	"Strand": ["+", "+", "-", "-", "+", "+", "+", "+"],
-             	"Start": [1, 40, 10, 70, 85, 110, 150, 140],
-             	"End": [11, 60, 25, 80, 100, 115, 180, 152],
-             	"transcript_id":["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4"],
-              "feature1": ["a", "a", "b", "b", "c", "c", "c", "d"],
-              "feature2": ["A", "A", "B", "B", "C", "C", "C", "D"]})
+                  "Strand": ["+", "+", "-", "-", "+", "+", "+", "+"],
+                  "Start": [1, 40, 10, 70, 85, 110, 150, 140],
+                  "End": [11, 60, 25, 80, 100, 115, 180, 152], 
+                  "transcript_id":["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4"], 
+                  "feature1": ["a", "a", "b", "b", "c", "c", "c", "d"], 
+                  "feature2": ["A", "A", "B", "B", "C", "C", "C", "D"]})
 print(p)
 
 ```
@@ -241,6 +241,30 @@ prplot.plot_generic(p)
 </p>
 
 
+
+Once we are able to get the plot we want, it can be exported to pdf or png format using the 
+``outfmt`` parameter. The file will be located in your current working directory and will be 
+called "prplot\_yourplot.pdf" or "prplot_yourplot.png".
+
+```python
+# Return to original features
+prplot.set_default('plot_background', 'white')
+prplot.set_default('plot_border', 'black')
+prplot.set_default('title_dict_ply.color', 'goldenrod')
+
+# Build the plot and save it in pdf or png
+prplot.plot_generic(p, outfmt='pdf')
+
+# An example of some pyranges adjustments and save
+p_subset = p[p.transcript_id.isin(['t3', 't4'])]
+prplot.plot_generic(p_subset, colormap='Set3', disposition='full', outfmt='png')
+```
+<p align="center">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_yourplot.png">
+</p>
+
+
 ## Coming soon
-* Bases will be displayed along coordinates
-* Colorblind friendly
+* Bases will be displayed along coordinates.
+* Customized name of exported file.
+* Colorblind friendly.
