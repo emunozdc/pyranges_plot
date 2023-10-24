@@ -29,7 +29,7 @@ intron_threshold = 0.3
 # PLOT_EXONS FUNCTIONS 
 
 def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
-		custom_coords = None, showinfo = None, disposition = 'packed', outfmt = None):
+		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -78,10 +78,9 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     	Select wether the genes should be presented in full display (one row each) using the 'full' option,
     	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
     	
-    outfmt: str, default None
+    to_file: str, default None
     
-    	Format of the function's output. It could be None, being the output an interactive Matplotlib ot Plotly
-    	window. It also could be 'pdf' or 'png', so the output would be a file named after the provided object.	
+    	Name of the file to export specifying the desired extension. The supported extensions are '.png' and '.pdf'.
     
     Examples
     --------
@@ -270,10 +269,10 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     
     # Provide output
-    if outfmt is None:
+    if to_file is None:
         plt.show()   
-    elif outfmt in ['pdf', 'png']:
-        plt.savefig('prplot_yourplot.' + outfmt, format = outfmt)
+    else:
+        plt.savefig(to_file, format = to_file[-3:])
     
     
     
@@ -295,7 +294,10 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
         strand = ''
     
     # Get the gene information to print on hover
-    geneinfo = f"Coordinates: ({min(df.Start)}, {max(df.End)})\nID: {genename}" #default
+    if strand:
+        geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})\nID: {genename}" #default with strand
+    else:
+        geneinfo = f"({min(df.Start)}, {max(df.End)})\nID: {genename}" #default without strand
     showinfo_data = []
     if showinfo:
         for i in range(len(showinfo)):
@@ -339,7 +341,7 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
             start =  sorted_exons['End'].iloc[i] 
             stop = sorted_exons['Start'].iloc[i+1]
             intron_size = coord2inches(fig, ax, start, stop, 0,0)
-            incl = inches2coord(fig, ax, 0.1)  #how long in the plot (OX)
+            incl = inches2coord(fig, ax, 0.15)  #how long in the plot (OX)
             
             # create and plot lines
             if intron_size > intron_threshold:
@@ -384,17 +386,14 @@ def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chro
     ax.add_patch(exon_rect)
     
     # Plot DIRECTION ARROW in EXON
-    # decide about exon size
+    # decide about placing a direction arrow
     arrow_size = coord2inches(fig, ax, 0.05 * start, 0.05 * stop, 0, 0)
-    #within limits, arrow shape according to exon size
-    if arrow_size_min <= arrow_size <= arrow_size_max:
-        incl = 0.05*(stop - start) 
     #too small to plot
-    elif arrow_size <= arrow_size_min: 
+    if arrow_size <= arrow_size_min: 
         incl = 0
-    #maximum allowed size of arrow
-    elif arrow_size >= arrow_size_max:
-        incl = inches2coord(fig, ax, arrow_size_max) 
+    #plot the arrow
+    else:
+        incl = inches2coord(fig, ax, 0.15)  #how long in the plot (OX)
 
     # create and plot lines
     if incl:

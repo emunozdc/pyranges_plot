@@ -43,7 +43,7 @@ pip install pyranges-plot
 
 
 ## Examples
-Next we will test pyranges\_plot visualization options using the ``plot_generic`` function. 
+Next we will test pyranges\_plot visualization options using the ``plot`` function. 
 For that we will be using a PyRanges object generated from a dictionary.
 
 ```python
@@ -84,7 +84,7 @@ as shown above. Having this example data in the variable ``p`` we are able to st
 pyranges_plot options. We can get a plot in a single line:
 
 ```python
-prplot.plot_generic(p, engine="plt", id_col="transcript_id")
+prplot.plot(p, engine="plt", id_col="transcript_id")
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex01.png">
@@ -109,7 +109,7 @@ as 2. Note that in the case of plotting more than 25 a warning about the plot's 
 will appear.
 
 ```python
-prplot.plot_generic(p, max_ngenes=2)
+prplot.plot(p, max_ngenes=2)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex02.png">
@@ -139,10 +139,7 @@ and the values are either ``None`` or a tuple indicating the limits. When a chro
 specified in the dictionary or it is assigned ``None`` the coordinates will appear as default.
 
 ```python
-prplot.plot_generic(
-    p,
-    custom_coords={"1": (None, 100), "2": (60, 200), "3": None}
-)
+prplot.plot(p, custom_coords={"1": (None, 100), "2": (60, 200), "3": None})
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex05.png">
@@ -154,7 +151,7 @@ We can try to color the genes according to the strand column instead of the ID (
 that the ``color_col`` parameter should be used.
 
 ```python
-prplot.plot_generic(p, color_col="Strand")
+prplot.plot(p, color_col="Strand")
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex06.png">
@@ -167,7 +164,7 @@ these colors can be customized through the ``colormap`` parameter to see it more
 this case we can specify it as a dictionary in the following way:
 
 ```python
-prplot.plot_generic(
+prplot.plot(
     p,
     color_col="Strand",
     colormap={"+": "green", "-": "red"}
@@ -185,7 +182,7 @@ these objects) as well as lists of colors. For example we can use the Dark2 Matp
 even if the plot is based on Plotly:
 
 ```python
-prplot.plot_generic(p, colormap="Dark2")
+prplot.plot(p, colormap="Dark2")
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex08.png">
@@ -198,7 +195,7 @@ placed one beside the other preferentially. But this ``disposition`` parameter c
 if the user wants to display each gene under the other.
 
 ```python
-prplot.plot_generic(p, disposition='full')
+prplot.plot(p, disposition='full')
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex09.png">
@@ -207,12 +204,12 @@ prplot.plot_generic(p, disposition='full')
 
 
 In interactive plots there is the option of showing information about the gene when the mouse is 
-placed over its structure. This information always shows the gene's start and end coordinates 
-along with the ID. To add information contained in other dataframe calumns to the tooltip, the 
-``showinfo`` parameter should be used in the following way:
+placed over its structure. This information always shows the gene's strand if it exists, the start and 
+end coordinates and the ID. To add information contained in other dataframe columns to the tooltip, 
+the ``showinfo`` parameter should be used in the following way:
 
 ```python
-prplot.plot_generic(p, showinfo=["feature1", "feature2"])
+prplot.plot(p, showinfo=["feature1", "feature2"])
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex10.png">
@@ -234,7 +231,7 @@ prplot.set_default('plot_border', '#808080')
 prplot.set_default('title_dict_ply.color', 'magenta')
 
 # Make the customized plot
-prplot.plot_generic(p)
+prplot.plot(p)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex11.png">
@@ -243,8 +240,8 @@ prplot.plot_generic(p)
 
 
 Once we are able to get the plot we want, it can be exported to pdf or png format using the 
-``outfmt`` parameter. The file will be located in your current working directory and will be 
-called "prplot\_yourplot.pdf" or "prplot_yourplot.png".
+``to\_file`` parameter. This parameter takes a string with the name or path of the file including
+its extension.
 
 ```python
 # Return to original features
@@ -253,14 +250,14 @@ prplot.set_default('plot_border', 'black')
 prplot.set_default('title_dict_ply.color', 'goldenrod')
 
 # Build the plot and save it in pdf or png
-prplot.plot_generic(p, outfmt='pdf')
+prplot.plot(p, to_file='my_plot.pdf')
 
 # An example of some pyranges adjustments and save
 p_subset = p[p.transcript_id.isin(['t3', 't4'])]
-prplot.plot_generic(p_subset, colormap='Set3', disposition='full', outfmt='png')
+prplot.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.png')
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_yourplot.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/t3_t4_plot.png">
 </p>
 
 

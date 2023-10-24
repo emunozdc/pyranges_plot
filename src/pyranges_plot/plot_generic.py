@@ -6,8 +6,8 @@ from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 
 colormap = plotly.colors.sequential.thermal
 
-def plot_generic(df, engine = None, max_ngenes = 25, id_col = None, color_col = None, colormap = colormap, 
-		custom_coords = None, showinfo = None, disposition = 'packed', outfmt = None):
+def plot(df, engine = None, max_ngenes = 25, id_col = None, color_col = None, colormap = colormap, 
+		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -62,10 +62,9 @@ def plot_generic(df, engine = None, max_ngenes = 25, id_col = None, color_col = 
     	Select wether the genes should be presented in full display (one row each) using the 'full' option,
     	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
     	
-    outfmt: str, default None
+    to_file: str, default None
     
-    	Format of the function's output. It could be None, being the output an interactive Matplotlib ot Plotly
-    	window. It also could be 'pdf' or 'png', so the output would be a file named after the provided object.
+    	Name of the file to export specifying the desired extension. The supported extensions are '.png' and '.pdf'.
     	
     Examples
     --------
@@ -78,7 +77,7 @@ def plot_generic(df, engine = None, max_ngenes = 25, id_col = None, color_col = 
     
     >>> plot_generic(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = ['feature1', 'feature3'])
     
-    >>> plot_generic(df, engine='plt', color_col='Strand', disposition='full')
+    >>> plot_generic(df, engine='plt', color_col='Strand', disposition='full', to_file='my_plot.pdf')
     	
 
     """
@@ -87,6 +86,16 @@ def plot_generic(df, engine = None, max_ngenes = 25, id_col = None, color_col = 
     if type(df) is pyranges.pyranges_main.PyRanges:
         df = df.df
     
+    
+    # Deal with export
+    if to_file:
+        ext = to_file[-4:]
+        try:
+            if ext not in ['.pdf', '.png']:
+                raise Exception("Please specify the desired format to export the file including either '.png' or '.pdf' as an extension.")
+        except SystemExit as e:
+            print("An error occured:", e)
+
     
     # Deal with id column
     if id_col is None:
@@ -106,10 +115,10 @@ def plot_generic(df, engine = None, max_ngenes = 25, id_col = None, color_col = 
     try:
     	if engine == 'plt' or engine == 'matplotlib':
     	    plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, colormap = colormap, 
-    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, outfmt = outfmt)
+    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, to_file = to_file)
     	elif engine == 'ply' or engine == 'plotly':
     	    plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, colormap = colormap, 
-    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, outfmt = outfmt)
+    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, to_file = to_file)
     	else:
             raise Exception("Please define engine with set_engine().")
     except SystemExit as e:

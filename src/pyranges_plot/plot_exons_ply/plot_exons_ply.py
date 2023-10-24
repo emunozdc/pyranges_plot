@@ -17,7 +17,7 @@ from dash import dcc, html, Output, Input
 # plot parameters
 exon_width = 0.4
 colormap = plotly.colors.sequential.thermal
-arrow_width = 2
+arrow_width = 1
 arrow_color = "grey"
 arrow_size_max = 0.02
 arrow_size_min = 0.005
@@ -29,7 +29,7 @@ intron_threshold = 0.03
 # PLOT_EXONS FUNCTIONS 
 
 def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
-		custom_coords = None, showinfo = None, disposition = 'packed', outfmt = None):
+		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
     """
     Create genes plot from PyRanges object DataFrame
     
@@ -77,10 +77,9 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     	Select wether the genes should be presented in full display (one row each) using the 'full' option,
     	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
     	
-    outfmt: str, default None
+    to_file: str, default None
     
-    	Format of the function's output. It could be None, being the output an interactive Matplotlib ot Plotly
-    	window. It also could be 'pdf' or 'png', so the output would be a file named after the provided object.
+    	Name of the file to export specifying the desired extension. The supported extensions are '.png' and '.pdf'.
     	
     Examples
     --------
@@ -260,10 +259,10 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     
     # Provide output
-    if outfmt == None:
+    if to_file == None:
         fig.show()
-    elif outfmt in ['pdf', 'png']:
-        pio.write_image(fig, 'prplot_yourplot.' + outfmt)
+    else:
+        pio.write_image(fig, to_file)
 
 
     
@@ -286,7 +285,10 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
         strand = ''
     
     # Get the gene information to print on hover
-    geneinfo = f"Coordinates: ({min(df.Start)}, {max(df.End)})<br>ID: {genename}" #default
+    if strand:
+        geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})<br>ID: {genename}" #default with strand
+    else:
+        geneinfo = f"({min(df.Start)}, {max(df.End)})<br>ID: {genename}" #default without strand
     showinfo_data = []
     if showinfo:
         for i in range(len(showinfo)):
@@ -380,17 +382,14 @@ def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix
             )
     
     # Plot DIRECTION ARROW in EXON
-    # decide about exon size
+    # decide about placing a direction arrow
     arrow_size = coord2percent(fig, chrom_ix+1, 0.05*start, 0.05*stop)
-    #within limits, arrow shape according to exon size
-    if arrow_size_min <= arrow_size <= arrow_size_max: 
-        incl = 0.05*(stop - start) 
     #too small to plot
-    elif arrow_size <= arrow_size_min: 
+    if arrow_size <= arrow_size_min: 
         incl = 0
-    #maximum allowed size of arrow
-    elif arrow_size >= arrow_size_max: 
-        incl = percent2coord(fig, chrom_ix+1, arrow_size_max) 
+    #plot the arrow
+    else:
+        incl = percent2coord(fig, chrom_ix+1, 0.003) #how long in the plot (OX)
     
     # create and plot lines
     if incl:
