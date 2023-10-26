@@ -225,7 +225,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
     # Create figure and chromosome plots
     titles = ["Chromosome %s" % chrom for chrom in chrmd_df.index]
     fig = sp.make_subplots(rows=nchrs, cols=1, row_heights=chrmd_df.y_height.to_list(), subplot_titles=titles)
-    print('\n\n\n' + str(sum(chrmd_df.y_height)+ nchrs) + '\n\n\n')
+    #print('\n\n\n' + str(sum(chrmd_df.y_height)+ nchrs) + '\n\n\n')
     
     # one subplot per chromosome
     for i in range(nchrs):
@@ -336,13 +336,13 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, transcript_str, showi
             df = df.groupby('Feature').get_group('CDS')
             
         # transcript only has CDS
-        #elif df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+        elif df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+            print()
         
         # trancript only has exon    
         elif not df.Feature.str.contains('CDS').any() and df.Feature.str.contains('exon').any():
-            #plot just as utr and pass gene
+            #plot just as utr
             df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, transcript_utr_width), axis=1)
-            return
             
         # transcript has neither, skip it
         else:
@@ -363,7 +363,9 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, transcript_str, showi
     fig.add_trace(exon_line, row=chrom_ix+1, col=1)
     
     # Plot the gene rows
-    df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, exon_width), axis=1)
+    # trancript does not only have exon    
+    if df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+        df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, exon_width), axis=1)
     
     # Plot DIRECTION ARROW in INTRONS if strand is known
     sorted_exons = df[['Start', 'End']].sort_values(by = 'Start')

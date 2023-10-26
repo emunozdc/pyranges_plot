@@ -360,15 +360,15 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, transcript_str,
             df = df.groupby('Feature').get_group('CDS')
         
         # transcript only has CDS
-        #elif df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+        elif df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+            print()
         
         # transcript only has exon    
         elif not df.Feature.str.contains('CDS').any() and df.Feature.str.contains('exon').any():
-            #plot just as utr and pass gene
+            #plot just as utr 
             df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, 
                      tag_background, geneinfo, transcript_utr_width), axis=1)
-            return
-            
+          
         # transcript has neither, skip it
         else:
             return
@@ -401,7 +401,9 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, transcript_str,
     
     
     # Plot the gene rows
-    df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo, exon_width), axis=1)
+    # trancript does not only have exon    
+    if df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+        df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo, exon_width), axis=1)
             
 
     # Plot DIRECTION ARROW in INTRONS if strand is known
