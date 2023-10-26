@@ -363,8 +363,11 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, transcript_str, showi
     fig.add_trace(exon_line, row=chrom_ix+1, col=1)
     
     # Plot the gene rows
-    # trancript does not only have exon    
-    if df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+    # not transcript
+    if not transcript_str:
+        df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, exon_width), axis=1)
+    # trancript does not only have exon
+    if transcript_str and df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
         df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, exon_width), axis=1)
     
     # Plot DIRECTION ARROW in INTRONS if strand is known

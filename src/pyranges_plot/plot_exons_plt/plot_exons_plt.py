@@ -223,7 +223,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
     # Create figure and axes
     x = 20
     y = (sum(chrmd_df.y_height) + 4*len(chrmd_df)) / 2
-    print('\n\n\n' + str(y) + '\n\n\n')
+    #print('\n\n\n' + str(y) + '\n\n\n')
     fig = plt.figure(figsize=(x, y)) # height according to genes and add 2 per each chromosome
     gs = gridspec.GridSpec(len(chrmd_df), 1, height_ratios=chrmd_df.y_height) #size of chromosome subplot according to number of gene rows
     plt.rcParams.update({'font.family': 'sans-serif'})
@@ -401,9 +401,14 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, transcript_str,
     
     
     # Plot the gene rows
-    # trancript does not only have exon    
-    if df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+    # not transcript
+    if not transcript_str:
         df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo, exon_width), axis=1)
+            
+    # trancript does not only have exon
+    if transcript_str and df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+        df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo, exon_width), axis=1)
+            
             
 
     # Plot DIRECTION ARROW in INTRONS if strand is known
