@@ -188,3 +188,22 @@ def get_plycolormap(colormap_string):
         return getattr(pc.cyclical, colormap_string)
     elif hasattr(pc.qualitative, colormap_string):
         return getattr(pc.qualitative, colormap_string)
+
+
+
+def on_hover_factory(fig, annotation, object, geneinfo):
+    def on_hover(event):
+        """Check if the mouse is over the object and show annotation if so."""
+        visible = annotation.get_visible()
+        contains_object = object.contains(event)  # Check if the mouse is over the object
+
+        if contains_object:
+            annotation.set_text(geneinfo)  # Add the information
+            annotation.xy = (event.xdata, event.ydata)
+            annotation.set_visible(True)
+            fig.canvas.draw()
+        elif visible:
+            annotation.set_visible(False)
+            fig.canvas.draw()
+
+    return on_hover

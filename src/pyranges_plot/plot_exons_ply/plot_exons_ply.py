@@ -16,6 +16,7 @@ from dash import dcc, html, Output, Input
 
 # plot parameters
 exon_width = 0.4
+transcript_utr_width = 0.2 * exon_width
 colormap = plotly.colors.sequential.thermal
 arrow_width = 1
 arrow_color = "grey"
@@ -28,7 +29,7 @@ intron_threshold = 0.03
 
 # PLOT_EXONS FUNCTIONS 
 
-def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
+def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = False, color_col = None, colormap = colormap, 
 		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
     """
     Create genes plot from PyRanges object DataFrame
@@ -46,6 +47,11 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     id_col: str, default 'gene_id'
         
         Name of the column containing gene ID.
+    
+    transcript_str: bool, default False
+    
+        Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
+        must be stored in the 'Feature' column of the PyRanges object or the dataframe.
 
     color_col: str, default None
     	
@@ -247,7 +253,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
 
 
     # Plot genes
-    subdf.groupby(id_col).apply(lambda subdf: _gby_plot_exons(subdf, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background))
+    subdf.groupby(id_col).apply(lambda subdf: _gby_plot_exons(subdf, fig, chrmd_df, genesmd_df, id_col, transcript_str, showinfo, tag_background))
     
     
     # Adjust plot display
@@ -262,12 +268,13 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     if to_file == None:
         fig.show()
     else:
+        fig.update_layout(width=1600, height=800)
         pio.write_image(fig, to_file)
 
 
     
 
-def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background):
+def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, transcript_str, showinfo, tag_background):
 
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -293,13 +300,56 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
     if showinfo:
         for i in range(len(showinfo)):
            col = showinfo[i]
-           showinfo_data.append(df[col].iloc[0])
+           showinfo_data.append(df[col].iloc[0]) # first by default, change for exons.
            geneinfo += f"<br>{showinfo[i]}: {showinfo_data[i]}"
 
+
+    # Plot transcript structure
+    if transcript_str:
+        # transcript has CDS and exon
+        if df.Feature.str.contains('CDS').any() and df.Feature.str.contains('exon').any(): 
+            #get coordinates for utr and cds
+            tr_start, cds_start = df.groupby('Feature').Start.apply(min)[['exon', 'CDS']]
+            tr_end, cds_end = df.groupby('Feature').End.apply(max)[['exon', 'CDS']]
+        
+            #create start utr
+            x0, x1 = tr_start, cds_start
+            y0, y1 = gene_ix - transcript_utr_width/2, gene_ix + transcript_utr_width/2
+            fig.add_trace(
+                go.Scatter(x = [x0, x0, x1, x1, x0], y = [y0, y1, y1, y0, y0] ,
+                           fill = "toself", fillcolor = exon_color, mode = 'lines', 
+                           line = dict(color=exon_color), name = geneinfo),
+                           row=chrom_ix+1, 
+                           col=1)
+                           
+            #create end utr
+            x0, x1 = cds_end, tr_end
+            y0, y1 = gene_ix - transcript_utr_width/2, gene_ix + transcript_utr_width/2
+            fig.add_trace(
+                go.Scatter(x = [x0, x0, x1, x1, x0], y = [y0, y1, y1, y0, y0] ,
+                           fill = "toself", fillcolor = exon_color, mode = 'lines', 
+                           line = dict(color=exon_color), name = geneinfo),
+                           row=chrom_ix+1, 
+                           col=1)
+                           
+            #remove non-CDS from data
+            df = df.groupby('Feature').get_group('CDS')
+            
+        # transcript only has CDS
+        #elif df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+        
+        # trancript only has exon    
+        elif not df.Feature.str.contains('CDS').any() and df.Feature.str.contains('exon').any():
+            #plot just as utr and pass gene
+            df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, transcript_utr_width), axis=1)
+            return
+            
+        # transcript has neither, skip it
+        else:
+            return
+
+
     # Plot LINE binding the exons
-    #exon_line = go.Scatter(x=[min(df.Start), max(df.End)], y=[gene_ix, gene_ix], mode="lines",
-    #                       line=go.scatter.Line(color=exon_color, width=0.7), showlegend=False, 
-    #                       name=genename, hovertext=genelabel)
     x0, x1 = min(df.Start), max(df.End)
     y0, y1 = gene_ix - exon_width/100, gene_ix + exon_width/100
     exon_line = go.Scatter(
@@ -313,14 +363,14 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
     fig.add_trace(exon_line, row=chrom_ix+1, col=1)
     
     # Plot the gene rows
-    df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo), axis=1)
+    df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, exon_width), axis=1)
     
     # Plot DIRECTION ARROW in INTRONS if strand is known
     sorted_exons = df[['Start', 'End']].sort_values(by = 'Start')
     
     if strand:
         # evaluate  each intron
-        for i in range(n_exons-1):
+        for i in range(len(sorted_exons)-1):
             start =  sorted_exons['End'].iloc[i] 
             stop = sorted_exons['Start'].iloc[i+1]
             intron_size = coord2percent(fig, chrom_ix+1, start, stop)
@@ -359,7 +409,7 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
 
 
 def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, 
-                n_exons, genelabel, geneinfo):
+                n_exons, genelabel, geneinfo, exon_width):
 
     """Plot elements corresponding to one row of one gene."""
     
@@ -367,10 +417,8 @@ def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix
     start = int(row["Start"])
     stop = int(row["End"])
     # convert to coordinates for rectangle
-    x0=start
-    x1=stop
-    y0=gene_ix-exon_width/2 ##gene middle point - half of exon size
-    y1=gene_ix+exon_width/2 ##gene middle point + half of exon size
+    x0, x1 = start, stop
+    y0, y1=gene_ix-exon_width/2, gene_ix+exon_width/2 ##gene middle point -+ half of exon size
     
     # Plot EXON as rectangle
     fig.add_trace(

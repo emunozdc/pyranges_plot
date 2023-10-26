@@ -7,7 +7,7 @@ import matplotlib.colors as mcolors
 import plotly.colors
 import numpy as np
 import mplcursors
-from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd
+from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd, on_hover_factory
 from ..plot_features import get_default
 
 
@@ -15,6 +15,7 @@ from ..plot_features import get_default
 
 # plot parameters
 exon_width = 0.4
+transcript_utr_width = 0.2 * exon_width
 colormap = plotly.colors.sequential.thermal
 arrow_width = 1
 arrow_color = "grey"
@@ -28,7 +29,7 @@ intron_threshold = 0.3
 
 # PLOT_EXONS FUNCTIONS 
 
-def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
+def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = False, color_col = None, colormap = colormap, 
 		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
 
     """
@@ -47,6 +48,11 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     id_col: str, default 'gene_id'
         
         Name of the column containing gene ID.
+
+    transcript_str: bool, default False
+    
+        Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
+        must be stored in the 'Feature' column of the PyRanges object or the dataframe.
 
     color_col: str, default None
     	
@@ -265,7 +271,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
   
     
     # Plot genes
-    subdf.groupby(id_col).apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background))
+    subdf.groupby(id_col).apply(lambda subdf: _gby_plot_exons(subdf, axes, fig, chrmd_df, genesmd_df, id_col, transcript_str, showinfo, tag_background))
     
     
     # Provide output
@@ -276,7 +282,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     
     
-def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background):
+def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, transcript_str, showinfo, tag_background):
 
     """Plot elements corresponding to the df rows of one gene."""
     
@@ -293,7 +299,8 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
     else:
         strand = ''
     
-    # Get the gene information to print on hover
+    # Make gene annotation
+    # get the gene information to print on hover
     if strand:
         geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})\nID: {genename}" #default with strand
     else:
@@ -303,10 +310,70 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
         for i in range(len(showinfo)):
                 showinfo_data.append(df[showinfo[i]].iloc[0])
                 geneinfo += f"\n{showinfo[i]}: {showinfo_data[i]}"
-                
-    # Plot the gene rows
-    df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo), axis=1)
+ 
+    
+    
+    # Plot transcript structure
+    if transcript_str:
+        # transcript has CDS and exon
+        if df.Feature.str.contains('CDS').any() and df.Feature.str.contains('exon').any(): 
+            #get coordinates for utr and cds
+            tr_start, cds_start = df.groupby('Feature').Start.apply(min)[['exon', 'CDS']]
+            tr_end, cds_end = df.groupby('Feature').End.apply(max)[['exon', 'CDS']]
+        
+            #create utr
+            start_utr = Rectangle( (tr_start, gene_ix-transcript_utr_width/2), cds_start-tr_start, transcript_utr_width,
+                                  edgecolor = exon_color, facecolor = exon_color, fill = True)
+            end_utr = Rectangle( (cds_end, gene_ix-transcript_utr_width/2), tr_end-cds_end, transcript_utr_width,
+                                edgecolor = exon_color, facecolor = exon_color, fill = True)                    
+            ax.add_patch(start_utr)
+            ax.add_patch(end_utr)
             
+            #make annotation visible for utr
+            #create annotation and make it not visible
+            ann = ax.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
+                                     bbox=dict(boxstyle="round", edgecolor=tag_background, facecolor=tag_background,),
+                                     arrowprops=dict(arrowstyle="->"), color='white')
+            ann.set_visible(False)
+
+            # Create the on_hover function
+            def on_hover(event):
+                visible = ann.get_visible()
+    
+                # Check if the mouse is over start_utr or end_utr
+                contains_start_utr, _ = start_utr.contains(event)
+                contains_end_utr, _ = end_utr.contains(event)
+
+                if contains_start_utr or contains_end_utr:
+                    ann.set_text(geneinfo)  # Set the annotation text to geneinfo
+                    ann.xy = (event.xdata, event.ydata)
+                    ann.set_visible(True)
+                    fig.canvas.draw()
+                elif visible:
+                    ann.set_visible(False)
+                    fig.canvas.draw()
+
+            # Connect the on_hover function to the "motion_notify_event" event
+            fig.canvas.mpl_connect("motion_notify_event", on_hover)
+        
+            #remove non-CDS from data
+            df = df.groupby('Feature').get_group('CDS')
+        
+        # transcript only has CDS
+        #elif df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
+        
+        # transcript only has exon    
+        elif not df.Feature.str.contains('CDS').any() and df.Feature.str.contains('exon').any():
+            #plot just as utr and pass gene
+            df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, 
+                     tag_background, geneinfo, transcript_utr_width), axis=1)
+            return
+            
+        # transcript has neither, skip it
+        else:
+            return
+    
+    
     # Plot the LINE binding the exons    
     gene_line = ax.plot([min(df.Start), max(df.End)], [gene_ix, gene_ix], color=exon_color, linewidth=1, zorder=1)
 
@@ -330,14 +397,19 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
             annotation.set_visible(False)
             fig.canvas.draw()
 
-    fig.canvas.mpl_connect("motion_notify_event", on_hover)    
+    fig.canvas.mpl_connect("motion_notify_event", on_hover) 
+    
+    
+    # Plot the gene rows
+    df.apply(_apply_gene, args=(fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo, exon_width), axis=1)
+            
 
-    # plot DIRECTION ARROW in INTRONS if strand is known
+    # Plot DIRECTION ARROW in INTRONS if strand is known
     sorted_exons = df[['Start', 'End']].sort_values(by = 'Start')
     
     if strand:
         # evaluate each intron
-        for i in range(n_exons-1):
+        for i in range(len(sorted_exons)-1):
             start =  sorted_exons['End'].iloc[i] 
             stop = sorted_exons['Start'].iloc[i+1]
             intron_size = coord2inches(fig, ax, start, stop, 0,0)
@@ -372,7 +444,7 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
     
     
     
-def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo):
+def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, tag_background, geneinfo, exon_width):
 
     """Plot elements corresponding to one row of one gene."""
     
@@ -384,6 +456,28 @@ def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chro
     exon_rect = Rectangle( (start, gene_ix-exon_width/2), stop-start, exon_width, 
                      edgecolor = exon_color, facecolor = exon_color, fill=True)
     ax.add_patch(exon_rect)
+    
+    # create annotation for exon
+    annotation = ax.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
+                              bbox=dict(boxstyle="round", edgecolor=tag_background, facecolor=tag_background,),
+                              arrowprops=dict(arrowstyle="->"), color='white')
+    annotation.set_visible(False)
+    
+    # make annotation visible when over the exon
+    def on_hover(event):
+        visible = annotation.get_visible()
+        contains, _ = exon_rect.contains(event)
+        if contains:
+            annotation.set_text(geneinfo)
+            annotation.xy = (event.xdata, event.ydata)
+            annotation.set_visible(True)
+            fig.canvas.draw()
+        elif visible:
+            annotation.set_visible(False)
+            fig.canvas.draw()
+
+    fig.canvas.mpl_connect("motion_notify_event", on_hover)
+    
     
     # Plot DIRECTION ARROW in EXON
     # decide about placing a direction arrow
@@ -421,27 +515,6 @@ def _apply_gene(row, fig, ax, strand, genename, gene_ix, exon_color, chrom, chro
                 color=arrow_color, linewidth = arrow_width, 
                 solid_capstyle = arrow_style, alpha = 0.75)           
 
-    # Add tooltips to gene objects using mplcursors
-    # create annotation and make it not visible
-    annotation = ax.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
-                              bbox=dict(boxstyle="round", edgecolor=tag_background, facecolor=tag_background,),
-                              arrowprops=dict(arrowstyle="->"), color='white')
 
-    annotation.set_visible(False)
-    
-    # make annotation visible when over the exon
-    def on_hover(event):
-        visible = annotation.get_visible()
-        contains, _ = exon_rect.contains(event)
-        if contains:
-            annotation.set_text(geneinfo)
-            annotation.xy = (event.xdata, event.ydata)
-            annotation.set_visible(True)
-            fig.canvas.draw()
-        elif visible:
-            annotation.set_visible(False)
-            fig.canvas.draw()
-
-    fig.canvas.mpl_connect("motion_notify_event", on_hover)
 
 

@@ -6,7 +6,7 @@ from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 
 colormap = plotly.colors.sequential.thermal
 
-def plot(df, engine = None, max_ngenes = 25, id_col = None, color_col = None, colormap = colormap, 
+def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = False, color_col = None, colormap = colormap, 
 		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
 
     """
@@ -30,6 +30,11 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, color_col = None, co
     id_col: str, default 'gene_id'
         
         Name of the column containing gene ID.
+        
+    transcript_str: bool, default False
+    
+        Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
+        must be stored in the 'Feature' column of the PyRanges object or the dataframe.
     
     color_col: str, default None
     	
@@ -108,16 +113,25 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, color_col = None, co
         print("An error occured:", e)
         
     
+    # Deal with transcript structure
+    if transcript_str:
+        try:
+            if 'Feature' not in df.columns:
+                raise Exception("The transcript structure information must be stored in 'Feature' column of the data.")
+        except SystemExit as e:
+            print("An error occured:", e)
+    
+    
     # Deal with engine
     if engine is None:
         engine = get_engine()
     
     try:
     	if engine == 'plt' or engine == 'matplotlib':
-    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, colormap = colormap, 
+    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, transcript_str = transcript_str, color_col = color_col, colormap = colormap, 
     	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, to_file = to_file)
     	elif engine == 'ply' or engine == 'plotly':
-    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, colormap = colormap, 
+    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, transcript_str = transcript_str, color_col = color_col, colormap = colormap, 
     	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, to_file = to_file)
     	else:
             raise Exception("Please define engine with set_engine().")

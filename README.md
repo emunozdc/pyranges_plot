@@ -263,5 +263,4 @@ prplot.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.p
 
 ## Coming soon
 * Bases will be displayed along coordinates.
-* Customized name of exported file.
 * Colorblind friendly.
