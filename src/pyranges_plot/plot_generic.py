@@ -7,7 +7,7 @@ from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 colormap = plotly.colors.sequential.thermal
 
 def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = False, color_col = None, colormap = colormap, 
-		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
+		limits = None, showinfo = None, packed = True, to_file = None, file_size = None):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -48,28 +48,37 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     	structure {color_column_value1: color1, color_column_value2: color2, ...}. When a specific
     	color_col value is not specified in the dictionary it will be colored in black.
     	
-    custom_coords: {None, dict}, default None
+    limits: {None, dict, tuple, pyranges.pyranges_main.PyRanges}, default None
     
-    	Customization of coordinates for the chromosome plots. As default it is defined as 
-    	the minimun and maximum exon coordinate plotted plus a 5% of the range on each side.
-    	It also accepts a dictionary with the following strunctue {chr_name1: (min_coord, max coord), 
-    	chr_name2: (min_coord, max_coord), ...}. Note that in the dictionary not all the chromosomes 
-    	have to be present and some coordinates can be indicated as None leading to the use of the 
-    	default value.
-    	
+    	Customization of coordinates for the chromosome plots. 
+    	- None: minimun and maximum exon coordinate plotted plus a 5% of the range on each side.
+    	- dict: {chr_name1: (min_coord, max coord), chr_name2: (min_coord, max_coord), ...}. Not 
+    	all the plotted chromosomes need to be specified in the dictionary and some coordinates 
+    	can be indicated as None, both cases lead to the use of the default value. 
+    	- tuple: the coordinate limits of all chromosomes will be defined as indicated.
+    	- pyranges.pyranges_main.PyRanges: for each matching chromosome between the plotted data 
+    	and the limits data, the limits will be defined by the minimum and maximum coordinates 
+    	in the pyranges object defined as limits. If some plotted chromosomes are not present they 
+    	will be left as default.
+    	    	
     showinfo: list, default None
     
     	Dataframe information to show when placing the mouse over a gene. This must be provided as a list 
     	of column names. By default it shows the ID of the gene followed by its start and end position.
     
-    disposition: str, default 'packed'
+    packed: bool, default True
     
-    	Select wether the genes should be presented in full display (one row each) using the 'full' option,
-    	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
+    	Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
+        they do not overlap) and False for unpacked (one row per gene).
     	
     to_file: str, default None
     
     	Name of the file to export specifying the desired extension. The supported extensions are '.png' and '.pdf'.
+    	
+    file_size: {list, tuple}, default None
+    
+    	Size of the plot to export defined by a sequence object like: (height, width). The default values 
+    	make the height according to the number of genes and the width as 20 in Matplotlib and 1600 in Plotly.
     	
     Examples
     --------
@@ -78,11 +87,11 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     
     >>> plot_generic(df, engine='matplotlib', color_col='Strand', colormap={'+': 'green', '-': 'red'})
     
-    >>> plot_generic(df, engine='ply', custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
+    >>> plot_generic(df, engine='ply', limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
     
     >>> plot_generic(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = ['feature1', 'feature3'])
     
-    >>> plot_generic(df, engine='plt', color_col='Strand', disposition='full', to_file='my_plot.pdf')
+    >>> plot_generic(df, engine='plt', color_col='Strand', packed='False', to_file='my_plot.pdf')
     	
 
     """
@@ -129,10 +138,10 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     try:
     	if engine == 'plt' or engine == 'matplotlib':
     	    plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, transcript_str = transcript_str, color_col = color_col, colormap = colormap, 
-    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, to_file = to_file)
+    	    		limits = limits, showinfo = showinfo, packed = packed, to_file = to_file, file_size = file_size)
     	elif engine == 'ply' or engine == 'plotly':
     	    plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, transcript_str = transcript_str, color_col = color_col, colormap = colormap, 
-    	    		custom_coords = custom_coords, showinfo = showinfo, disposition = disposition, to_file = to_file)
+    	    		limits = limits, showinfo = showinfo, packed = packed, to_file = to_file, file_size = file_size)
     	else:
             raise Exception("Please define engine with set_engine().")
     except SystemExit as e:

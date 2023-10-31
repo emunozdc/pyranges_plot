@@ -4,6 +4,7 @@ import plotly.subplots as sp
 import matplotlib.cm as cm
 import plotly.colors as pc
 from intervaltree import Interval, IntervalTree
+from .plot_features import plot_features_dict, plot_features_dict_in_use
 
 # CORE FUNCTIONS
 engine = None
@@ -207,3 +208,139 @@ def on_hover_factory(fig, annotation, object, geneinfo):
             fig.canvas.draw()
 
     return on_hover
+
+
+
+def set_default(varname, value):
+    """
+    Define some features of the plot layout.
+    
+    Parameters
+    ----------
+    varname: str
+        
+        Name of the variable to change.
+        
+    value:
+    
+        New value of the variable to be assigned.
+
+    Examples
+    --------
+    >>> pyranges_plot.set_default('plot_background', 'magenta')
+    
+    >>> pyranges_plot.set_default('title_dict_ply.size', 20)
+    
+    >>> pyranges_plot.set_default('title_dict_plt.color', 'red')
+    
+    """
+
+    if '.' in varname:
+        dictname = varname.split('.')[0]
+        keyname = varname.split('.')[1]
+        plot_features_dict_in_use[dictname][0][keyname] = value
+
+    else:
+        plot_features_dict_in_use[varname] = (value, plot_features_dict[varname][1])
+
+
+
+def get_default(varname = 'all'):
+    """
+    Obtain the deafault value for a plot layout variable/s and its description.
+    
+    Parameters
+    ----------
+    varname: {str, list}, default 'all'
+        
+        Name of the variable/s to get the value and description.
+    
+    Examples
+    --------
+    >>> pyranges_plot.get_default()
+    
+    >>> pyranges_plot.get_default('all')
+    
+    >>> pyranges_plot.get_default('plot_border')
+    
+    >>> pyranges_plot.get_default(['title_dict_plt', 'plot_background'])
+    
+    >>> pyranges_plot.get_default('title_dict_ply')[0][color]
+    
+    """
+
+    # list of variables
+    if type(varname) is list:
+        vars_dict = {}
+        for var in varname:
+            vars_dict[var] = plot_features_dict_in_use[var]
+        return vars_dict
+        
+    # all variables
+    elif varname == "all":
+        return plot_features_dict_in_use
+    
+    # one variable
+    else:
+        try:
+            if varname in plot_features_dict_in_use:
+                return plot_features_dict_in_use[varname]
+            else:
+                raise Exception(f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}")
+        except SystemExit as e:
+            print("An error occured:", e) 
+    
+
+
+def get_original_default():
+   """Returns the dictionary with the original plot features."""
+   
+   return plot_features_dict
+
+ 
+    
+def reset_default(varname = "all"):
+    """
+    Reset the deafault value for one, some or all plot layout variables to their original vlaue.
+    
+    Parameters
+    ----------
+    varname: {str, list}, default 'all'
+        
+        Name of the variable/ to reset the value.
+    
+    Examples
+    --------
+    >>> pyranges_plot.reset_default()
+    
+    >>> pyranges_plot.reset_default('all')
+    
+    >>> pyranges_plot.reset_default('tag_background')
+    
+    >>> pyranges_plot.reset_default(['title_dict_plt', 'tag_background'])
+    
+    >>> pyranges_plot.reset_default('title_dict_ply')
+    """
+    
+    plot_features_dict_in_use = get_default()
+    plot_features_dict = get_original_default()
+    
+    # list of variables
+    if type(varname) is list:
+        for var in varname:
+            plot_features_dict_in_use[var] = plot_features_dict[var]
+    
+    # all variables
+    elif varname == "all":
+        for var in plot_features_dict_in_use.keys():
+            plot_features_dict_in_use[var] = plot_features_dict[var]
+    
+    # one variable
+    else:
+        try:
+            if varname in plot_features_dict_in_use.keys():
+                plot_features_dict_in_use[varname] = plot_features_dict[varname]
+            else:
+                raise Exception(f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}")
+        except SystemExit as e:
+            print("An error occured:", e)

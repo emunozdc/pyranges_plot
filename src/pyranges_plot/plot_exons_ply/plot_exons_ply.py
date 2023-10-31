@@ -7,8 +7,7 @@ import plotly.io as pio
 import matplotlib.pyplot as plt  ## priorizar no depender de las 2?
 import matplotlib.colors as mcolors
 import numpy as np
-from ..core import coord2percent, percent2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd
-from ..plot_features import  get_default
+from ..core import coord2percent, percent2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd, get_default
 import dash
 from dash import dcc, html, Output, Input
 
@@ -30,7 +29,7 @@ intron_threshold = 0.03
 # PLOT_EXONS FUNCTIONS 
 
 def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = False, color_col = None, colormap = colormap, 
-		custom_coords = None, showinfo = None, disposition = 'packed', to_file = None):
+		limits = None, showinfo = None, packed = True, to_file = None, file_size = None):
     """
     Create genes plot from PyRanges object DataFrame
     
@@ -64,28 +63,37 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
     	color objects from Matplotlib and Plotly, or a dictionary with the following 
     	structure {color_column_value1: color1, color_column_value2: color2, ...}
     	
-    custom_coords: {None, dict}, default None
+    limits: {None, dict, tuple}, default None
     
-    	Customization of coordinates for the chromosome plots. As default it is defined as 
-    	the minimun and maximum exon coordinate plotted plus a 5% of the range on each side.
-    	It also accepts a dictionary with the following strunctue {chr_name1: (min_coord, max coord), 
-    	chr_name2: (min_coord, max_coord), ...}. Note that in the dictionary not all the chromosomes 
-    	have to be present and some coordinates can be indicated as None leading to the use of the 
-    	default value.
+    	Customization of coordinates for the chromosome plots. 
+    	- None: minimun and maximum exon coordinate plotted plus a 5% of the range on each side.
+    	- dict: {chr_name1: (min_coord, max coord), chr_name2: (min_coord, max_coord), ...}. Not 
+    	all the plotted chromosomes need to be specified in the dictionary and some coordinates 
+    	can be indicated as None, both cases lead to the use of the default value. 
+    	- tuple: the coordinate limits of all chromosomes will be defined as indicated.
+    	- pyranges.pyranges_main.PyRanges: for each matching chromosome between the plotted data 
+    	and the limits data, the limits will be defined by the minimum and maximum coordinates 
+    	in the pyranges object defined as limits. If some plotted chromosomes are not present they 
+    	will be left as default.
     	
     showinfo: list, default None
     
     	Dataframe information to show when placing the mouse over a gene. This must be provided as a list 
     	of column names. By default it shows the ID of the gene followed by its start and end position.
 
-    disposition: str, default 'packed'
+    packed: bool, default True
     
-    	Select wether the genes should be presented in full display (one row each) using the 'full' option,
-    	or if they should be presented in a packed (in the same line if they do not overlap) using 'packed'.
+    	Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
+        they do not overlap) and False for unpacked (one row per gene).
     	
     to_file: str, default None
     
     	Name of the file to export specifying the desired extension. The supported extensions are '.png' and '.pdf'.
+    	
+    file_size: {list, tuple}, default None
+    
+    	Size of the plot to export defined by a sequence object like: (height, width). The default values 
+    	make the height according to the number of genes and the width as 1600.
     	
     Examples
     --------
@@ -94,17 +102,17 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
     
     >>> plot_exons_ply(df, color_col='Strand', colormap={'+': 'green', '-': 'red'})
     
-    >>> plot_exons_ply(df, custom_coords = {'1': (1000, 50000), '2': None, '3': (10000, None)})
+    >>> plot_exons_ply(df, limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
     	
 
     """
     
     
     # Get default plot features
-    tag_background = get_default('tag_background')
-    plot_background = get_default('plot_background')
-    plot_border = get_default('plot_border')
-    title_dict_ply = get_default('title_dict_ply')
+    tag_background = get_default('tag_background')[0]
+    plot_background = get_default('plot_background')[0]
+    plot_border = get_default('plot_border')[0]
+    title_dict_ply = get_default('title_dict_ply')[0]
 
     
     # Make DataFrame subset if needed
@@ -134,13 +142,41 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
                    inplace=True)
     nchrs = len(chrmd_df)
     
-    # consider custom coordinates
-    #create min_max column containing (plot min, plot max)
-    if custom_coords is None:
+    # consider custom coordinates limits
+    # 1- create min_max column containing (plot min, plot max)
+    
+    #no limits no info
+    if limits is None:
     	chrmd_df['min_max'] = [(np.nan, np.nan)] * len(chrmd_df)
+    
+    #tuple for all chromosomes
+    elif type(limits) is tuple:
+        chrmd_df['min_max'] = [limits] * len(chrmd_df)
+    
+    #pyranges object
+    elif type(limits) is pr.pyranges_main.PyRanges:
+        #create dict to map limits
+        limits_df = limits.df
+        limits_chrmd_df = limits_df.groupby("Chromosome").agg({'Start': 'min', 'End': 'max'})
+        limits_chrmd_dict = limits_chrmd_df.to_dict(orient='index')
+        
+        #function to get matching values from limits_chrmd_df
+        def make_min_max(row):
+            chromosome = str(row.name)
+            limits = limits_chrmd_dict.get(chromosome)
+            if limits:
+                return (limits['Start'], limits['End'])  #chromosome in both sets of data
+            else:
+                return (np.nan, np.nan)  #chromosome does not match
+        
+        #create limits column in plotting data
+        chrmd_df['min_max'] = chrmd_df.apply(make_min_max, axis=1)
+    
+    #dictionary as limits
     else:
-    	chrmd_df['min_max'] = [custom_coords.get(index) for index in chrmd_df.index] # fills with None the ones not specified
-
+    	chrmd_df['min_max'] = [limits_chrmd_df.get(index) for index in chrmd_df.index] # fills with None the chromosomes not specified
+    
+    # 2- not specified values are (np.nan, np.nan), get default from data
     def fill_min_max(row):
     	minmax_t = row['min_max']
     	#deal with empty rows
@@ -161,6 +197,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
     chrmd_df = chrmd_df.apply(fill_min_max, axis=1)
     
     
+    
     # Create genes metadata DataFrame
     if color_col is None:
         color_col = id_col
@@ -172,11 +209,11 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
     genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('Chromosome').cumcount()
     
     #Assign y-coordinate
-    if disposition == 'packed':
+    if packed:
         genesmd_df['ycoord'] = -1
         genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column using intervaltree
         genesmd_df = genesmd_df.reset_index(level='Chromosome', drop=True)
-    elif disposition == 'full':
+    else:
         genesmd_df['ycoord'] = genesmd_df.loc[:, 'gene_ix_xchrom']
     
     #store plot y height
@@ -246,7 +283,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
         y_max = chrmd_df.iloc[i].y_height
         y_ticks_val = []
         y_ticks_name = []
-        if disposition == 'full':
+        if not packed:
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
             y_ticks_name = genesmd_df.groupby(genesmd_df['Chromosome']).groups[chrom]
         fig.update_yaxes(range=[y_min, y_max], tickvals=y_ticks_val, ticktext=y_ticks_name, showgrid=False, row=i+1, col=1)
@@ -268,7 +305,11 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', transcript_str = Fal
     if to_file == None:
         fig.show()
     else:
-        fig.update_layout(width=1600, height=800)
+        if not file_size:
+            fig.update_layout(width=1600, height=800)
+        else:
+            fig.update_layout(width=file_size[0], height=file_size[1])
+        
         pio.write_image(fig, to_file)
 
 
@@ -316,9 +357,9 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, transcript_str, showi
             x0, x1 = tr_start, cds_start
             y0, y1 = gene_ix - transcript_utr_width/2, gene_ix + transcript_utr_width/2
             fig.add_trace(
-                go.Scatter(x = [x0, x0, x1, x1, x0], y = [y0, y1, y1, y0, y0] ,
+                go.Scatter(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
                            fill = "toself", fillcolor = exon_color, mode = 'lines', 
-                           line = dict(color=exon_color), name = geneinfo),
+                           line = dict(color=exon_color), text = geneinfo),
                            row=chrom_ix+1, 
                            col=1)
                            
@@ -326,9 +367,9 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, transcript_str, showi
             x0, x1 = cds_end, tr_end
             y0, y1 = gene_ix - transcript_utr_width/2, gene_ix + transcript_utr_width/2
             fig.add_trace(
-                go.Scatter(x = [x0, x0, x1, x1, x0], y = [y0, y1, y1, y0, y0] ,
+                go.Scatter(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
                            fill = "toself", fillcolor = exon_color, mode = 'lines', 
-                           line = dict(color=exon_color), name = geneinfo),
+                           line = dict(color=exon_color), text = geneinfo),
                            row=chrom_ix+1, 
                            col=1)
                            
@@ -353,13 +394,13 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, transcript_str, showi
     x0, x1 = min(df.Start), max(df.End)
     y0, y1 = gene_ix - exon_width/100, gene_ix + exon_width/100
     exon_line = go.Scatter(
-        x=[x0, x0, x1, x1, x0],
-        y=[y0, y1, y1, y0, y0],
+        x=[x0, x1, x1, x0, x0], 
+        y=[y0, y0, y1, y1, y0],
         fill="toself",
         fillcolor=exon_color,
         mode='lines',
         line=dict(color=exon_color, width=0.5),
-        name=geneinfo)
+        text=geneinfo)
     fig.add_trace(exon_line, row=chrom_ix+1, col=1)
     
     # Plot the gene rows
@@ -427,11 +468,11 @@ def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix
     
     # Plot EXON as rectangle
     fig.add_trace(
-        go.Scatter(x = [x0, x0, x1, x1, x0], y = [y0, y1, y1, y0, y0] ,
+        go.Scatter(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
             fill = "toself", fillcolor = exon_color, mode = 'lines', 
-            line = dict(color=exon_color), name = geneinfo),
+            line = dict(color=exon_color), text = geneinfo, hoverinfo = "text"),
             row=chrom_ix+1, 
-            col=1
+            col = 1
             )
     
     # Plot DIRECTION ARROW in EXON
@@ -485,24 +526,6 @@ def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix
 
 
 
-
-def ply_formatting(fig):
-    """xxx"""
-    
-    app = dash.Dash(__name__)
-    
-    app.layout = html.Div([
-        html.Div([
-        dcc.Graph(id='chr_graph', figure=fig,
-        config={
-            'staticPlot': False,
-            'scrollZoom': True,
-            'doubleClick': 'reset',
-            'showTips': True
-            },)
-        ]),
-    ])
-    
     
     
 
