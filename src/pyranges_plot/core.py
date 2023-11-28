@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import plotly.subplots as sp
 import matplotlib.cm as cm
 import plotly.colors as pc
+import pandas as pd
 from intervaltree import Interval, IntervalTree
 from .plot_features import plot_features_dict, plot_features_dict_in_use
 
@@ -194,7 +195,7 @@ def get_plycolormap(colormap_string):
 
 def on_hover_factory(fig, annotation, object, geneinfo):
     def on_hover(event):
-        """Check if the mouse is over the object and show annotation if so."""
+        """Check if the mouse is over the object and show annotation if so. NOT WORKING"""
         visible = annotation.get_visible()
         contains_object = object.contains(event)  # Check if the mouse is over the object
 
@@ -210,6 +211,8 @@ def on_hover_factory(fig, annotation, object, geneinfo):
     return on_hover
 
 
+
+# Related to default features
 
 def set_default(varname, value):
     """
@@ -229,9 +232,7 @@ def set_default(varname, value):
     --------
     >>> pyranges_plot.set_default('plot_background', 'magenta')
     
-    >>> pyranges_plot.set_default('title_dict_ply.size', 20)
-    
-    >>> pyranges_plot.set_default('title_dict_plt.color', 'red')
+    >>> pyranges_plot.set_default('title_size', 20)
     
     """
 
@@ -241,7 +242,7 @@ def set_default(varname, value):
         plot_features_dict_in_use[dictname][0][keyname] = value
 
     else:
-        plot_features_dict_in_use[varname] = (value, plot_features_dict[varname][1])
+        plot_features_dict_in_use[varname] = (value, plot_features_dict[varname][1], "*") # (value, description, modified tag)
 
 
 
@@ -271,10 +272,10 @@ def get_default(varname = 'all'):
 
     # list of variables
     if type(varname) is list:
-        vars_dict = {}
+        vars_list = []
         for var in varname:
-            vars_dict[var] = plot_features_dict_in_use[var]
-        return vars_dict
+            vars_list.append(plot_features_dict_in_use[var][0])
+        return vars_list
         
     # all variables
     elif varname == "all":
@@ -284,7 +285,7 @@ def get_default(varname = 'all'):
     else:
         try:
             if varname in plot_features_dict_in_use:
-                return plot_features_dict_in_use[varname]
+                return plot_features_dict_in_use[varname][0]
             else:
                 raise Exception(f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}")
         except SystemExit as e:
@@ -296,8 +297,8 @@ def get_original_default():
    """Returns the dictionary with the original plot features."""
    
    return plot_features_dict
-
- 
+   
+    
     
 def reset_default(varname = "all"):
     """
@@ -344,3 +345,55 @@ def reset_default(varname = "all"):
                 raise Exception(f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}")
         except SystemExit as e:
             print("An error occured:", e)
+            
+            
+            
+            
+def print_default(return_keys = False):  ##!!!!!!!! add 'all' or some variables only
+    """xxx"""
+    
+    # prepare data to print
+    plot_features_dict_in_use = get_default()
+    feat_df = pd.DataFrame.from_dict(plot_features_dict_in_use, orient='index', columns=['Value', 'Description', 'Modified'])
+    
+    # Calculate column sizes
+    name_sz = max([len(val) for val in plot_features_dict_in_use])
+    value_sz = max([len(str(val)) for val in feat_df['Value']]) 
+    if value_sz < 5:   # value has a minimum of 5
+        value_sz = 5
+    mod_sz  = 8   # according to "Modified" length
+    desc_sz = max([len(val) for val in feat_df['Description']]) 
+
+    # Function to format row
+    def format_row(key, value):
+    
+        name_sz = max([len(val) for val in plot_features_dict_in_use])
+        value_sz = max([len(str(val)) for val in feat_df['Value']]) 
+        if value_sz < 5:   # value has a minimum of 5
+            value_sz = 5
+        mod_sz  = 8   # according to "Modified" length
+        desc_sz = max([len(val) for val in feat_df['Description']]) 
+    
+        return f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {value[1]:<{desc_sz}} |"
+
+    # Create table header
+    header = f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+\n"
+    header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Modified':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
+    header += f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
+
+    # Create table rows
+    rows = "\n".join([format_row(key, value) for key, value in feat_df.iterrows()])
+
+    # Print table
+    print(header)
+    print(rows)
+    print(f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+")
+    
+    
+    if return_keys:
+        return set(plot_features_dict_in_use.keys())
+    
+    
+    
+    
+    
