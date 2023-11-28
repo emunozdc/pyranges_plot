@@ -2,12 +2,16 @@ import pyranges
 import plotly.colors
 from .core import get_engine, get_idcol
 from .plot_exons_plt.plot_exons_plt import plot_exons_plt
+from .plot_exons_plt.plot_transcript_plt import plot_transcript_plt
 from .plot_exons_ply.plot_exons_ply import plot_exons_ply
+from .plot_exons_ply.plot_transcript_ply import plot_transcript_ply
+
 
 colormap = plotly.colors.sequential.thermal
 
 def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = False, color_col = None, colormap = colormap, 
-		limits = None, showinfo = None, packed = True, to_file = None, file_size = None):
+		limits = None, showinfo = None, packed = True, to_file = None, file_size = None,
+		**kargs):
 
     """
     Create genes plot from PyRanges object DataFrame
@@ -135,13 +139,29 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     if engine is None:
         engine = get_engine()
     
-    try:
+    try:  #call plot functions
+    	kargs_l = [k for k in kargs]
     	if engine == 'plt' or engine == 'matplotlib':
-    	    plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, transcript_str = transcript_str, color_col = color_col, colormap = colormap, 
-    	    		limits = limits, showinfo = showinfo, packed = packed, to_file = to_file, file_size = file_size)
+    	    if not transcript_str:
+    	        plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
+    	                       colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                       to_file = to_file, file_size = file_size, **kargs)
+    	    else:
+    	        plot_transcript_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
+    	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                            to_file = to_file, file_size = file_size, **kargs)                       
+    	                       
     	elif engine == 'ply' or engine == 'plotly':
-    	    plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, transcript_str = transcript_str, color_col = color_col, colormap = colormap, 
-    	    		limits = limits, showinfo = showinfo, packed = packed, to_file = to_file, file_size = file_size)
+    	    if not transcript_str:
+    	        plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
+    	                       colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                       to_file = to_file, file_size = file_size, **kargs)            
+    	    else:
+    	        plot_transcript_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
+    	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                            to_file = to_file, file_size = file_size, **kargs)
+    	                       
+    	                       
     	else:
             raise Exception("Please define engine with set_engine().")
     except SystemExit as e:
