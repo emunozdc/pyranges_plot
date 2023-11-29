@@ -5,6 +5,8 @@ from .plot_exons_plt.plot_exons_plt import plot_exons_plt
 from .plot_exons_plt.plot_transcript_plt import plot_transcript_plt
 from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 from .plot_exons_ply.plot_transcript_ply import plot_transcript_ply
+from dash import Dash, dcc, html, Input, Output
+import dash_bootstrap_components as dbc
 
 
 colormap = plotly.colors.sequential.thermal
@@ -153,9 +155,42 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     	                       
     	elif engine == 'ply' or engine == 'plotly':
     	    if not transcript_str:
-    	        plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
+    	        fig = plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
     	                       colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
-    	                       to_file = to_file, file_size = file_size, **kargs)            
+    	                       to_file = to_file, file_size = file_size, **kargs)
+    	        
+    	        # Start dash for warnings               
+    	        app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+    	        # create alert and graph components
+    	        subdf_alert = dbc.Alert("The provided data contains more genes than the ones plotted.", id="alert-subset", color="warning", dismissable=True)
+    	        #col_alert = dbc.Alert("The provided dictionary for coloring does not have instructions for all the plotted genes, the non specified ones are coloured in black.", id="alert-color", color="warning", dismissable=True)
+    	        gr = dcc.Graph(id="genes-plot", figure=fig)
+    	        
+    	        # define layout
+    	        app.layout = html.Div([
+     	           dbc.Row([subdf_alert, gr], justify="around")
+    	        ])
+    	        
+    	        # callback and function
+    	        @app.callback(
+         	        Output("alert-subset", "is_open"),
+        	         Input("genes-plot", "figure"),
+        	         prevent_initial_call=True
+    	        )
+    	        
+    	        def update_graph_card(grfig):
+    	            n_genes = len(grfig['data'][0]['x'])
+    	            if n_genes > max_ngenes:
+      	                return subdf_alert
+
+    	        
+    	        #if __name__ == '__main__':
+    	        app.run()	
+    	        
+    	        
+    	        
+    	        
+    	                  
     	    else:
     	        plot_transcript_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
     	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 

@@ -292,14 +292,15 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     # Adjust plot display
     if max_ngenes > 25:
         fig.update_layout(title_text="<span style='color:red;'>Warning! The plot integity might be compromised when displaying too many genes.</span>") #warning for too many genes
-    fig.update_layout(plot_bgcolor=plot_background, font_color=plot_border, showlegend=False)  #label text color == plot border color
+    fig.update_layout(plot_bgcolor=plot_background, font_color=plot_border, showlegend=False)  
     fig.update_xaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
     fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
     
     
     # Provide output
     if to_file == None:
-        fig.show()
+        return fig
+        #fig.show()
     else:
         if not file_size:
             fig.update_layout(width=1600, height=800)
