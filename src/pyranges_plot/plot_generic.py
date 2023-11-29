@@ -159,43 +159,20 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     	                       colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
     	                       to_file = to_file, file_size = file_size, **kargs)
     	        
-    	        # Start dash for warnings               
-    	        app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-    	        # create alert and graph components
-    	        subdf_alert = dbc.Alert("The provided data contains more genes than the ones plotted.", id="alert-subset", color="warning", dismissable=True)
-    	        #col_alert = dbc.Alert("The provided dictionary for coloring does not have instructions for all the plotted genes, the non specified ones are coloured in black.", id="alert-color", color="warning", dismissable=True)
-    	        gr = dcc.Graph(id="genes-plot", figure=fig)
-    	        
-    	        # define layout
-    	        app.layout = html.Div([
-     	           dbc.Row([subdf_alert, gr], justify="around")
-    	        ])
-    	        
-    	        # callback and function
-    	        @app.callback(
-         	        Output("alert-subset", "is_open"),
-        	         Input("genes-plot", "figure"),
-        	         prevent_initial_call=True
-    	        )
-    	        
-    	        def update_graph_card(grfig):
-    	            n_genes = len(grfig['data'][0]['x'])
-    	            if n_genes > max_ngenes:
-      	                return subdf_alert
-
-    	        
-    	        #if __name__ == '__main__':
-    	        app.run()	
+    	        app_instance = initialize_dash_app(fig, max_ngenes)
+    	        app_instance.run_server()
     	        
     	        
     	        
     	        
     	                  
     	    else:
-    	        plot_transcript_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
+    	        fig = plot_transcript_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
     	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
     	                            to_file = to_file, file_size = file_size, **kargs)
-    	                       
+    	        
+    	        app_instance = initialize_dash_app(fig, max_ngenes)
+    	        app_instance.run_server()
     	                       
     	else:
             raise Exception("Please define engine with set_engine().")
@@ -203,3 +180,35 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
         print("An error occured:", e)
 
 
+
+
+# CHAT TOLD ME TO PUT IT OUTSIDE
+# Function to initialize Dash app layout and callbacks
+def initialize_dash_app(fig, max_ngenes):
+    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+    # create alert and graph components
+    subdf_alert = dbc.Alert("The provided data contains more genes than the ones plotted.",
+                            id="alert-subset", color="warning", dismissable=True, is_open=False)
+    gr = dcc.Graph(id="genes-plot", figure=fig)
+    print("=================")
+    print(fig['data'][0]['customdata'][0])
+
+    # define layout
+    app.layout = html.Div([
+        dbc.Row([subdf_alert, gr], justify="around")
+    ])
+
+    # callback function
+    @app.callback(
+        Output("alert-subset", "is_open"), 
+        Input("genes-plot", "figure"), 
+        )
+        
+    def show_warning(grfig):
+        n_genes = int(grfig['data'][0]['customdata'][0])
+        print(n_genes)
+        if n_genes > max_ngenes:
+            return True
+
+    return app

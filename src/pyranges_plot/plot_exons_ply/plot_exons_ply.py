@@ -118,6 +118,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     for ix, gene in genesix_l:
         genesix_d[gene] = ix
     df["gene_index"] = df[id_col].map(genesix_d) 
+    tot_ngenes = max(genesix_l)
     
     # select maximun number of genes
     if max(df.gene_index)+1 <= max_ngenes:
@@ -298,6 +299,9 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     
     # Provide output
+    # insert silent information for subset warning
+    fig.data[0].customdata = np.array(tot_ngenes) 
+    
     if to_file == None:
         return fig
         #fig.show()

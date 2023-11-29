@@ -118,6 +118,8 @@ def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     for ix, gene in genesix_l:
         genesix_d[gene] = ix
     df["gene_index"] = df[id_col].map(genesix_d) 
+    tot_ngenes = max(genesix_l)
+
     
     # select maximun number of genes
     if max(df.gene_index)+1 <= max_ngenes:
@@ -299,8 +301,12 @@ def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     
     
     # Provide output
+    # insert silent information for subset warning
+    fig.data[0].customdata = np.array(tot_ngenes) 
+    
     if to_file == None:
-        fig.show()
+        return fig
+        #fig.show()
     else:
         if not file_size:
             fig.update_layout(width=1600, height=800)
