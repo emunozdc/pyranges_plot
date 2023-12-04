@@ -4,6 +4,8 @@ import plotly.subplots as sp
 import matplotlib.cm as cm
 import plotly.colors as pc
 import pandas as pd
+import tkinter as tk
+from tkinter import ttk
 from intervaltree import Interval, IntervalTree
 from .plot_features import plot_features_dict, plot_features_dict_in_use
 
@@ -349,7 +351,7 @@ def reset_default(varname = "all"):
             
             
             
-def print_default(return_keys = False):  ##!!!!!!!! add 'all' or some variables only
+def print_default(return_keys = False):  
     """xxx"""
     
     # prepare data to print
@@ -395,5 +397,23 @@ def print_default(return_keys = False):  ##!!!!!!!! add 'all' or some variables 
     
     
     
+def plt_popup_warning(txt, bkg="#1f1f1f", txtcol="white", botcol="#D6AA00"):
+    """Create warning window for Matplotlib plots."""
     
+    warn = tk.Tk()
+    
+    # Title and background
+    warn.wm_title("Warning!")
+    warn.configure(background=bkg)
+
+    # Label for warning text
+    label = tk.Label(warn, text=txt, font=("Sans", 15), fg=txtcol, bg=bkg)
+    label.pack(side="top", anchor="center", pady=10)
+
+    # Button
+    bot = tk.Button(warn, text="Got it", command=lambda: warn.destroy(), fg="black", bg=botcol)
+    bot.pack(pady=10)
+
+    # Start main loop
+    warn.mainloop()
     

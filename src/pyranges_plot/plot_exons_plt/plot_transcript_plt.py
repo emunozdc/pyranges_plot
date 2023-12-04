@@ -7,7 +7,9 @@ import matplotlib.colors as mcolors
 import plotly.colors
 import numpy as np
 import mplcursors
-from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd, on_hover_factory, get_default
+import tkinter as tk
+from tkinter import ttk
+from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd, on_hover_factory, get_default, plt_popup_warning
 
 
 
@@ -93,6 +95,13 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     	Size of the plot to export defined by a sequence object like: (height, width). The default values 
     	make the height according to the number of genes and the width as 20.
     
+    **kargs: 
+    
+    	Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
+    	nomenclature, description and default values.
+    	
+    	
+    
     Examples
     --------
     
@@ -120,6 +129,7 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     for ix, gene in genesix_l:
         genesix_d[gene] = ix
     df["gene_index"] = df[id_col].map(genesix_d) # create a cloumn indexing all the genes in the df
+    tot_ngenes = max(genesix_l)[0]
     
     # select maximun number of genes
     if max(df.gene_index)+1 <= max_ngenes:
@@ -200,21 +210,25 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
         color_col = id_col
 
     # start df with chromosome and the column defining color
-    genesmd_df = subdf.groupby(id_col).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max', color_col: 'first'})
+    if color_col == 'Chromosome':
+        genesmd_df = subdf.groupby(id_col).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max'})
+    else:
+        genesmd_df = subdf.groupby(id_col).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max', color_col: 'first'})
     genesmd_df.dropna(inplace=True) # remove genes not present in subset (NaN)
+    genesmd_df['chrix'] = genesmd_df['Chromosome'].copy()
     genesmd_df.rename(columns={color_col: 'color_tag'}, inplace=True)
-    genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('Chromosome').cumcount()
+    genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('chrix').cumcount()
     
     #Assign y-coordinate to genes
     if packed:
         genesmd_df['ycoord'] = -1
-        genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column
-        genesmd_df = genesmd_df.reset_index(level='Chromosome', drop=True)
+        genesmd_df = genesmd_df.groupby(genesmd_df['chrix']).apply(packed_for_genesmd) # add packed ycoord column
+        genesmd_df = genesmd_df.reset_index(level='chrix', drop=True)
     else:
         genesmd_df['ycoord'] = genesmd_df.loc[:, 'gene_ix_xchrom']
 
     #Store plot y height
-    chrmd_df['y_height'] = genesmd_df.groupby('Chromosome').ycoord.max()
+    chrmd_df['y_height'] = genesmd_df.groupby('chrix').ycoord.max()
     chrmd_df['y_height'] += 1 # count from 1
     
     #Assign colors to genes
@@ -251,7 +265,9 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     
     # 3- Use dict to assign color to gene
     if type(colormap) == dict: 
-        genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)  ## NOTE: when specifying color by dict, careful with color_col
+        #genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)  ## NOTE: when specifying color by dict, careful with color_col content
+        genesmd_df['color_tag'] = genesmd_df['color_tag'].astype(str)
+        genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)
         genesmd_df['color'].fillna('black', inplace=True) # not specified in dict will be colored as black
         
         
@@ -302,7 +318,7 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
         y_ticks_name = []
         if not packed:
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
-            y_ticks_name = genesmd_df.groupby(genesmd_df['Chromosome']).groups[chrom]
+            y_ticks_name = genesmd_df.groupby(genesmd_df['chrix']).groups[chrom]
         ax.set_yticks(y_ticks_val)
         ax.set_yticklabels(y_ticks_name)
 	
@@ -319,7 +335,10 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     
     # Provide output
     if to_file is None:
-        plt.show()   
+        # evaluate warning
+        if tot_ngenes > max_ngenes:
+            plt_popup_warning("The provided data contains more genes than the ones plotted.")
+        plt.show()
     else:
         plt.savefig(to_file, format = to_file[-3:])
         
@@ -333,7 +352,7 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
     genename = df[id_col].iloc[0]
     gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
     exon_color = genesmd_df.loc[genename].color
-    chrom = genesmd_df.loc[genename].Chromosome
+    chrom = genesmd_df.loc[genename].chrix
     chrom_ix = chrmd_df.index.get_loc(chrom)
     ax = axes[chrom_ix]
     n_exons = len(df)

@@ -7,7 +7,9 @@ import matplotlib.colors as mcolors
 import plotly.colors
 import numpy as np
 import mplcursors
-from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd, print_default, get_default
+import tkinter as tk
+from tkinter import ttk
+from ..core import coord2inches, inches2coord, is_pltcolormap, is_plycolormap, get_plycolormap, packed_for_genesmd, print_default, get_default, plt_popup_warning
 
 
 
@@ -93,6 +95,13 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     	Size of the plot to export defined by a sequence object like: (height, width). The default values 
     	make the height according to the number of genes and the width as 20.
     
+    **kargs: 
+    
+    	Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
+    	nomenclature, description and default values.
+    	
+    	
+    
     Examples
     --------
     
@@ -132,6 +141,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     for ix, gene in genesix_l:
         genesix_d[gene] = ix
     df["gene_index"] = df[id_col].map(genesix_d) # create a cloumn indexing all the genes in the df
+    tot_ngenes = max(genesix_l)[0]
     
     # select maximun number of genes
     if max(df.gene_index)+1 <= max_ngenes:
@@ -166,7 +176,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     elif type(limits) is pr.pyranges_main.PyRanges:
         #create dict to map limits
         limits_df = limits.df
-        limits_chrmd_df = limits_df.groupby("Chromosome").agg({'Start': 'min', 'End': 'max'})
+        limits_chrmd_df = limits_df.groupby("chrix").agg({'Start': 'min', 'End': 'max'})
         limits_chrmd_dict = limits_chrmd_df.to_dict(orient='index')
         
         #function to get matching values from limits_chrmd_df
@@ -212,21 +222,26 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
         color_col = id_col
 
     # start df with chromosome and the column defining color
-    genesmd_df = subdf.groupby(id_col).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max', color_col: 'first'})
+    # Function to create Rectangle objects based on color
+    if color_col == 'Chromosome':
+        genesmd_df = subdf.groupby(id_col).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max'})
+    else:
+        genesmd_df = subdf.groupby(id_col).agg({'Chromosome': 'first', 'Start': 'min', 'End': 'max', color_col: 'first'})
     genesmd_df.dropna(inplace=True) # remove genes not present in subset (NaN)
+    genesmd_df['chrix'] = genesmd_df['Chromosome'].copy()
     genesmd_df.rename(columns={color_col: 'color_tag'}, inplace=True)
-    genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('Chromosome').cumcount()
+    genesmd_df['gene_ix_xchrom'] = genesmd_df.groupby('chrix').cumcount()
     
     #Assign y-coordinate to genes
     if packed:
         genesmd_df['ycoord'] = -1
-        genesmd_df = genesmd_df.groupby(genesmd_df['Chromosome']).apply(packed_for_genesmd) # add packed ycoord column
-        genesmd_df = genesmd_df.reset_index(level='Chromosome', drop=True)
+        genesmd_df = genesmd_df.groupby(genesmd_df['chrix']).apply(packed_for_genesmd) # add packed ycoord column
+        genesmd_df = genesmd_df.reset_index(level='chrix', drop=True)
     else:
         genesmd_df['ycoord'] = genesmd_df.loc[:, 'gene_ix_xchrom']
 
     #Store plot y height
-    chrmd_df['y_height'] = genesmd_df.groupby('Chromosome').ycoord.max()
+    chrmd_df['y_height'] = genesmd_df.groupby('chrix').ycoord.max()
     chrmd_df['y_height'] += 1 # count from 1
     
     #Assign colors to genes
@@ -259,13 +274,23 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
             numb_list = [rgb[rgb.find('(')+1:rgb.find(')')].split(',') for rgb in colormap]
             colormap = [(int(r)/255, int(g)/255, int(b)/255) for r,g,b in numb_list]
         #create dict of colors
-        colormap = {color_tags[i]: colormap[i%len(colormap)] for i in range(n_color_tags)}
+        colormap = {str(color_tags[i]): colormap[i%len(colormap)] for i in range(n_color_tags)}
     
     # 3- Use dict to assign color to gene
     if type(colormap) == dict: 
-        genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)  ## NOTE: when specifying color by dict, careful with color_col
+        #genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)  ## NOTE: when specifying color by dict, careful with color_col content
+        genesmd_df['color_tag'] = genesmd_df['color_tag'].astype(str)
+        genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)
         genesmd_df['color'].fillna('black', inplace=True) # not specified in dict will be colored as black
-
+    
+    
+    # Add legend info
+    def create_legend_rect(color):
+        return Rectangle((0, 0), 1, 1, color=color)
+        
+    genesmd_df['legend_item'] = genesmd_df['color'].apply(create_legend_rect) # column with rectangle objects with same color as gene
+    
+    
 
     # Create figure and axes
     if file_size:
@@ -273,9 +298,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
         y = file_size[1]
     else:
         x = 20
-        y = (sum(chrmd_df.y_height) + 4*len(chrmd_df)) / 2 # height according to genes and add 2 per each chromosome
-    
-    #print('\n\n\n' + str(y) + '\n\n\n')
+        y = (sum(chrmd_df.y_height) + 2*len(chrmd_df)) # height according to genes and add 2 per each chromosome
     
     fig = plt.figure(figsize=(x, y)) 
     gs = gridspec.GridSpec(len(chrmd_df), 1, height_ratios=chrmd_df.y_height) #size of chromosome subplot according to number of gene rows
@@ -312,11 +335,14 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
         y_ticks_name = []
         if not packed:
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
-            y_ticks_name = genesmd_df.groupby(genesmd_df['Chromosome']).groups[chrom]
+            y_ticks_name = genesmd_df.groupby(genesmd_df['chrix']).groups[chrom]
         ax.set_yticks(y_ticks_val)
         ax.set_yticklabels(y_ticks_name)
 	
     plt.subplots_adjust(hspace=0.7) 
+    handles = genesmd_df['legend_item'].tolist()
+    labels = genesmd_df.index.tolist()
+    plt.legend(handles, labels, loc='upper right', bbox_to_anchor=(1.05, 1))
     if max_ngenes > 25:
         plt.suptitle("Warning! The plot integity might be compromised when displaying too many genes.", color='red',
         x=0.05, y=0.95)
@@ -328,7 +354,10 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     # Provide output
     if to_file is None:
-        plt.show()   
+        # evaluate warning
+        if tot_ngenes > max_ngenes:
+            plt_popup_warning("The provided data contains more genes than the ones plotted.")
+        plt.show()
     else:
         plt.savefig(to_file, format = to_file[-3:])
     
@@ -342,7 +371,7 @@ def _gby_plot_exons(df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_b
     genename = df[id_col].iloc[0]
     gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
     exon_color = genesmd_df.loc[genename].color
-    chrom = genesmd_df.loc[genename].Chromosome
+    chrom = genesmd_df.loc[genename].chrix
     chrom_ix = chrmd_df.index.get_loc(chrom)
     ax = axes[chrom_ix]
     n_exons = len(df)

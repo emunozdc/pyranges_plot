@@ -86,6 +86,13 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     	Size of the plot to export defined by a sequence object like: (height, width). The default values 
     	make the height according to the number of genes and the width as 20 in Matplotlib and 1600 in Plotly.
     	
+    **kargs: 
+    
+    	Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
+    	nomenclature, description and default values.
+
+    
+    	
     Examples
     --------
     
@@ -97,7 +104,7 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     
     >>> plot_generic(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = ['feature1', 'feature3'])
     
-    >>> plot_generic(df, engine='plt', color_col='Strand', packed='False', to_file='my_plot.pdf')
+    >>> plot_generic(df, engine='plt', color_col='Strand', packed='False', to_file='my_plot.pdf', background)
     	
 
     """
@@ -152,25 +159,26 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     	        plot_transcript_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
     	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
     	                            to_file = to_file, file_size = file_size, **kargs)                       
+    	         
     	                       
     	elif engine == 'ply' or engine == 'plotly':
     	    if not transcript_str:
+    	        #store figure
     	        fig = plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
     	                       colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
     	                       to_file = to_file, file_size = file_size, **kargs)
     	        
+    	        #initialize and run dash app
     	        app_instance = initialize_dash_app(fig, max_ngenes)
     	        app_instance.run_server()
-    	        
-    	        
-    	        
-    	        
-    	                  
+           
     	    else:
+    	        #store figure
     	        fig = plot_transcript_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
     	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
     	                            to_file = to_file, file_size = file_size, **kargs)
     	        
+    	        #initialize and run dash app
     	        app_instance = initialize_dash_app(fig, max_ngenes)
     	        app_instance.run_server()
     	                       
@@ -182,8 +190,7 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
 
 
 
-# CHAT TOLD ME TO PUT IT OUTSIDE
-# Function to initialize Dash app layout and callbacks
+# Plotly - Function to initialize Dash app layout and callbacks
 def initialize_dash_app(fig, max_ngenes):
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -191,8 +198,6 @@ def initialize_dash_app(fig, max_ngenes):
     subdf_alert = dbc.Alert("The provided data contains more genes than the ones plotted.",
                             id="alert-subset", color="warning", dismissable=True, is_open=False)
     gr = dcc.Graph(id="genes-plot", figure=fig)
-    print("=================")
-    print(fig['data'][0]['customdata'][0])
 
     # define layout
     app.layout = html.Div([
