@@ -306,7 +306,7 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     # Adjust plot display
     if max_ngenes > 25:
         fig.update_layout(title_text="<span style='color:red;'>Warning! The plot integity might be compromised when displaying too many genes.</span>") #warning for too many genes
-    fig.update_layout(plot_bgcolor=plot_background, font_color=plot_border, showlegend=False)  
+    fig.update_layout(plot_bgcolor=plot_background, font_color=plot_border, showlegend=True)  
     fig.update_xaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
     fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
     
@@ -314,8 +314,11 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     # Provide output
     # insert silent information for subset warning
     fig.data[0].customdata = np.array(tot_ngenes) 
+    # insert legend position
+    fig.update_layout(legend = dict(x=1, y=1))
     
     if to_file == None:
+        print(fig)
         return fig
         #fig.show()
     else:
@@ -436,7 +439,7 @@ def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix
     fig.add_trace(
         go.Scatter(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
             fill = "toself", fillcolor = exon_color, mode = 'lines', 
-            line = dict(color=exon_color), text = geneinfo, hoverinfo = "text"),
+            line = dict(color=exon_color), text = geneinfo, hoverinfo = "text", name = genename, showlegend = True),
             row=chrom_ix+1, 
             col = 1
             )

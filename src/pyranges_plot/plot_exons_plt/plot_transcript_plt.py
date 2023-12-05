@@ -269,6 +269,12 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
         genesmd_df['color_tag'] = genesmd_df['color_tag'].astype(str)
         genesmd_df['color'] = genesmd_df['color_tag'].map(colormap)
         genesmd_df['color'].fillna('black', inplace=True) # not specified in dict will be colored as black
+         
+    # Add legend info
+    def create_legend_rect(color):
+        return Rectangle((0, 0), 1, 1, color=color)
+        
+    genesmd_df['legend_item'] = genesmd_df['color'].apply(create_legend_rect) # column with rectangle objects with same color as gene
         
         
         
@@ -323,6 +329,9 @@ def plot_transcript_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
         ax.set_yticklabels(y_ticks_name)
 	
     plt.subplots_adjust(hspace=0.7) 
+    handles = genesmd_df['legend_item'].tolist()
+    labels = genesmd_df.index.tolist()
+    fig.legend(handles, labels, loc='upper right', bbox_to_anchor=(1, 1))
     if max_ngenes > 25:
         plt.suptitle("Warning! The plot integity might be compromised when displaying too many genes.", color='red',
         x=0.05, y=0.95)

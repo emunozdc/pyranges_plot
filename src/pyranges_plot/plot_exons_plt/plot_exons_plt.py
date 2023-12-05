@@ -342,7 +342,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     plt.subplots_adjust(hspace=0.7) 
     handles = genesmd_df['legend_item'].tolist()
     labels = genesmd_df.index.tolist()
-    plt.legend(handles, labels, loc='upper right', bbox_to_anchor=(1.05, 1))
+    fig.legend(handles, labels, loc='upper right', bbox_to_anchor=(1, 1))
     if max_ngenes > 25:
         plt.suptitle("Warning! The plot integity might be compromised when displaying too many genes.", color='red',
         x=0.05, y=0.95)
