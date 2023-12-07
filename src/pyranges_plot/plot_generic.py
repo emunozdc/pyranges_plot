@@ -9,7 +9,7 @@ from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 
 
-colormap = plotly.colors.sequential.thermal
+colormap = plotly.colors.qualitative.Alphabet
 
 def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = False, color_col = None, colormap = colormap, 
 		limits = None, showinfo = None, packed = True, to_file = None, file_size = None,
