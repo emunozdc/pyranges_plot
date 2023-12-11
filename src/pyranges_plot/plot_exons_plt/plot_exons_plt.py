@@ -199,7 +199,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     #dictionary as limits
     else:
-    	chrmd_df['min_max'] = [limits_chrmd_df.get(index) for index in chrmd_df.index] # fills with None the chromosomes not specified
+    	chrmd_df['min_max'] = [limits.get(index) for index in chrmd_df.index] # fills with None the chromosomes not specified
     
     # 2- not specified values are (np.nan, np.nan), get default from data
     def fill_min_max(row):

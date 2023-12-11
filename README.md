@@ -243,20 +243,37 @@ prplot.plot(p, showinfo=["feature1", "feature2"])
 
 
 
-Lastly, some features of the plot appearance can also be customized. The way to change 
-the default features is using the ``set_default`` function. The background, plot border or title
-default colors can be checked and customized in the following way:
+Lastly, some features of the plot appearance can also be customized. The background, plot border or title
+default colors can be checked in the following way:
 
 
 
 ```python
 # Check the default values
-prplot.get_default('plot_background') # shows the value and a brief description
+prplot.print_default()
+```
+```
++-----------------+-----------+----------+------------------------------------------------------------------------+
+|     Feature     |   Value   | Modified |                              Description                               |
++-----------------+-----------+----------+------------------------------------------------------------------------+
+| tag_background  |   grey    |          | Background color of the tooltip annotation for the gene in Matplotlib. |
+| plot_background |   white   |          | Background color for the chromosomes plots.                            |
+|   plot_border   |   black   |          | Color of the line defining the chromosome plots.                       |
+|   title_size    |    18     |          | Size of the plots' titles.                                             |
+|   title_color   | goldenrod |          | Color of the plots' titles.                                            |
++-----------------+-----------+----------+------------------------------------------------------------------------+
+```
+
+
+The way to change the default features is using the ``set_default`` function. An example is show below.
+
+
+```python
 
 # Change the default values
 prplot.set_default('plot_background', 'rgb(173, 216, 230)')
 prplot.set_default('plot_border', '#808080')
-prplot.set_default('title_dict_ply.color', 'magenta')
+prplot.set_default('title_color', 'magenta')
 
 # Make the customized plot
 prplot.plot(p)
@@ -266,6 +283,23 @@ prplot.plot(p)
 </p>
 
 
+Now the modified values will be marked when checking the default values:
+
+
+```python
+prplot.print_default()
+```
+```
++-----------------+--------------------+----------+------------------------------------------------------------------------+
+|     Feature     |       Value        | Modified |                              Description                               |
++-----------------+--------------------+----------+------------------------------------------------------------------------+
+| tag_background  |        grey        |          | Background color of the tooltip annotation for the gene in Matplotlib. |
+| plot_background | rgb(173, 216, 230) |    *     | Background color for the chromosomes plots.                            |
+|   plot_border   |      #808080       |    *     | Color of the line defining the chromosome plots.                       |
+|   title_size    |         18         |          | Size of the plots' titles.                                             |
+|   title_color   |      magenta       |    *     | Color of the plots' titles.                                            |
++-----------------+--------------------+----------+------------------------------------------------------------------------+
+```
 
 To return to the original appearance of the plot, the ``reset_default`` function can restore 
 all or some paramaters. By default it will reset all the features, but it also accepts a string
@@ -276,7 +310,7 @@ for resetting a single feature or a list of strings to reset a few.
 ```python
 prplot.reset_default()  # reset all
 prplot.reset_default('plot_background')  # reset one feature
-prplot.reset_default(['plot_border', 'title_dict_ply'])  # reset a few features
+prplot.reset_default(['plot_border', 'title_color'])  # reset a few features
 ```
 
 
@@ -296,6 +330,7 @@ prplot.plot(p, to_file='my_plot.pdf', file_size=(1300, 600))
 p_subset = p[p.transcript_id.isin(['t3', 't4'])]
 prplot.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.png')
 ```
+
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/t3_t4_plot.png">
 </p>
@@ -303,8 +338,8 @@ prplot.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.p
 
 
 ## Coming soon
+* Option to turn off introns.
 * New function for displaying data with transcript structure.
 * Accept different PyRanges objects or DataFrames as input for the same plot.
-* Option to turn off introns.
 * Bases will be displayed along coordinates.
 * Colorblind friendly.
