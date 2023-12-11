@@ -32,7 +32,7 @@ intron_threshold = 0.3
 # PLOT_EXONS FUNCTIONS 
 
 def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
-		limits = None, showinfo = None, packed = True, to_file = None, file_size = None,
+		limits = None, showinfo = None, chr_string = None, packed = True, to_file = None, file_size = None,
 		**kargs):
 
     """
@@ -80,6 +80,11 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     	Dataframe information to show when placing the mouse over a gene. This must be provided as a list 
     	of column names. By default it shows the ID of the gene followed by its start and end position.
+    	
+    chr_string: string, default f"Chromosome {chrom}"
+    
+    	String naming the chromosome used as titles for the plots. An f string is used, where the variable 
+    	chrom corresponds to the PyRanges object value for chromosome.
     	
     packed: bool, default True
     
@@ -132,6 +137,7 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     plot_background = getvalue('plot_background')
     plot_border = getvalue('plot_border')
     title_dict_plt = {'family': 'sans-serif', 'color': getvalue('title_color'), 'size': getvalue('title_size')-5}
+
     
     
     # Make DataFrame subset if needed

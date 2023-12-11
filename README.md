@@ -19,7 +19,7 @@ will be conserved.
 In the case of coloring, Pyranges Plot offers a wide versatility. The data feature 
 (column) according to which the genes will be colored is by default the gene ID, but 
 this "color column" can be selected manually. Color specifications can be left as the 
-default colormap (``plotly.colors.sequential.thermal``) or be provided as dictionaries, 
+default colormap (``plotly.colors.qualitative.Alphabet``) or be provided as dictionaries, 
 lists or color objects from either Matplotlib or Plotly regardless of the chosen engine. 
 When a colormap or list of colors is specified, the colors assigned to the genes will 
 iterate over the provided ones following the color column pattern. In the case of concrete 
