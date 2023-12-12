@@ -244,9 +244,9 @@ def set_default(varname, value):
     #    plot_features_dict_in_use[dictname][0][keyname] = value
     
     # make rgb colors camplatible with matplotlib
-    if 'rgb' in value:
-        new_val = value[value.find('(')+1:value.find(')')].split(',')
-        value = [int(number)/255 for number in new_val]      
+    #if 'rgb' in value:
+    #    new_val = value[value.find('(')+1:value.find(')')].split(',')
+    #    value = [int(number)/255 for number in new_val]      
     
     plot_features_dict_in_use[varname] = (value, plot_features_dict[varname][1], "*") # (value, description, modified tag)
 
