@@ -238,13 +238,17 @@ def set_default(varname, value):
     
     """
 
-    if '.' in varname:
-        dictname = varname.split('.')[0]
-        keyname = varname.split('.')[1]
-        plot_features_dict_in_use[dictname][0][keyname] = value
-
-    else:
-        plot_features_dict_in_use[varname] = (value, plot_features_dict[varname][1], "*") # (value, description, modified tag)
+    #if '.' in varname:
+    #    dictname = varname.split('.')[0]
+    #    keyname = varname.split('.')[1]
+    #    plot_features_dict_in_use[dictname][0][keyname] = value
+    
+    # make rgb colors camplatible with matplotlib
+    if 'rgb' in value:
+        new_val = value[value.find('(')+1:value.find(')')].split(',')
+        value = [int(number)/255 for number in new_val]      
+    
+    plot_features_dict_in_use[varname] = (value, plot_features_dict[varname][1], "*") # (value, description, modified tag)
 
 
 
@@ -390,7 +394,6 @@ def print_default(return_keys = False):
     print(header)
     print(rows)
     print(f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+")
-    
     
     if return_keys:
         return set(plot_features_dict_in_use.keys())
