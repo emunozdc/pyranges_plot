@@ -12,7 +12,7 @@ import dash_bootstrap_components as dbc
 colormap = plotly.colors.qualitative.Alphabet
 
 def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = False, color_col = None, colormap = colormap, 
-		limits = None, showinfo = None, packed = True, to_file = None, file_size = None,
+		limits = None, showinfo = None, legend = True, packed = True, to_file = None, file_size = None,
 		**kargs):
 
     """
@@ -76,6 +76,10 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     
     	Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
         they do not overlap) and False for unpacked (one row per gene).
+        
+    legend: bool, default True
+    
+        Whether or not the legend should appear in the plot.
     	
     to_file: str, default None
     
@@ -153,11 +157,11 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     	if engine == 'plt' or engine == 'matplotlib':
     	    if not transcript_str:
     	        plot_exons_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
-    	                       colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                       colormap = colormap, limits = limits, showinfo = showinfo, legend = legend, packed = packed, 
     	                       to_file = to_file, file_size = file_size, **kargs)
     	    else:
     	        plot_transcript_plt(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
-    	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                            colormap = colormap, limits = limits, showinfo = showinfo, legend = legend, packed = packed, 
     	                            to_file = to_file, file_size = file_size, **kargs)                       
     	         
     	                       
@@ -165,22 +169,24 @@ def plot(df, engine = None, max_ngenes = 25, id_col = None, transcript_str = Fal
     	    if not transcript_str:
     	        #store figure
     	        fig = plot_exons_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
-    	                       colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                       colormap = colormap, limits = limits, showinfo = showinfo, legend = legend, packed = packed, 
     	                       to_file = to_file, file_size = file_size, **kargs)
     	        
     	        #initialize and run dash app
-    	        app_instance = initialize_dash_app(fig, max_ngenes)
-    	        app_instance.run_server()
+    	        if not to_file:
+    	            app_instance = initialize_dash_app(fig, max_ngenes)
+    	            app_instance.run_server()
            
     	    else:
     	        #store figure
     	        fig = plot_transcript_ply(df, max_ngenes=max_ngenes, id_col = id_col, color_col = color_col, 
-    	                            colormap = colormap, limits = limits, showinfo = showinfo, packed = packed, 
+    	                            colormap = colormap, limits = limits, showinfo = showinfo, legend = legend, packed = packed, 
     	                            to_file = to_file, file_size = file_size, **kargs)
     	        
     	        #initialize and run dash app
-    	        app_instance = initialize_dash_app(fig, max_ngenes)
-    	        app_instance.run_server()
+    	        if not to_file:
+    	            app_instance = initialize_dash_app(fig, max_ngenes)
+    	            app_instance.run_server()
     	                       
     	else:
             raise Exception("Please define engine with set_engine().")
@@ -197,7 +203,7 @@ def initialize_dash_app(fig, max_ngenes):
     # create alert and graph components
     subdf_alert = dbc.Alert("The provided data contains more genes than the ones plotted.",
                             id="alert-subset", color="warning", dismissable=True, is_open=False)
-    gr = dcc.Graph(id="genes-plot", figure=fig)
+    gr = dcc.Graph(id="genes-plot", figure=fig, style={'height': '800px'})
 
     # define layout
     app.layout = html.Div([

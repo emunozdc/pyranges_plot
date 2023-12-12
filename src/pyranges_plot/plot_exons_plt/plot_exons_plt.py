@@ -32,7 +32,7 @@ intron_threshold = 0.3
 # PLOT_EXONS FUNCTIONS 
 
 def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
-		limits = None, showinfo = None, chr_string = None, packed = True, to_file = None, file_size = None,
+		limits = None, showinfo = None, legend = True, chr_string = None, packed = True, to_file = None, file_size = None,
 		**kargs):
 
     """
@@ -80,6 +80,10 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     
     	Dataframe information to show when placing the mouse over a gene. This must be provided as a list 
     	of column names. By default it shows the ID of the gene followed by its start and end position.
+    	
+    legend: bool, default True
+    
+        Whether or not the legend should appear in the plot.
     	
     chr_string: string, default f"Chromosome {chrom}"
     
@@ -346,9 +350,11 @@ def plot_exons_plt(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
         ax.set_yticklabels(y_ticks_name)
 	
     plt.subplots_adjust(hspace=0.7) 
-    handles = genesmd_df['legend_item'].tolist()
-    labels = genesmd_df.index.tolist()
-    fig.legend(handles, labels, loc='upper right', bbox_to_anchor=(1, 1))
+    # Create legend
+    if legend:
+        handles = genesmd_df['legend_item'].tolist()
+        labels = genesmd_df.index.tolist()
+        fig.legend(handles, labels, loc='upper right', bbox_to_anchor=(1, 1))
     if max_ngenes > 25:
         plt.suptitle("Warning! The plot integity might be compromised when displaying too many genes.", color='red',
         x=0.05, y=0.95)

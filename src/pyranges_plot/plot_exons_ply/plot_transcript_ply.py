@@ -29,7 +29,7 @@ intron_threshold = 0.03
 # PLOT_TRANSCRIPT FUNCTIONS 
 
 def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, colormap = colormap, 
-		limits = None, showinfo = None, chr_string = None, packed = True, to_file = None, file_size = None,
+		limits = None, showinfo = None, legend = True, chr_string = None, packed = True, to_file = None, file_size = None,
 		**kargs):
     """
     Create genes plot from PyRanges object DataFrame
@@ -76,6 +76,10 @@ def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     
     	Dataframe information to show when placing the mouse over a gene. This must be provided as a list 
     	of column names. By default it shows the ID of the gene followed by its start and end position.
+    	
+    legend: bool, default True
+    
+        Whether or not the legend should appear in the plot.
     	
     chr_string: string, default f"Chromosome {chrom}"
     
@@ -131,7 +135,6 @@ def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
         genesix_d[gene] = ix
     df["gene_index"] = df[id_col].map(genesix_d) 
     tot_ngenes = max(genesix_l)
-
     
     # select maximun number of genes
     if max(df.gene_index)+1 <= max_ngenes:
@@ -305,15 +308,14 @@ def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
         fig.update_yaxes(range=[y_min, y_max], tickvals=y_ticks_val, ticktext=y_ticks_name, showgrid=False, row=i+1, col=1)
     
     
-    
     # Plot genes
-    subdf.groupby(id_col).apply(lambda subdf: _gby_plot_exons(subdf, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background))
+    subdf.groupby(id_col).apply(lambda subdf: _gby_plot_exons(subdf, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background, legend))
     
     
     # Adjust plot display
     if max_ngenes > 25:
         fig.update_layout(title_text="<span style='color:red;'>Warning! The plot integity might be compromised when displaying too many genes.</span>") #warning for too many genes
-    fig.update_layout(plot_bgcolor=plot_background, font_color=plot_border, showlegend=True)  #label text color == plot border color
+    fig.update_layout(plot_bgcolor=plot_background, font_color=plot_border, showlegend=legend)  #label text color == plot border color
     fig.update_xaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
     fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
     
@@ -322,7 +324,7 @@ def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     # insert silent information for subset warning
     fig.data[0].customdata = np.array(tot_ngenes) 
     # insert legend position
-    fig.update_layout(legend = dict(x=1, y=1))
+    #fig.update_layout(legend = dict(x=1, y=1))
     
     if to_file == None:
         return fig
@@ -337,7 +339,7 @@ def plot_transcript_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = Non
     
     
     
-def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background):
+def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background, legend):
 
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -380,7 +382,7 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
         fig.add_trace(
             go.Scatter(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
                        fill = "toself", fillcolor = exon_color, mode = 'lines', 
-                       line = dict(color=exon_color), text = geneinfo, hoverinfo = "text", name = genename, showlegend = True),
+                       line = dict(color=exon_color), text = geneinfo, hoverinfo = "text", name = genename, showlegend = legend),
                        row=chrom_ix+1, 
                        col=1)
                            
@@ -390,7 +392,7 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
         fig.add_trace(
             go.Scatter(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
                        fill = "toself", fillcolor = exon_color, mode = 'lines', 
-                       line = dict(color=exon_color), text = geneinfo,  hoverinfo = "text", name = genename, showlegend = True),
+                       line = dict(color=exon_color), text = geneinfo,  hoverinfo = "text", name = genename, showlegend = legend),
                        row=chrom_ix+1, 
                        col=1)
                            
@@ -404,7 +406,7 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
     # trancript only has exon    
     elif not df.Feature.str.contains('CDS').any() and df.Feature.str.contains('exon').any():
         #plot just as utr
-        df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, transcript_utr_width), axis=1)
+        df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, transcript_utr_width, legend), axis=1)
             
     # transcript has neither, skip it
     else:
@@ -468,13 +470,13 @@ def _gby_plot_exons(df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_backgro
     # Plot the gene rows
     # trancript does not only have exon, non-CDS removed before
     if df.Feature.str.contains('CDS').any() and not df.Feature.str.contains('exon').any():
-        df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, exon_width), axis=1)
+        df.apply(_apply_gene, args=(fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, n_exons, genelabel, geneinfo, exon_width, legend), axis=1)
         
     
     
     
 def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix, 
-                n_exons, genelabel, geneinfo, exon_width):
+                n_exons, genelabel, geneinfo, exon_width, legend):
 
     """Plot elements corresponding to one row of one gene."""
     
@@ -489,7 +491,7 @@ def _apply_gene(row, fig, strand, genename, gene_ix, exon_color, chrom, chrom_ix
     fig.add_trace(
         go.Scatter(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
             fill = "toself", fillcolor = exon_color, mode = 'lines', 
-            line = dict(color=exon_color), text = geneinfo, hoverinfo = "text", name = genename, showlegend = True),
+            line = dict(color=exon_color), text = geneinfo, hoverinfo = "text", name = genename, showlegend = legend),
             row=chrom_ix+1, 
             col = 1
             )
