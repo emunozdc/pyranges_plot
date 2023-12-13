@@ -327,7 +327,6 @@ def plot_exons_ply(df, max_ngenes = 25, id_col = 'gene_id', color_col = None, co
     #fig.update_layout(legend = dict(x=1, y=1))
     
     if to_file == None:
-        print(fig)
         return fig
         #fig.show()
     else:
