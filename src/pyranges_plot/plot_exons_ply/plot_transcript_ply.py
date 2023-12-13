@@ -260,7 +260,7 @@ def plot_transcript_ply(
         genesmd_df = genesmd_df.groupby(genesmd_df["chrix"]).apply(
             packed_for_genesmd
         )  # add packed ycoord column using intervaltree
-        genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
+        #genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
     else:
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]
 
