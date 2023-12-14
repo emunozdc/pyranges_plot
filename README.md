@@ -48,7 +48,7 @@ For that we will be using a PyRanges object generated from a dictionary.
 
 ```python
 import pyranges as pr
-import pyranges_plot as prplot
+import pyranges_plot as prp
 
 p = pr.from_dict({"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3],
                   "Strand": ["+", "+", "-", "-", "+", "+", "+", "+"],
@@ -86,7 +86,7 @@ pyranges_plot options. We can get a plot in a single line:
 
 
 ```python
-prplot.plot(p, engine="plt", id_col="transcript_id")
+prp.plot(p, engine="plt", id_col="transcript_id")
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex01.png">
@@ -102,8 +102,8 @@ previously so there is no need to specify them anymore while plotting:
 
 ```python
 # For engine use 'plotly' or 'ply' for Plotly plots and 'matplotlib' or 'plt' for Matplotlib plots
-prplot.set_engine('plotly')
-prplot.set_idcol('transcript_id')
+prp.set_engine('plotly')
+prp.set_idcol('transcript_id')
 ```
 
 
@@ -116,7 +116,7 @@ will appear.
 
 
 ```python
-prplot.plot(p, max_ngenes=2)
+prp.plot(p, max_ngenes=2)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex02.png">
@@ -152,8 +152,8 @@ be provided as a dictionary, tuple or PyRanges object:
 
 
 ```python
-prplot.plot(p, limits={"1": (None, 100), "2": (60, 200), "3": None})
-prplot.plot(p, limits=(0,300))
+prp.plot(p, limits={"1": (None, 100), "2": (60, 200), "3": None})
+prp.plot(p, limits=(0,300))
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex05.png">
@@ -169,7 +169,7 @@ that the ``color_col`` parameter should be used.
 
 
 ```python
-prplot.plot(p, color_col="Strand")
+prp.plot(p, color_col="Strand")
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex07.png">
@@ -184,7 +184,7 @@ this case we can specify it as a dictionary in the following way:
 
 
 ```python
-prplot.plot(
+prp.plot(
     p,
     color_col="Strand",
     colormap={"+": "green", "-": "red"}
@@ -204,7 +204,7 @@ even if the plot is based on Plotly:
 
 
 ```python
-prplot.plot(p, colormap="Dark2")
+prp.plot(p, colormap="Dark2")
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex09.png">
@@ -219,7 +219,7 @@ user wants to display each gene under the other by setting the ``packed`` parame
 
 
 ```python
-prplot.plot(p, packed=False)
+prp.plot(p, packed=False)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex10.png">
@@ -235,7 +235,7 @@ the ``showinfo`` parameter should be used in the following way:
 
 
 ```python
-prplot.plot(p, showinfo=["feature1", "feature2"])
+prp.plot(p, showinfo=["feature1", "feature2"])
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex11.png">
@@ -250,7 +250,7 @@ default colors can be checked in the following way:
 
 ```python
 # Check the default values
-prplot.print_default()
+prp.print_default()
 ```
 ```
 +-----------------+-----------+----------+------------------------------------------------------------------------+
@@ -271,12 +271,12 @@ The way to change the default features is using the ``set_default`` function. An
 ```python
 
 # Change the default values
-prplot.set_default('plot_background', 'rgb(173, 216, 230)')
-prplot.set_default('plot_border', '#808080')
-prplot.set_default('title_color', 'magenta')
+prp.set_default('plot_background', 'rgb(173, 216, 230)')
+prp.set_default('plot_border', '#808080')
+prp.set_default('title_color', 'magenta')
 
 # Make the customized plot
-prplot.plot(p)
+prp.plot(p)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex12.png">
@@ -287,7 +287,7 @@ Now the modified values will be marked when checking the default values:
 
 
 ```python
-prplot.print_default()
+prp.print_default()
 ```
 ```
 +-----------------+--------------------+----------+------------------------------------------------------------------------+
@@ -308,9 +308,9 @@ for resetting a single feature or a list of strings to reset a few.
 
 
 ```python
-prplot.reset_default()  # reset all
-prplot.reset_default('plot_background')  # reset one feature
-prplot.reset_default(['plot_border', 'title_color'])  # reset a few features
+prp.reset_default()  # reset all
+prp.reset_default('plot_background')  # reset one feature
+prp.reset_default(['plot_border', 'title_color'])  # reset a few features
 ```
 
 
@@ -324,11 +324,11 @@ providing a tuple containig the height and width values.
 
 ```python
 # Build the plot and save it in pdf or png
-prplot.plot(p, to_file='my_plot.pdf', file_size=(1300, 600))
+prp.plot(p, to_file='my_plot.pdf', file_size=(1300, 600))
 
 # An example of some pyranges adjustments and save
 p_subset = p[p.transcript_id.isin(['t3', 't4'])]
-prplot.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.png')
+prp.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.png')
 ```
 
 <p align="center">
