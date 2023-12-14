@@ -45,7 +45,7 @@ def plot_transcript_plt(
     colormap=colormap,
     limits=None,
     showinfo=None,
-    legend=True,
+    legend=False,
     chr_string=None,
     packed=True,
     to_file=None,
@@ -98,7 +98,7 @@ def plot_transcript_plt(
         Dataframe information to show when placing the mouse over a gene. This must be provided as a list
         of column names. By default it shows the ID of the gene followed by its start and end position.
 
-    legend: bool, default True
+    legend: bool, default False
 
         Whether or not the legend should appear in the plot.
 

@@ -22,7 +22,7 @@ def plot(
     colormap=colormap,
     limits=None,
     showinfo=None,
-    legend=True,
+    legend=False,
     packed=True,
     to_file=None,
     file_size=None,
@@ -90,7 +90,7 @@ def plot(
         Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
         they do not overlap) and False for unpacked (one row per gene).
 
-    legend: bool, default True
+    legend: bool, default False
 
         Whether or not the legend should appear in the plot.
 
