@@ -13,6 +13,7 @@ from ..core import (
     is_pltcolormap,
     is_plycolormap,
     get_plycolormap,
+    print_default,
     packed_for_genesmd,
     get_default,
 )
@@ -42,7 +43,7 @@ def plot_transcript_ply(
     colormap=colormap,
     limits=None,
     showinfo=None,
-    legend=True,
+    legend=False,
     chr_string=None,
     packed=True,
     to_file=None,
@@ -95,14 +96,14 @@ def plot_transcript_ply(
         Dataframe information to show when placing the mouse over a gene. This must be provided as a list
         of column names. By default it shows the ID of the gene followed by its start and end position.
 
-    legend: bool, default True
+    legend: bool, default False
 
         Whether or not the legend should appear in the plot.
 
-    chr_string: string, default f"Chromosome {chrom}"
+    chr_string: str, default "Chromosome {chrom_name}"
 
-        String naming the chromosome used as titles for the plots. An f string is used, where the variable
-        chrom corresponds to the PyRanges object value for chromosome.
+        String indicating the titile desired for the chromosome plots. It should be given in a way where
+        the chromosome value in the data is indicated as {chrom_name}.
 
     packed: bool, default True
 
@@ -137,6 +138,22 @@ def plot_transcript_ply(
 
     """
 
+
+    # Deal with plot features as kargs
+    wrong_keys = [k for k in kargs if not k in print_default(return_keys=True)]
+    if len(wrong_keys):
+        raise Exception(
+            "The following keys do not match any customizable features: {wrong_keys}.\nCheck the print_default function to see the customizable names"
+        )
+
+    def getvalue(key):
+        if key in kargs:
+            value = kargs[key]
+            return value  ## add invalid data type??
+        else:
+            return get_default(key)
+
+
     # Get default plot features
     tag_background = get_default("tag_background")
     plot_background = get_default("plot_background")
@@ -144,7 +161,7 @@ def plot_transcript_ply(
     title_dict_ply = {
         "family": "Arial",
         "color": get_default("title_color"),
-        "size": get_default("title_size"),
+        "size": int(get_default("title_size")),
     }
 
     # Make DataFrame subset if needed
@@ -316,7 +333,8 @@ def plot_transcript_ply(
         )  # not specified in dict will be colored as black
 
     # Create figure and chromosome plots
-    titles = ["Chromosome %s" % chrom for chrom in chrmd_df.index]
+    chr_string = chr_string.replace('chrom_name', '')
+    titles = [chr_string.format(chrom) for chrom in chrmd_df.index]
     fig = sp.make_subplots(
         rows=nchrs,
         cols=1,
@@ -726,6 +744,9 @@ def _apply_gene(
                 hoverinfo="skip",
             )
 
+            fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
+            fig.add_trace(arrow_top, row=chrom_ix + 1, col=1)
+
         elif strand == "-":
             arrow_bot = go.Scatter(
                 x=bot_minus[0],
@@ -746,5 +767,8 @@ def _apply_gene(
                 hoverinfo="skip",
             )
 
-        fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
-        fig.add_trace(arrow_top, row=chrom_ix + 1, col=1)
+            fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
+            fig.add_trace(arrow_top, row=chrom_ix + 1, col=1)
+
+
+

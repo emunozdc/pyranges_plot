@@ -16,6 +16,7 @@ from ..core import (
     is_plycolormap,
     get_plycolormap,
     packed_for_genesmd,
+    print_default,
     on_hover_factory,
     get_default,
     plt_popup_warning,
@@ -45,7 +46,7 @@ def plot_transcript_plt(
     colormap=colormap,
     limits=None,
     showinfo=None,
-    legend=True,
+    legend=False,
     chr_string=None,
     packed=True,
     to_file=None,
@@ -98,14 +99,14 @@ def plot_transcript_plt(
         Dataframe information to show when placing the mouse over a gene. This must be provided as a list
         of column names. By default it shows the ID of the gene followed by its start and end position.
 
-    legend: bool, default True
+    legend: bool, default False
 
         Whether or not the legend should appear in the plot.
 
-    chr_string: string, default f"Chromosome {chrom}"
+    chr_string: str, default "Chromosome {chrom_name}"
 
-        String naming the chromosome used as titles for the plots. An f string is used, where the variable
-        chrom corresponds to the PyRanges object value for chromosome.
+        String indicating the titile desired for the chromosome plots. It should be given in a way where
+        the chromosome value in the data is indicated as {chrom_name}.
 
     packed: bool, default True
 
@@ -140,6 +141,23 @@ def plot_transcript_plt(
 
     """
 
+
+
+    # Deal with plot features as kargs
+    wrong_keys = [k for k in kargs if not k in print_default(return_keys=True)]
+    if len(wrong_keys):
+        raise Exception(
+            "The following keys do not match any customizable features: {wrong_keys}.\nCheck the print_default function to see the customizable names"
+        )
+
+    def getvalue(key):
+        if key in kargs:
+            value = kargs[key]
+            return value  ## add invalid data type??
+        else:
+            return get_default(key)
+
+
     # Get default plot features
     tag_background = get_default("tag_background")
     plot_background = get_default("plot_background")
@@ -147,7 +165,7 @@ def plot_transcript_plt(
     title_dict_plt = {
         "family": "sans-serif",
         "color": get_default("title_color"),
-        "size": get_default("title_size") - 5,
+        "size": int(getvalue("title_size")) - 5,
     }
 
     # Make DataFrame subset if needed
@@ -354,7 +372,8 @@ def plot_transcript_plt(
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
-        ax.set_title("Chromosome %s" % chrom, fontdict=title_dict_plt)
+        chr_string = chr_string.replace('chrom_name', '')
+        ax.set_title(chr_string.format(chrom), fontdict=title_dict_plt)
         ax.set_facecolor(plot_background)
         plt.setp(ax.spines.values(), color=plot_border)
         plt.setp([ax.get_xticklines(), ax.get_yticklines()], color=plot_border)
