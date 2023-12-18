@@ -154,6 +154,7 @@ def plot_exons_ply(
             return get_default(key)
 
 
+
     # Get default plot features
     tag_background = get_default("tag_background")
     plot_background = get_default("plot_background")
@@ -278,6 +279,7 @@ def plot_exons_ply(
             packed_for_genesmd
         )  # add packed ycoord column using intervaltree
         #genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
+
     else:
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]
 
@@ -416,6 +418,7 @@ def plot_exons_ply(
 
         pio.write_image(fig, to_file)
 
+        
 
 def _gby_plot_exons(
     df, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background, legend
@@ -678,5 +681,4 @@ def _apply_gene(
 
             fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
             fig.add_trace(arrow_top, row=chrom_ix + 1, col=1)
-
 

@@ -97,7 +97,7 @@ def plot_exons_plt(
 
         Dataframe information to show when placing the mouse over a gene. This must be provided as a list
         of column names. By default it shows the ID of the gene followed by its start and end position.
-
+        
     legend: bool, default False
 
         Whether or not the legend should appear in the plot.
@@ -280,6 +280,7 @@ def plot_exons_plt(
             packed_for_genesmd
         )  # add packed ycoord column
         #genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
+
     else:
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]
 
