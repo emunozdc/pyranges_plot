@@ -102,10 +102,10 @@ def plot_exons_plt(
 
         Whether or not the legend should appear in the plot.
 
-    chr_string: string, default f"Chromosome {chrom}"
+    chr_string: str, default "Chromosome {chrom_name}"
 
-        String naming the chromosome used as titles for the plots. An f string is used, where the variable
-        chrom corresponds to the PyRanges object value for chromosome.
+        String indicating the titile desired for the chromosome plots. It should be given in a way where
+        the chromosome value in the data is indicated as {chrom_name}.
 
     packed: bool, default True
 
@@ -149,7 +149,8 @@ def plot_exons_plt(
 
     def getvalue(key):
         if key in kargs:
-            return key  ## add invalid data type??
+            value = kargs[key]
+            return value  ## add invalid data type??
         else:
             return get_default(key)
 
@@ -160,7 +161,7 @@ def plot_exons_plt(
     title_dict_plt = {
         "family": "sans-serif",
         "color": getvalue("title_color"),
-        "size": getvalue("title_size") - 5,
+        "size": int(getvalue("title_size")) - 5,
     }
 
     # Make DataFrame subset if needed
@@ -363,7 +364,8 @@ def plot_exons_plt(
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
-        ax.set_title("Chromosome %s" % chrom, fontdict=title_dict_plt)
+        chr_string = chr_string.replace('chrom_name', '')
+        ax.set_title(chr_string.format(chrom), fontdict=title_dict_plt)
         ax.set_facecolor(plot_background)
         plt.setp(ax.spines.values(), color=plot_border)
         plt.setp([ax.get_xticklines(), ax.get_yticklines()], color=plot_border)

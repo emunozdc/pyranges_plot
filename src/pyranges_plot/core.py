@@ -273,7 +273,7 @@ def get_default(varname="all"):
 
     >>> pyranges_plot.get_default(['title_dict_plt', 'plot_background'])
 
-    >>> pyranges_plot.get_default('title_dict_ply')[0][color]
+    >>> pyranges_plot.get_default('title_dict_ply')[0]
 
     """
 

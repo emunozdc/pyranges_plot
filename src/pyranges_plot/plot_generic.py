@@ -23,6 +23,7 @@ def plot(
     limits=None,
     showinfo=None,
     legend=False,
+    chr_string="Chromosome {chrom_name}",
     packed=True,
     to_file=None,
     file_size=None,
@@ -85,14 +86,19 @@ def plot(
         Dataframe information to show when placing the mouse over a gene. This must be provided as a list
         of column names. By default it shows the ID of the gene followed by its start and end position.
 
+    legend: bool, default False
+
+        Whether or not the legend should appear in the plot.
+
+    chr_string: str, default "Chromosome {chrom_name}"
+
+        String indicating the titile desired for the chromosome plots. It should be given in a way where
+        the chromosome value in the data is indicated as {chrom_name}.
+
     packed: bool, default True
 
         Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
         they do not overlap) and False for unpacked (one row per gene).
-
-    legend: bool, default False
-
-        Whether or not the legend should appear in the plot.
 
     to_file: str, default None
 
@@ -180,6 +186,7 @@ def plot(
                     limits=limits,
                     showinfo=showinfo,
                     legend=legend,
+                    chr_string=chr_string,
                     packed=packed,
                     to_file=to_file,
                     file_size=file_size,
@@ -195,6 +202,7 @@ def plot(
                     limits=limits,
                     showinfo=showinfo,
                     legend=legend,
+                    chr_string=chr_string,
                     packed=packed,
                     to_file=to_file,
                     file_size=file_size,
@@ -213,6 +221,7 @@ def plot(
                     limits=limits,
                     showinfo=showinfo,
                     legend=legend,
+                    chr_string=chr_string,
                     packed=packed,
                     to_file=to_file,
                     file_size=file_size,
@@ -235,6 +244,7 @@ def plot(
                     limits=limits,
                     showinfo=showinfo,
                     legend=legend,
+                    chr_string=chr_string,
                     packed=packed,
                     to_file=to_file,
                     file_size=file_size,
