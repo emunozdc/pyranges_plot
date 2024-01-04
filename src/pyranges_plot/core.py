@@ -1,13 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import plotly.subplots as sp
-import matplotlib.cm as cm
-import plotly.colors as pc
 import pandas as pd
-import tkinter as tk
-from tkinter import ttk
-from intervaltree import Interval, IntervalTree
 from .plot_features import plot_features_dict, plot_features_dict_in_use
+import tkinter as tk
 
 # CORE FUNCTIONS
 engine = None
@@ -24,7 +18,9 @@ def set_engine(name):
 
     Examples
     --------
-    >>> pyranges_plot.set_engine('plt')
+    >>> import pyranges_plot as prp
+    
+    >>> prp.set_engine('plt')
 
     """
 
@@ -53,7 +49,9 @@ def set_idcol(name):
 
     Examples
     --------
-    >>> pyranges_plot.set_idcol('gene_id')
+    >>> import pyranges_plot as prp
+    
+    >>> prp.set_idcol('gene_id')
 
     """
 
@@ -65,31 +63,6 @@ def get_idcol():
     """Shows the current defined ID column (id_col)."""
 
     return id_col
-
-
-def packed_for_genesmd(genesmd_df):
-    """xxx"""
-
-    # Sort the dataframe by Start values
-    genesmd_df = genesmd_df.sort_values(by="Start")
-
-    # Initialize IntervalTree and used y-coordinates list
-    trees = [IntervalTree()]
-
-    def find_tree(row):
-        for tree in trees:
-            if not tree.overlaps(row["Start"], row["End"]):
-                return tree
-        trees.append(IntervalTree())
-        return trees[-1]
-
-    # Assign y-coordinates
-    for idx, row in genesmd_df.iterrows():
-        tree = find_tree(row)
-        tree.addi(row["Start"], row["End"], idx)
-        genesmd_df.at[idx, "ycoord"] = trees.index(tree)
-
-    return genesmd_df
 
 
 def coord2inches(fig, ax, X0, X1, Y0, Y1):
@@ -151,64 +124,6 @@ def percent2coord(fig, trace, x_percent):
     return percent_coord
 
 
-def is_pltcolormap(colormap_string):
-    """Checks whether the string given is a valid plt colormap name."""
-
-    try:
-        colormap = cm.get_cmap(colormap_string)
-        if colormap is not None and colormap._isinit:
-            return True
-        else:
-            return False
-
-    except ValueError:
-        return False
-
-
-def is_plycolormap(colormap_string):
-    """Checks whether the string given is a valid plotly color object name."""
-
-    if hasattr(pc.sequential, colormap_string):
-        return True
-    elif hasattr(pc.diverging, colormap_string):
-        return True
-    elif hasattr(pc.cyclical, colormap_string):
-        return True
-    elif hasattr(pc.qualitative, colormap_string):
-        return True
-
-
-def get_plycolormap(colormap_string):
-    """Provides the plotly color object corresponding to the string given."""
-
-    if hasattr(pc.sequential, colormap_string):
-        return getattr(pc.sequential, colormap_string)
-    elif hasattr(pc.diverging, colormap_string):
-        return getattr(pc.diverging, colormap_string)
-    elif hasattr(pc.cyclical, colormap_string):
-        return getattr(pc.cyclical, colormap_string)
-    elif hasattr(pc.qualitative, colormap_string):
-        return getattr(pc.qualitative, colormap_string)
-
-
-def on_hover_factory(fig, annotation, object, geneinfo):
-    def on_hover(event):
-        """Check if the mouse is over the object and show annotation if so. NOT WORKING"""
-        visible = annotation.get_visible()
-        contains_object = object.contains(
-            event
-        )  # Check if the mouse is over the object
-
-        if contains_object:
-            annotation.set_text(geneinfo)  # Add the information
-            annotation.xy = (event.xdata, event.ydata)
-            annotation.set_visible(True)
-            fig.canvas.draw()
-        elif visible:
-            annotation.set_visible(False)
-            fig.canvas.draw()
-
-    return on_hover
 
 
 # Related to default features
@@ -230,21 +145,13 @@ def set_default(varname, value):
 
     Examples
     --------
-    >>> pyranges_plot.set_default('plot_background', 'magenta')
+    >>> import pyranges_plot as prp
 
-    >>> pyranges_plot.set_default('title_size', 20)
+    >>> prp.set_default('plot_background', 'magenta')
+
+    >>> prp.set_default('title_size', 20)
 
     """
-
-    # if '.' in varname:
-    #    dictname = varname.split('.')[0]
-    #    keyname = varname.split('.')[1]
-    #    plot_features_dict_in_use[dictname][0][keyname] = value
-
-    # make rgb colors camplatible with matplotlib
-    # if 'rgb' in value:
-    #    new_val = value[value.find('(')+1:value.find(')')].split(',')
-    #    value = [int(number)/255 for number in new_val]
 
     plot_features_dict_in_use[varname] = (
         value,
@@ -262,16 +169,6 @@ def get_default(varname="all"):
     varname: {str, list}, default 'all'
 
         Name of the variable/s to get the value and description.
-
-    Examples
-    --------
-    >>> pyranges_plot.get_default()
-
-    >>> pyranges_plot.get_default('all')
-
-    >>> pyranges_plot.get_default('plot_border')
-
-    >>> pyranges_plot.get_default(['title_dict_plt', 'plot_background'])
 
     """
 
@@ -317,15 +214,17 @@ def reset_default(varname="all"):
 
     Examples
     --------
-    >>> pyranges_plot.reset_default()
+    >>> import pyranges_plot as prp
 
-    >>> pyranges_plot.reset_default('all')
+    >>> prp.reset_default()
 
-    >>> pyranges_plot.reset_default('tag_background')
+    >>> prp.reset_default('all')
 
-    >>> pyranges_plot.reset_default(['title_dict_plt', 'tag_background'])
+    >>> prp.reset_default('tag_background')
 
-    >>> pyranges_plot.reset_default('title_dict_ply')
+    >>> prp.reset_default(['title_dict_plt', 'tag_background'])
+
+    >>> prp.reset_default('title_dict_ply')
     """
 
     plot_features_dict_in_use = get_default()

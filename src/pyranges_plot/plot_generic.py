@@ -2,9 +2,7 @@ import pyranges
 import plotly.colors
 from .core import get_engine, get_idcol
 from .plot_exons_plt.plot_exons_plt import plot_exons_plt
-from .plot_exons_plt.plot_transcript_plt import plot_transcript_plt
 from .plot_exons_ply.plot_exons_ply import plot_exons_ply
-from .plot_exons_ply.plot_transcript_ply import plot_transcript_ply
 from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 
@@ -23,7 +21,7 @@ def plot(
     limits=None,
     showinfo=None,
     legend=False,
-    chr_string="Chromosome {chrom_name}",
+    chr_string="Chromosome {chrom}",
     packed=True,
     to_file=None,
     file_size=None,
@@ -90,10 +88,10 @@ def plot(
 
         Whether or not the legend should appear in the plot.
 
-    chr_string: str, default "Chromosome {chrom_name}"
+    chr_string: str, default "Chromosome {chrom}"
 
         String indicating the titile desired for the chromosome plots. It should be given in a way where
-        the chromosome value in the data is indicated as {chrom_name}.
+        the chromosome value in the data is indicated as {chrom}.
 
     packed: bool, default True
 
@@ -174,87 +172,44 @@ def plot(
         engine = get_engine()
 
     try:  # call plot functions
-        kargs_l = [k for k in kargs]
         if engine == "plt" or engine == "matplotlib":
-            if not transcript_str:
-                plot_exons_plt(
-                    df,
-                    max_ngenes=max_ngenes,
-                    id_col=id_col,
-                    color_col=color_col,
-                    colormap=colormap,
-                    limits=limits,
-                    showinfo=showinfo,
-                    legend=legend,
-                    chr_string=chr_string,
-                    packed=packed,
-                    to_file=to_file,
-                    file_size=file_size,
-                    **kargs,
-                )
-            else:
-                plot_transcript_plt(
-                    df,
-                    max_ngenes=max_ngenes,
-                    id_col=id_col,
-                    color_col=color_col,
-                    colormap=colormap,
-                    limits=limits,
-                    showinfo=showinfo,
-                    legend=legend,
-                    chr_string=chr_string,
-                    packed=packed,
-                    to_file=to_file,
-                    file_size=file_size,
-                    **kargs,
-                )
+            plot_exons_plt(
+                df,
+                max_ngenes=max_ngenes,
+                id_col=id_col,
+                transcript_str=transcript_str,
+                color_col=color_col,
+                colormap=colormap,
+                limits=limits,
+                showinfo=showinfo,
+                legend=legend,
+                chr_string=chr_string,
+                packed=packed,
+                to_file=to_file,
+                file_size=file_size,
+                **kargs,
+            )
 
         elif engine == "ply" or engine == "plotly":
-            if not transcript_str:
-                # store figure
-                fig = plot_exons_ply(
-                    df,
-                    max_ngenes=max_ngenes,
-                    id_col=id_col,
-                    color_col=color_col,
-                    colormap=colormap,
-                    limits=limits,
-                    showinfo=showinfo,
-                    legend=legend,
-                    chr_string=chr_string,
-                    packed=packed,
-                    to_file=to_file,
-                    file_size=file_size,
-                    **kargs,
-                )
-
-                # initialize and run dash app
-                if not to_file:
-                    app_instance = initialize_dash_app(fig, max_ngenes)
-                    app_instance.run_server()
-
-            else:
-                # store figure
-                fig = plot_transcript_ply(
-                    df,
-                    max_ngenes=max_ngenes,
-                    id_col=id_col,
-                    color_col=color_col,
-                    colormap=colormap,
-                    limits=limits,
-                    showinfo=showinfo,
-                    legend=legend,
-                    chr_string=chr_string,
-                    packed=packed,
-                    to_file=to_file,
-                    file_size=file_size,
-                    **kargs,
-                )
-
-                # initialize and run dash app
-                if not to_file:
-                    app_instance = initialize_dash_app(fig, max_ngenes)
-                    app_instance.run_server()
+            fig = plot_exons_ply(
+                df,
+                max_ngenes=max_ngenes,
+                id_col=id_col,
+                transcript_str=transcript_str,
+                color_col=color_col,
+                colormap=colormap,
+                limits=limits,
+                showinfo=showinfo,
+                legend=legend,
+                chr_string=chr_string,
+                packed=packed,
+                to_file=to_file,
+                file_size=file_size,
+                **kargs,
+            )
+            if not to_file:
+                 app_instance = initialize_dash_app(fig, max_ngenes)
+                 app_instance.run_server()
 
         else:
             raise Exception("Please define engine with set_engine().")
