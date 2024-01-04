@@ -19,7 +19,7 @@ def set_engine(name):
     Examples
     --------
     >>> import pyranges_plot as prp
-    
+
     >>> prp.set_engine('plt')
 
     """
@@ -50,7 +50,7 @@ def set_idcol(name):
     Examples
     --------
     >>> import pyranges_plot as prp
-    
+
     >>> prp.set_idcol('gene_id')
 
     """
@@ -124,8 +124,6 @@ def percent2coord(fig, trace, x_percent):
     return percent_coord
 
 
-
-
 # Related to default features
 
 
@@ -173,7 +171,7 @@ def get_default(varname="all"):
     """
 
     # list of variables
-    if type(varname) is list:
+    if isinstance(varname, list):
         vars_list = []
         for var in varname:
             vars_list.append(plot_features_dict_in_use[var][0])
@@ -231,7 +229,7 @@ def reset_default(varname="all"):
     plot_features_dict = get_original_default()
 
     # list of variables
-    if type(varname) is list:
+    if isinstance(varname, list):
         for var in varname:
             plot_features_dict_in_use[var] = plot_features_dict[var]
 

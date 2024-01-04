@@ -5,7 +5,6 @@ import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 
 
-
 ############ FIGURE AND AXES
 
 
@@ -78,7 +77,6 @@ def create_fig(
     return fig, axes
 
 
-
 ############ PLOTTING ITEMS
 
 
@@ -104,9 +102,7 @@ def make_annotation(item, fig, ax, geneinfo, tag_background):
     # make annotation visible when over the gene line
     def on_hover(event):
         visible = annotation.get_visible()
-        contains_item, _ = item.contains(
-            event
-        )  # Check if mouse is over the gene line
+        contains_item, _ = item.contains(event)  # Check if mouse is over the gene line
         if contains_item:
             annotation.set_text(geneinfo)
             annotation.xy = (event.xdata, event.ydata)
@@ -119,20 +115,19 @@ def make_annotation(item, fig, ax, geneinfo, tag_background):
     fig.canvas.mpl_connect("motion_notify_event", on_hover)
 
 
-
 def plot_direction(
-        ax,
-        strand,
-        item_size,
-        item_threshold,
-        start,
-        stop,
-        incl,
-        gene_ix,
-        exon_width,
-        arrow_color,
-        arrow_style,
-        arrow_width,
+    ax,
+    strand,
+    item_size,
+    item_threshold,
+    start,
+    stop,
+    incl,
+    gene_ix,
+    exon_width,
+    arrow_color,
+    arrow_style,
+    arrow_width,
 ):
     """xxx"""
 
@@ -192,24 +187,22 @@ def plot_direction(
                 )
 
 
-
-
 def _apply_gene(
-        transcript_str,
-        df,
-        fig,
-        ax,
-        strand,
-        gene_ix,
-        exon_color,
-        tag_background,
-        geneinfo,
-        exon_width,
-        transcript_utr_width,
-        arrow_size_min,
-        arrow_color,
-        arrow_style,
-        arrow_width,
+    transcript_str,
+    df,
+    fig,
+    ax,
+    strand,
+    gene_ix,
+    exon_color,
+    tag_background,
+    geneinfo,
+    exon_width,
+    transcript_utr_width,
+    arrow_size_min,
+    arrow_color,
+    arrow_style,
+    arrow_width,
 ):
     """xxx"""
 
@@ -237,9 +230,14 @@ def _apply_gene(
     # WITH transcript structure
     else:
         # transcript has only CDS and exon
-        if df.Feature.str.contains("CDS").any() and df.Feature.str.contains("exon").any():
+        if (
+            df.Feature.str.contains("CDS").any()
+            and df.Feature.str.contains("exon").any()
+        ):
             # get coordinates for utr and cds
-            tr_start, cds_start = df.groupby("Feature").Start.apply(min)[["exon", "CDS"]]
+            tr_start, cds_start = df.groupby("Feature").Start.apply(min)[
+                ["exon", "CDS"]
+            ]
             tr_end, cds_end = df.groupby("Feature").End.apply(max)[["exon", "CDS"]]
 
             # create utr
@@ -289,8 +287,8 @@ def _apply_gene(
 
         # transcript only has exon
         elif (
-                not df.Feature.str.contains("CDS").any()
-                and df.Feature.str.contains("exon").any()
+            not df.Feature.str.contains("CDS").any()
+            and df.Feature.str.contains("exon").any()
         ):
             # plot just as utr
             df.apply(
@@ -314,8 +312,8 @@ def _apply_gene(
 
         # transcript only has CDS
         elif (
-                df.Feature.str.contains("CDS").any()
-                and not df.Feature.str.contains("exon").any()
+            df.Feature.str.contains("CDS").any()
+            and not df.Feature.str.contains("exon").any()
         ):
             df.apply(
                 _plot_row,
@@ -339,7 +337,6 @@ def _apply_gene(
         # transcript has neither, skip gene
         else:
             return
-
 
 
 def _plot_row(
@@ -383,5 +380,17 @@ def _plot_row(
     incl = inches2coord(fig, ax, 0.15)  # how long in the plot (OX)
 
     # create and plot lines
-    plot_direction(ax, strand, arrow_size, arrow_size_min, start, stop, incl, gene_ix, exon_width, arrow_color,
-                   arrow_style, arrow_width)
+    plot_direction(
+        ax,
+        strand,
+        arrow_size,
+        arrow_size_min,
+        start,
+        stop,
+        incl,
+        gene_ix,
+        exon_width,
+        arrow_color,
+        arrow_style,
+        arrow_width,
+    )

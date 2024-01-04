@@ -208,8 +208,8 @@ def plot(
                 **kargs,
             )
             if not to_file:
-                 app_instance = initialize_dash_app(fig, max_ngenes)
-                 app_instance.run_server()
+                app_instance = initialize_dash_app(fig, max_ngenes)
+                app_instance.run_server()
 
         else:
             raise Exception("Please define engine with set_engine().")

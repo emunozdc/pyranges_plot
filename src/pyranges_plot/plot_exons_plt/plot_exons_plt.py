@@ -101,7 +101,7 @@ def plot_exons_plt(
 
         Dataframe information to show when placing the mouse over a gene. This must be provided as a list
         of column names. By default it shows the ID of the gene followed by its start and end position.
-        
+
     legend: bool, default False
 
         Whether or not the legend should appear in the plot.
@@ -145,7 +145,7 @@ def plot_exons_plt(
     """
 
     # Deal with plot features as kargs
-    wrong_keys = [k for k in kargs if not k in print_default(return_keys=True)]
+    wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
     if len(wrong_keys):
         raise Exception(
             "The following keys do not match any customizable features: {wrong_keys}.\nCheck the print_default function to see the customizable names"
@@ -167,8 +167,6 @@ def plot_exons_plt(
         "color": getvalue("title_color"),
         "size": int(getvalue("title_size")) - 5,
     }
-    plot_feat = [tag_background, plot_background, plot_border, title_dict_plt]
-
 
     # Make DataFrame subset if needed
     subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
@@ -181,21 +179,41 @@ def plot_exons_plt(
     # Create chromosome metadata DataFrame
     chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
 
-
     # Create figure and axes
     if file_size:
         x = file_size[0]
         y = file_size[1]
     else:
         x = 20
-        y = ( sum(chrmd_df.y_height) + 2 * len(chrmd_df) ) / 2  # height according to genes and add 2 per each chromosome
+        y = (
+            sum(chrmd_df.y_height) + 2 * len(chrmd_df)
+        ) / 2  # height according to genes and add 2 per each chromosome
 
-    fig, axes = create_fig(x, y, chrmd_df, genesmd_df, chr_string, title_dict_plt, plot_background, plot_border, packed, legend)
+    fig, axes = create_fig(
+        x,
+        y,
+        chrmd_df,
+        genesmd_df,
+        chr_string,
+        title_dict_plt,
+        plot_background,
+        plot_border,
+        packed,
+        legend,
+    )
 
     # Plot genes
     subdf.groupby(id_col).apply(
         lambda subdf: _gby_plot_exons(
-            subdf, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background, transcript_str
+            subdf,
+            axes,
+            fig,
+            chrmd_df,
+            genesmd_df,
+            id_col,
+            showinfo,
+            tag_background,
+            transcript_str,
         )
     )
 
@@ -212,7 +230,15 @@ def plot_exons_plt(
 
 
 def _gby_plot_exons(
-    df, axes, fig, chrmd_df, genesmd_df, id_col, showinfo, tag_background, transcript_str
+    df,
+    axes,
+    fig,
+    chrmd_df,
+    genesmd_df,
+    id_col,
+    showinfo,
+    tag_background,
+    transcript_str,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -223,7 +249,6 @@ def _gby_plot_exons(
     chrom = genesmd_df.loc[genename].chrix
     chrom_ix = chrmd_df.index.get_loc(chrom)
     ax = axes[chrom_ix]
-    n_exons = len(df)
     if "Strand" in df.columns:
         strand = df["Strand"].unique()[0]
     else:
@@ -331,4 +356,17 @@ def _plot_row(
     incl = inches2coord(fig, ax, 0.15)  # how long in the plot (OX)
 
     # create and plot lines
-    plot_direction(ax, strand, arrow_size, arrow_size_min, start, stop, incl, gene_ix, exon_width, arrow_color, arrow_style, arrow_width)
+    plot_direction(
+        ax,
+        strand,
+        arrow_size,
+        arrow_size_min,
+        start,
+        stop,
+        incl,
+        gene_ix,
+        exon_width,
+        arrow_color,
+        arrow_style,
+        arrow_width,
+    )

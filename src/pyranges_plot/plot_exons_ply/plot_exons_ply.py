@@ -143,9 +143,8 @@ def plot_exons_ply(
 
     """
 
-
     # Deal with plot features as kargs
-    wrong_keys = [k for k in kargs if not k in print_default(return_keys=True)]
+    wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
     if len(wrong_keys):
         raise Exception(
             "The following keys do not match any customizable features: {wrong_keys}.\nCheck the print_default function to see the customizable names"
@@ -158,10 +157,8 @@ def plot_exons_ply(
         else:
             return get_default(key)
 
-
-
     # Get default plot features
-    tag_background = getvalue("tag_background")
+    # tag_background = getvalue("tag_background")
     plot_background = getvalue("plot_background")
     plot_border = getvalue("plot_border")
     title_dict_ply = {
@@ -214,7 +211,6 @@ def plot_exons_ply(
 
         pio.write_image(fig, to_file)
 
-        
 
 def _gby_plot_exons(
     df, fig, chrmd_df, genesmd_df, id_col, showinfo, legend, transcript_str
@@ -301,4 +297,3 @@ def _gby_plot_exons(
         arrow_size_min,
         arrow_color,
     )
-

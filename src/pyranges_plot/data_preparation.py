@@ -18,7 +18,7 @@ def make_subset(df, id_col, max_ngenes):
     genesix_d = {key: value for value, key in genesix_l}
     df["gene_index"] = df[id_col].map(
         genesix_d
-    ) # create a column indexing all the genes in the df
+    )  # create a column indexing all the genes in the df
     tot_ngenes = max(genesix_l)[0]
 
     # select maximum number of genes
@@ -28,21 +28,17 @@ def make_subset(df, id_col, max_ngenes):
         subdf = df[df.gene_index < max_ngenes]
 
     # remove the gene_index column from the original df
-    df.drop(
-        "gene_index", axis=1, inplace=True
-    )
+    df.drop("gene_index", axis=1, inplace=True)
 
     return subdf, tot_ngenes
 
 
-
-
 ############ GENESMD_DF
+
 
 ###packed
 def _genesmd_packed(genesmd_df):
     """xxx"""
-
 
     # Initialize IntervalTree and used y-coordinates list
     trees = [IntervalTree()]
@@ -61,7 +57,6 @@ def _genesmd_packed(genesmd_df):
         genesmd_df.at[idx, "ycoord"] = trees.index(tree)
 
     return genesmd_df
-
 
 
 ###colors for genes
@@ -103,6 +98,8 @@ def get_plycolormap(colormap_string):
         return getattr(pc.cyclical, colormap_string)
     elif hasattr(pc.qualitative, colormap_string):
         return getattr(pc.qualitative, colormap_string)
+
+
 def _genesmd_assigncolor(genesmd_df, colormap):
     """xxx"""
 
@@ -110,7 +107,7 @@ def _genesmd_assigncolor(genesmd_df, colormap):
     n_color_tags = len(color_tags)
 
     # 0-string to colormap object if possible
-    if type(colormap) == str:
+    if isinstance(colormap, str):
         try:
             if is_pltcolormap(colormap):
                 colormap = plt.get_cmap(colormap)
@@ -126,7 +123,7 @@ def _genesmd_assigncolor(genesmd_df, colormap):
         colormap = list(colormap.colors)  # colors of plt object
 
     # 2-list to dict
-    if type(colormap) == list:
+    if isinstance(colormap, list):
         # adjust number of colors
         if n_color_tags < len(colormap):
             colormap = colormap[:n_color_tags]
@@ -144,19 +141,12 @@ def _genesmd_assigncolor(genesmd_df, colormap):
         }
 
     # 3- Use dict to assign color to gene
-    if type(colormap) == dict:
+    if isinstance(colormap, dict):
         genesmd_df["color_tag"] = genesmd_df["color_tag"].astype(str)
         genesmd_df["color"] = genesmd_df["color_tag"].map(colormap)
         genesmd_df["color"].fillna(
             "black", inplace=True
         )  # not specified in dict will be colored as black*
-
-
-
-
-
-
-
 
 
 def get_genes_metadata(df, id_col, color_col, packed, colormap):
@@ -194,20 +184,9 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
         return Rectangle((0, 0), 1, 1, color=color)
 
     # column with rectangle objects with same color as gene
-    genesmd_df["legend_item"] = genesmd_df["color"].apply(
-        create_legend_rect
-    )
+    genesmd_df["legend_item"] = genesmd_df["color"].apply(create_legend_rect)
 
     return genesmd_df
-
-
-
-
-
-
-
-
-
 
 
 ############ CHRMD_DF
@@ -231,7 +210,9 @@ def _chrmd_limits(chrmd_df, limits, genesmd_df):
     elif type(limits) is pr.pyranges_main.PyRanges:
         # create dict to map limits
         limits_df = limits.df
-        limits_chrmd_df = limits_df.groupby("Chromosome").agg({"Start": "min", "End": "max"})
+        limits_chrmd_df = limits_df.groupby("Chromosome").agg(
+            {"Start": "min", "End": "max"}
+        )
         limits_chrmd_dict = limits_chrmd_df.to_dict(orient="index")
 
         # function to get matching values from limits_chrmd_df
@@ -256,7 +237,6 @@ def _chrmd_limits(chrmd_df, limits, genesmd_df):
         ]  # fills with None the chromosomes not specified
 
 
-
 def get_chromosome_metadata(df, id_col, limits, genesmd_df):
     """xxx"""
 
@@ -270,7 +250,7 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df):
     )
 
     # Add limits
-    _chrmd_limits(chrmd_df, limits, genesmd_df) # unknown limits are nan
+    _chrmd_limits(chrmd_df, limits, genesmd_df)  # unknown limits are nan
 
     def fill_min_max(row):
         minmax_t = row["min_max"]
@@ -296,6 +276,3 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df):
     chrmd_df["y_height"] += 1  # count from 1
 
     return chrmd_df
-
-
-

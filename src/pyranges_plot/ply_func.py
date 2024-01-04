@@ -3,9 +3,6 @@ import plotly.subplots as sp
 import plotly.graph_objects as go
 
 
-
-
-
 ####### CREATE FIGURE AND AXES
 def create_fig(chrmd_df, genesmd_df, chr_string, title_dict_ply, packed):
     """xxx"""
@@ -59,24 +56,22 @@ def create_fig(chrmd_df, genesmd_df, chr_string, title_dict_ply, packed):
     return fig
 
 
-
-
-
 ###### PLOTTING ELEEMNTS
 
+
 def plot_direction(
-        fig,
-        strand,
-        genename,
-        item_size,
-        item_threshold,
-        start,
-        stop,
-        incl,
-        gene_ix,
-        chrom_ix,
-        exon_width,
-        arrow_color,
+    fig,
+    strand,
+    genename,
+    item_size,
+    item_threshold,
+    start,
+    stop,
+    incl,
+    gene_ix,
+    chrom_ix,
+    exon_width,
+    arrow_color,
 ):
     """xxx"""
 
@@ -146,22 +141,21 @@ def plot_direction(
                 fig.add_trace(arrow_top, row=chrom_ix + 1, col=1)
 
 
-
 def _apply_gene(
-        transcript_str,
-        df,
-        fig,
-        strand,
-        genename,
-        gene_ix,
-        exon_color,
-        chrom_ix,
-        geneinfo,
-        exon_width,
-        transcript_utr_width,
-        legend,
-        arrow_size_min,
-        arrow_color,
+    transcript_str,
+    df,
+    fig,
+    strand,
+    genename,
+    gene_ix,
+    exon_color,
+    chrom_ix,
+    geneinfo,
+    exon_width,
+    transcript_utr_width,
+    legend,
+    arrow_size_min,
+    arrow_color,
 ):
     """xxx"""
 
@@ -188,14 +182,22 @@ def _apply_gene(
     # WITH transcript structure
     else:
         # transcript has only CDS and exon
-        if df.Feature.str.contains("CDS").any() and df.Feature.str.contains("exon").any():
+        if (
+            df.Feature.str.contains("CDS").any()
+            and df.Feature.str.contains("exon").any()
+        ):
             # get coordinates for utr and cds
-            utr_start, cds_start = df.groupby("Feature").Start.apply(min)[["exon", "CDS"]]
+            utr_start, cds_start = df.groupby("Feature").Start.apply(min)[
+                ["exon", "CDS"]
+            ]
             utr_end, cds_end = df.groupby("Feature").End.apply(max)[["exon", "CDS"]]
 
             # create start utr
             x0, x1 = utr_start, cds_start
-            y0, y1 = gene_ix - transcript_utr_width / 2, gene_ix + transcript_utr_width / 2
+            y0, y1 = (
+                gene_ix - transcript_utr_width / 2,
+                gene_ix + transcript_utr_width / 2,
+            )
             fig.add_trace(
                 go.Scatter(
                     x=[x0, x1, x1, x0, x0],
@@ -215,7 +217,10 @@ def _apply_gene(
 
             # create end utr
             x0, x1 = cds_end, utr_end
-            y0, y1 = gene_ix - transcript_utr_width / 2, gene_ix + transcript_utr_width / 2
+            y0, y1 = (
+                gene_ix - transcript_utr_width / 2,
+                gene_ix + transcript_utr_width / 2,
+            )
             fig.add_trace(
                 go.Scatter(
                     x=[x0, x1, x1, x0, x0],
@@ -303,11 +308,6 @@ def _apply_gene(
         # transcript has neither, skip it
         else:
             return
-
-
-
-
-
 
 
 def _plot_row(
