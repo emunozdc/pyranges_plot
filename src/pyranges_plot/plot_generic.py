@@ -79,10 +79,14 @@ def plot(
         in the pyranges object defined as limits. If some plotted chromosomes are not present they
         will be left as default.
 
-    showinfo: list, default None
+    showinfo: str, default None
 
-        Dataframe information to show when placing the mouse over a gene. This must be provided as a list
-        of column names. By default it shows the ID of the gene followed by its start and end position.
+        Dataframe information to show in a tooltip when placing the mouse over a gene. This must be
+        provided as a string containing the column names of the values to be shown within curly brackets.
+        For example if you want to show the value of the pointed gene for the column "col1" a valid showinfo
+        string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
+        strings. If you want to introduce a newline you can use "\n". By default, it shows the ID of the
+        gene followed by its start and end position.
 
     legend: bool, default False
 
@@ -90,7 +94,7 @@ def plot(
 
     chr_string: str, default "Chromosome {chrom}"
 
-        String indicating the titile desired for the chromosome plots. It should be given in a way where
+        String providing the desired titile for the chromosome plots. It should be given in a way where
         the chromosome value in the data is indicated as {chrom}.
 
     packed: bool, default True
@@ -125,7 +129,7 @@ def plot(
 
     >>> plot_generic(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = ['feature1', 'feature3'])
 
-    >>> plot_generic(df, engine='plt', color_col='Strand', packed='False', to_file='my_plot.pdf', background)
+    >>> plot_generic(df, engine='plt', color_col='Strand', packed='False', to_file='my_plot.pdf')
 
 
     """

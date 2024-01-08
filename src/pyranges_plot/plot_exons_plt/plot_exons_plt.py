@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-
 from ..core import (
     coord2inches,
     inches2coord,
@@ -19,7 +18,6 @@ from ..plt_func import (
     plot_direction,
     _apply_gene,
 )
-
 
 # plot parameters
 exon_width = 0.4
@@ -97,10 +95,14 @@ def plot_exons_plt(
         in the pyranges object defined as limits. If some plotted chromosomes are not present they
         will be left as default.
 
-    showinfo: list, default None
+    showinfo: str, default None
 
-        Dataframe information to show when placing the mouse over a gene. This must be provided as a list
-        of column names. By default it shows the ID of the gene followed by its start and end position.
+        Dataframe information to show in a tooltip when placing the mouse over a gene. This must be
+        provided as a string containing the column names of the values to be shown within curly brackets.
+        For example if you want to show the value of the pointed gene for the column "col1" a valid showinfo
+        string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
+        strings. If you want to introduce a newline you can use "\n". By default, it shows the ID of the
+        gene followed by its start and end position.
 
     legend: bool, default False
 
@@ -108,7 +110,7 @@ def plot_exons_plt(
 
     chr_string: str, default "Chromosome {chrom}"
 
-        String indicating the titile desired for the chromosome plots. It should be given in a way where
+        String providing the desired titile for the chromosome plots. It should be given in a way where
         the chromosome value in the data is indicated as {chrom}.
 
     packed: bool, default True
@@ -256,15 +258,16 @@ def _gby_plot_exons(
 
     # Make gene annotation
     # get the gene information to print on hover
+    #default
     if strand:
         geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default with strand
     else:
         geneinfo = f"({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default without strand
-    showinfo_data = []
+
+    #customized
+    showinfo_dict = df.iloc[0].to_dict() # first element of gene rows
     if showinfo:
-        for i in range(len(showinfo)):
-            showinfo_data.append(df[showinfo[i]].iloc[0])
-            geneinfo += f"\n{showinfo[i]}: {showinfo_data[i]}"
+        geneinfo += '\n' + showinfo.format(**showinfo_dict)
 
     # Plot the gene rows as EXONS
     _apply_gene(

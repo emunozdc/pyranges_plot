@@ -96,10 +96,14 @@ def plot_exons_ply(
         in the pyranges object defined as limits. If some plotted chromosomes are not present they
         will be left as default.
 
-    showinfo: list, default None
+    showinfo: str, default None
 
-        Dataframe information to show when placing the mouse over a gene. This must be provided as a list
-        of column names. By default it shows the ID of the gene followed by its start and end position.
+        Dataframe information to show in a tooltip when placing the mouse over a gene. This must be
+        provided as a string containing the column names of the values to be shown within curly brackets.
+        For example if you want to show the value of the pointed gene for the column "col1" a valid showinfo
+        string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
+        strings. If you want to introduce a newline you can use "\n". By default, it shows the ID of the
+        gene followed by its start and end position.
 
     legend: bool, default False
 
@@ -107,7 +111,7 @@ def plot_exons_ply(
 
     chr_string: str, default "Chromosome {chrom}"
 
-        String indicating the titile desired for the chromosome plots. It should be given in a way where
+        String providing the desired titile for the chromosome plots. It should be given in a way where
         the chromosome value in the data is indicated as {chrom}.
 
     packed: bool, default True
@@ -229,16 +233,17 @@ def _gby_plot_exons(
         strand = ""
 
     # Get the gene information to print on hover
+    #default
     if strand:
         geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})<br>ID: {genename}"  # default with strand
     else:
         geneinfo = f"({min(df.Start)}, {max(df.End)})<br>ID: {genename}"  # default without strand
-    showinfo_data = []
+
+    #customized
+    showinfo_dict = df.iloc[0].to_dict() # first element of gene rows
+    showinfo = showinfo.replace("\n", "<br>")
     if showinfo:
-        for i in range(len(showinfo)):
-            col = showinfo[i]
-            showinfo_data.append(df[col].iloc[0])  # first by default, change for exons.
-            geneinfo += f"<br>{showinfo[i]}: {showinfo_data[i]}"
+        geneinfo += "<br>" + showinfo.format(**showinfo_dict)
 
     # Evaluate each intron
     sorted_exons = df[["Start", "End"]].sort_values(by="Start")
