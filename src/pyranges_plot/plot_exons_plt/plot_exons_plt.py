@@ -20,8 +20,6 @@ from ..plt_func import (
 )
 
 # plot parameters
-exon_width = 0.4
-transcript_utr_width = 0.3 * exon_width
 arrow_width = 1
 arrow_color = "grey"
 arrow_style = "round"
@@ -169,6 +167,8 @@ def plot_exons_plt(
         "color": getvalue("title_color"),
         "size": int(getvalue("title_size")) - 5,
     }
+    exon_width = getvalue("exon_width")
+    transcript_utr_width = 0.3 * exon_width
 
     # Make DataFrame subset if needed
     subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
@@ -216,6 +216,8 @@ def plot_exons_plt(
             showinfo,
             tag_background,
             transcript_str,
+            exon_width,
+            transcript_utr_width,
         )
     )
 
@@ -241,6 +243,8 @@ def _gby_plot_exons(
     showinfo,
     tag_background,
     transcript_str,
+    exon_width,
+    transcript_utr_width,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -258,16 +262,16 @@ def _gby_plot_exons(
 
     # Make gene annotation
     # get the gene information to print on hover
-    #default
+    # default
     if strand:
         geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default with strand
     else:
         geneinfo = f"({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default without strand
 
-    #customized
-    showinfo_dict = df.iloc[0].to_dict() # first element of gene rows
+    # customized
+    showinfo_dict = df.iloc[0].to_dict()  # first element of gene rows
     if showinfo:
-        geneinfo += '\n' + showinfo.format(**showinfo_dict)
+        geneinfo += "\n" + showinfo.format(**showinfo_dict)
 
     # Plot the gene rows as EXONS
     _apply_gene(

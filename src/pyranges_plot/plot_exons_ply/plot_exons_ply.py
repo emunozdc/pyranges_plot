@@ -21,8 +21,6 @@ from ..ply_func import (
 
 
 # plot parameters
-exon_width = 0.4
-transcript_utr_width = 0.2 * exon_width
 colormap = plotly.colors.sequential.thermal
 arrow_width = 1
 arrow_color = "grey"
@@ -170,6 +168,8 @@ def plot_exons_ply(
         "color": getvalue("title_color"),
         "size": int(getvalue("title_size")),
     }
+    exon_width = getvalue("exon_width")
+    transcript_utr_width = 0.3 * exon_width
 
     # Make DataFrame subset if needed
     subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
@@ -188,7 +188,16 @@ def plot_exons_ply(
     # Plot genes
     subdf.groupby(id_col).apply(
         lambda subdf: _gby_plot_exons(
-            subdf, fig, chrmd_df, genesmd_df, id_col, showinfo, legend, transcript_str
+            subdf,
+            fig,
+            chrmd_df,
+            genesmd_df,
+            id_col,
+            showinfo,
+            legend,
+            transcript_str,
+            exon_width,
+            transcript_utr_width,
         )
     )
 
@@ -217,7 +226,16 @@ def plot_exons_ply(
 
 
 def _gby_plot_exons(
-    df, fig, chrmd_df, genesmd_df, id_col, showinfo, legend, transcript_str
+    df,
+    fig,
+    chrmd_df,
+    genesmd_df,
+    id_col,
+    showinfo,
+    legend,
+    transcript_str,
+    exon_width,
+    transcript_utr_width,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -233,14 +251,14 @@ def _gby_plot_exons(
         strand = ""
 
     # Get the gene information to print on hover
-    #default
+    # default
     if strand:
         geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})<br>ID: {genename}"  # default with strand
     else:
         geneinfo = f"({min(df.Start)}, {max(df.End)})<br>ID: {genename}"  # default without strand
 
-    #customized
-    showinfo_dict = df.iloc[0].to_dict() # first element of gene rows
+    # customized
+    showinfo_dict = df.iloc[0].to_dict()  # first element of gene rows
     if showinfo:
         showinfo = showinfo.replace("\n", "<br>")
         geneinfo += "<br>" + showinfo.format(**showinfo_dict)
