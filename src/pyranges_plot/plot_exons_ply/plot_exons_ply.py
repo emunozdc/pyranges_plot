@@ -241,8 +241,8 @@ def _gby_plot_exons(
 
     #customized
     showinfo_dict = df.iloc[0].to_dict() # first element of gene rows
-    showinfo = showinfo.replace("\n", "<br>")
     if showinfo:
+        showinfo = showinfo.replace("\n", "<br>")
         geneinfo += "<br>" + showinfo.format(**showinfo_dict)
 
     # Evaluate each intron

@@ -29,12 +29,13 @@ def create_fig(chrmd_df, genesmd_df, chr_string, title_dict_ply, packed):
         fig.update_xaxes(
             range=[x_min - 0.05 * x_rang, x_max + 0.05 * x_rang],
             tickformat="d",
-            showgrid=False,
+            showgrid=True,
+            gridcolor="grey",
+            griddash="dot",
             zeroline=False,
             row=i + 1,
             col=1,
         )  # add 5% to limit coordinates range
-        # fig.update_xaxes(title_text="Chromosome %s" % chrom, row=i + 1, col=1)
 
         # set y axis limits
         y_min = 0

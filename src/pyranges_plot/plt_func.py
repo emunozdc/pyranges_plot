@@ -48,11 +48,10 @@ def create_fig(
             x_min - 0.05 * x_rang, x_max + 0.05 * x_rang
         )  # add 5% to limit coordinates range
         plt.ticklabel_format(style="plain")
+        ax.grid(visible = True, axis = 'x', linestyle = ":")#, zorder = -1)
         ax.xaxis.set_major_formatter(ScalarFormatter())
-        ax.xaxis.get_major_formatter().set_scientific(
-            False
-        )  # turn off scientific notation
-        ax.xaxis.get_major_formatter().set_useOffset(False)  # turn off offset notation
+        ax.xaxis.get_major_formatter().set_scientific(False) # not scientific notation
+        ax.xaxis.get_major_formatter().set_useOffset(False)  # not offset notation
 
         # set y axis limits
         y_min = 0

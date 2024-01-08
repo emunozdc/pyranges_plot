@@ -214,6 +214,7 @@ def plot(
             if not to_file:
                 app_instance = initialize_dash_app(fig, max_ngenes)
                 app_instance.run_server()
+                #app_instance.run_server(dev_tools_ui=True, dev_tools_props_check=True)
 
         else:
             raise Exception("Please define engine with set_engine().")
