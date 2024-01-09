@@ -65,6 +65,37 @@ def get_idcol():
     return id_col
 
 
+warnings = True
+
+
+def set_warnings(option):
+    """
+    Defines if the warnings should be shown.
+
+    Parameters
+    ----------
+    option: bool
+
+         True for showing the warnings and false to turn them off.
+
+    Examples
+    --------
+    >>> import pyranges_plot as prp
+
+    >>> prp.set_warnings(False)
+
+    """
+
+    global warnings
+    warnings = option
+
+
+def get_warnings():
+    """Returns the current warnings state."""
+
+    return warnings
+
+
 def coord2inches(fig, ax, X0, X1, Y0, Y1):
     """Provides the inches length from the points given. Plt friendly"""
 

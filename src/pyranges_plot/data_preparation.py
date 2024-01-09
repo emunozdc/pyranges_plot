@@ -7,7 +7,7 @@ from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
 import matplotlib.cm as cm
-from .core import get_engine, plt_popup_warning
+from .core import get_engine, plt_popup_warning, get_warnings
 
 
 ############ SUBSET
@@ -126,7 +126,16 @@ def _genesmd_assigncolor(genesmd_df, colormap):
     # 2-list to dict
     if isinstance(colormap, list):
         # adjust number of colors
-        if n_color_tags < len(colormap):
+        if n_color_tags > len(colormap):
+            engine = get_engine()
+            warnings = get_warnings()
+            if engine in ["plt", "matplotlib"] and warnings:
+                plt_popup_warning(
+                    "The genes are colored by iterating over the given color list."
+                )
+            elif engine in ["ply", "plotly"] and warnings:
+                genesmd_df["_iterwarning!"] = [1] * len(genesmd_df)
+        else:
             colormap = colormap[:n_color_tags]
         # make plotly rgb colors compatible with plt
         if colormap[0][:3] == "rgb":
@@ -134,10 +143,13 @@ def _genesmd_assigncolor(genesmd_df, colormap):
                 rgb[rgb.find("(") + 1 : rgb.find(")")].split(",") for rgb in colormap
             ]
             colormap = [
-                "#{:02x}{:02x}{:02x}".format(int(r), int(g), int(b)) for r, g, b in numb_list
+                "#{:02x}{:02x}{:02x}".format(int(r), int(g), int(b))
+                for r, g, b in numb_list
             ]
         # create dict of colors
-        colormap = {str(color_tags[i]): colormap[i] for i in range(len(colormap))}
+        colormap = {
+            str(color_tags[i]): colormap[i % len(colormap)] for i in range(n_color_tags)
+        }
 
     # 3- Use dict to assign color to gene
     if isinstance(colormap, dict):
@@ -145,11 +157,14 @@ def _genesmd_assigncolor(genesmd_df, colormap):
         genesmd_df["color"] = genesmd_df["color_tag"].map(colormap)
         if genesmd_df["color"].isna().any():
             engine = get_engine()
-            if engine in ['plt', 'matplotlib']:
-                plt_popup_warning("Some genes do not have a color assigned so they are colored in black.")
-            elif engine in ['ply', 'plotly']:
-                genesmd_df["_blackwarning!"] = [1]*len(genesmd_df)
-            genesmd_df["color"].fillna("black", inplace=True)  # not specified colored as black
+            warnings = get_warnings()
+            if engine in ["plt", "matplotlib"] and warnings:
+                plt_popup_warning(
+                    "Some genes do not have a color assigned so they are colored in black."
+                )
+            elif engine in ["ply", "plotly"] and warnings:
+                genesmd_df["_blackwarning!"] = [1] * len(genesmd_df)
+            genesmd_df["color"].fillna("black", inplace=True)  # black for not specified
 
     return genesmd_df
 
@@ -176,7 +191,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
         genesmd_df = genesmd_df.groupby(genesmd_df["chrix"]).apply(
             _genesmd_packed
         )  # add packed ycoord column
-        #genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
+        # genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
 
     else:
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]

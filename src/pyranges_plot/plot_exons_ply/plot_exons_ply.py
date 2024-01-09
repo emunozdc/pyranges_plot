@@ -7,6 +7,7 @@ from ..core import (
     percent2coord,
     print_default,
     get_default,
+    get_warnings,
 )
 from ..data_preparation import (
     make_subset,
@@ -209,10 +210,27 @@ def plot_exons_ply(
     fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
 
     # Provide output
-    # insert silent information for subset and uncolored warning
-    fig.data[0].customdata = np.array([tot_ngenes, 0])
-    if "_blackwarning!" in genesmd_df.columns:
-        fig.data[0].customdata = np.array([tot_ngenes, 91124])
+    # insert silent information for warnings
+    warnings = get_warnings()
+    if warnings:
+        fig.data[0].customdata = np.array([tot_ngenes, 0, 0])
+        if (
+            "_blackwarning!" in genesmd_df.columns
+            and "_iterwarning!" in genesmd_df.columns
+        ):
+            fig.data[0].customdata = np.array([tot_ngenes, 91124, 91321])
+        elif (
+            "_blackwarning!" in genesmd_df.columns
+            and not "_iterwarning!" in genesmd_df.columns
+        ):
+            fig.data[0].customdata = np.array([tot_ngenes, 91124, 0])
+        elif (
+            not "_blackwarning!" in genesmd_df.columns
+            and "_iterwarning!" in genesmd_df.columns
+        ):
+            fig.data[0].customdata = np.array([tot_ngenes, 0, 91321])
+    else:
+        fig.data[0].customdata = np.array(["no warnings"])
 
     if to_file is None:
         return fig

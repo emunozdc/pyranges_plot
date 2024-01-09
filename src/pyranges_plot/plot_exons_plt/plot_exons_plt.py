@@ -6,6 +6,7 @@ from ..core import (
     print_default,
     get_default,
     plt_popup_warning,
+    get_warnings,
 )
 from ..data_preparation import (
     make_subset,
@@ -224,7 +225,8 @@ def plot_exons_plt(
     # Provide output
     if to_file is None:
         # evaluate warning
-        if tot_ngenes > max_ngenes:
+        warnings = get_warnings()
+        if tot_ngenes > max_ngenes and warnings:
             plt_popup_warning(
                 "The provided data contains more genes than the ones plotted."
             )

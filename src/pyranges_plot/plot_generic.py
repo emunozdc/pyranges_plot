@@ -1,6 +1,6 @@
 import pyranges
 import plotly.colors
-from .core import get_engine, get_idcol
+from .core import get_engine, get_idcol, set_warnings
 from .plot_exons_plt.plot_exons_plt import plot_exons_plt
 from .plot_exons_ply.plot_exons_ply import plot_exons_ply
 from dash import Dash, dcc, html, Input, Output
@@ -13,8 +13,9 @@ colormap = plotly.colors.qualitative.Alphabet
 def plot(
     df,
     engine=None,
-    max_ngenes=25,
     id_col=None,
+    warnings=True,
+    max_ngenes=25,
     transcript_str=False,
     color_col=None,
     colormap=colormap,
@@ -41,13 +42,17 @@ def plot(
         Library in which the plot sould be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
         Plotly ['ply'/'plotly']
 
-    max_ngenes: int, default 20
-
-        Maximum number of genes plotted in the dataframe order.
-
     id_col: str, default 'gene_id'
 
         Name of the column containing gene ID.
+
+    warnings: bool, default True
+
+        Whether or not the warnings should be shown.
+
+    max_ngenes: int, default 20
+
+        Maximum number of genes plotted in the dataframe order.
 
     transcript_str: bool, default False
 
@@ -175,6 +180,11 @@ def plot(
     if engine is None:
         engine = get_engine()
 
+    if warnings:
+        set_warnings(True)
+    else:
+        set_warnings(False)
+
     try:  # call plot functions
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
@@ -243,10 +253,20 @@ def initialize_dash_app(fig, max_ngenes):
         is_open=False,
     )
 
+    iter_alert = dbc.Alert(
+        "The genes are colored by iterating over the given color list.",
+        id="alert-iteration",
+        color="warning",
+        dismissable=True,
+        is_open=False,
+    )
+
     gr = dcc.Graph(id="genes-plot", figure=fig, style={"height": "800px"})
 
     # define layout
-    app.layout = html.Div([dbc.Row([subdf_alert, uncol_alert, gr], justify="around")])
+    app.layout = html.Div(
+        [dbc.Row([subdf_alert, uncol_alert, iter_alert, gr], justify="around")]
+    )
 
     # callback function
     @app.callback(
@@ -254,8 +274,9 @@ def initialize_dash_app(fig, max_ngenes):
         Input("genes-plot", "figure"),
     )
     def show_subs_warning(grfig):
+        if grfig["data"][0]["customdata"][0] == "no warnings":
+            return False
         n_genes = int(grfig["data"][0]["customdata"][0])
-        print(n_genes)
         if n_genes > max_ngenes:
             return True
 
@@ -264,9 +285,21 @@ def initialize_dash_app(fig, max_ngenes):
         Input("genes-plot", "figure"),
     )
     def show_uncol_warning(grfig):
+        if grfig["data"][0]["customdata"][0] == "no warnings":
+            return False
         sign = int(grfig["data"][0]["customdata"][1])
-        print(sign)
         if sign == 91124:
+            return True
+
+    @app.callback(
+        Output("alert-iteration", "is_open"),
+        Input("genes-plot", "figure"),
+    )
+    def show_uncol_warning(grfig):
+        if grfig["data"][0]["customdata"][0] == "no warnings":
+            return False
+        sign = int(grfig["data"][0]["customdata"][2])
+        if sign == 91321:
             return True
 
     return app
