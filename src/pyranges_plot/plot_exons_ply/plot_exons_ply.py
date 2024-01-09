@@ -209,10 +209,10 @@ def plot_exons_ply(
     fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
 
     # Provide output
-    # insert silent information for subset warning
-    fig.data[0].customdata = np.array(tot_ngenes)
-    # insert legend position
-    # fig.update_layout(legend = dict(x=1, y=1))
+    # insert silent information for subset and uncolored warning
+    fig.data[0].customdata = np.array([tot_ngenes, 0])
+    if "_blackwarning!" in genesmd_df.columns:
+        fig.data[0].customdata = np.array([tot_ngenes, 91124])
 
     if to_file is None:
         return fig

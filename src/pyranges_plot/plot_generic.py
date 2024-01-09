@@ -234,20 +234,39 @@ def initialize_dash_app(fig, max_ngenes):
         dismissable=True,
         is_open=False,
     )
+
+    uncol_alert = dbc.Alert(
+        "Some genes do not have a color assigned so they are colored in black.",
+        id="alert-uncolored",
+        color="warning",
+        dismissable=True,
+        is_open=False,
+    )
+
     gr = dcc.Graph(id="genes-plot", figure=fig, style={"height": "800px"})
 
     # define layout
-    app.layout = html.Div([dbc.Row([subdf_alert, gr], justify="around")])
+    app.layout = html.Div([dbc.Row([subdf_alert, uncol_alert, gr], justify="around")])
 
     # callback function
     @app.callback(
         Output("alert-subset", "is_open"),
         Input("genes-plot", "figure"),
     )
-    def show_warning(grfig):
+    def show_subs_warning(grfig):
         n_genes = int(grfig["data"][0]["customdata"][0])
         print(n_genes)
         if n_genes > max_ngenes:
+            return True
+
+    @app.callback(
+        Output("alert-uncolored", "is_open"),
+        Input("genes-plot", "figure"),
+    )
+    def show_uncol_warning(grfig):
+        sign = int(grfig["data"][0]["customdata"][1])
+        print(sign)
+        if sign == 91124:
             return True
 
     return app

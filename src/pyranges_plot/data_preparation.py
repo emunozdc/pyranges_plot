@@ -7,6 +7,7 @@ from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
 import matplotlib.cm as cm
+from .core import get_engine, plt_popup_warning
 
 
 ############ SUBSET
@@ -133,20 +134,24 @@ def _genesmd_assigncolor(genesmd_df, colormap):
                 rgb[rgb.find("(") + 1 : rgb.find(")")].split(",") for rgb in colormap
             ]
             colormap = [
-                (int(r) / 255, int(g) / 255, int(b) / 255) for r, g, b in numb_list
+                "#{:02x}{:02x}{:02x}".format(int(r), int(g), int(b)) for r, g, b in numb_list
             ]
         # create dict of colors
-        colormap = {
-            str(color_tags[i]): colormap[i % len(colormap)] for i in range(n_color_tags)
-        }
+        colormap = {str(color_tags[i]): colormap[i] for i in range(len(colormap))}
 
     # 3- Use dict to assign color to gene
     if isinstance(colormap, dict):
         genesmd_df["color_tag"] = genesmd_df["color_tag"].astype(str)
         genesmd_df["color"] = genesmd_df["color_tag"].map(colormap)
-        genesmd_df["color"].fillna(
-            "black", inplace=True
-        )  # not specified in dict will be colored as black*
+        if genesmd_df["color"].isna().any():
+            engine = get_engine()
+            if engine in ['plt', 'matplotlib']:
+                plt_popup_warning("Some genes do not have a color assigned so they are colored in black.")
+            elif engine in ['ply', 'plotly']:
+                genesmd_df["_blackwarning!"] = [1]*len(genesmd_df)
+            genesmd_df["color"].fillna("black", inplace=True)  # not specified colored as black
+
+    return genesmd_df
 
 
 def get_genes_metadata(df, id_col, color_col, packed, colormap):
@@ -171,13 +176,13 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
         genesmd_df = genesmd_df.groupby(genesmd_df["chrix"]).apply(
             _genesmd_packed
         )  # add packed ycoord column
-        genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
+        #genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
 
     else:
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]
 
     # Assign color to each gene
-    _genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
+    genesmd_df = _genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
 
     # Add legend info
     def create_legend_rect(color):
