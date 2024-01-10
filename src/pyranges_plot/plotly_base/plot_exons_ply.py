@@ -1,11 +1,10 @@
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
+import plotly.graph_objects as go
+import plotly.colors
+import plotly.io as pio
+import numpy as np
 from ..core import (
-    coord2inches,
-    inches2coord,
     print_default,
     get_default,
-    plt_popup_warning,
     get_warnings,
 )
 from ..data_preparation import (
@@ -13,32 +12,30 @@ from ..data_preparation import (
     get_genes_metadata,
     get_chromosome_metadata,
 )
-from ..plt_func import (
-    create_fig,
-    make_annotation,
-    plot_direction,
-    _apply_gene,
-)
+from ._core import coord2percent, percent2coord
+from ._fig_axes import create_fig
+from ._data2plot import plot_direction, _apply_gene
+
 
 # plot parameters
+colormap = plotly.colors.sequential.thermal
 arrow_width = 1
 arrow_color = "grey"
-arrow_style = "round"
-arrow_size_max = 0.3
-arrow_size_min = 0.1
-intron_threshold = 0.3
+arrow_size_max = 0.02
+arrow_size_min = 0.005
+intron_threshold = 0.03
 
 
 # PLOT_EXONS FUNCTIONS
 
 
-def plot_exons_plt(
+def plot_exons_ply(
     df,
     max_ngenes=25,
     id_col="gene_id",
     transcript_str=False,
     color_col=None,
-    colormap=None,
+    colormap=colormap,
     limits=None,
     showinfo=None,
     legend=False,
@@ -124,7 +121,7 @@ def plot_exons_plt(
     file_size: {list, tuple}, default None
 
         Size of the plot to export defined by a sequence object like: (height, width). The default values
-        make the height according to the number of genes and the width as 20.
+        make the height according to the number of genes and the width as 1600.
 
     **kargs:
 
@@ -136,11 +133,11 @@ def plot_exons_plt(
     Examples
     --------
 
-    >>> plot_exons_plt(df, max_ngenes=25, colormap='Set3')
+    >>> plot_exons_ply(df, max_ngenes=25, colormap='Set3')
 
-    >>> plot_exons_plt(df, color_col='Strand', colormap={'+': 'green', '-': 'red'})
+    >>> plot_exons_ply(df, color_col='Strand', colormap={'+': 'green', '-': 'red'})
 
-    >>> plot_exons_plt(df, limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
+    >>> plot_exons_ply(df, limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
 
 
     """
@@ -160,13 +157,13 @@ def plot_exons_plt(
             return get_default(key)
 
     # Get default plot features
-    tag_background = getvalue("tag_background")
+    # tag_background = getvalue("tag_background")
     plot_background = getvalue("plot_background")
     plot_border = getvalue("plot_border")
-    title_dict_plt = {
-        "family": "sans-serif",
+    title_dict_ply = {
+        "family": "Arial",
         "color": getvalue("title_color"),
-        "size": int(getvalue("title_size")) - 5,
+        "size": int(getvalue("title_size")),
     }
     exon_width = getvalue("exon_width")
     transcript_utr_width = 0.3 * exon_width
@@ -182,68 +179,74 @@ def plot_exons_plt(
     # Create chromosome metadata DataFrame
     chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
 
-    # Create figure and axes
-    if file_size:
-        x = file_size[0]
-        y = file_size[1]
-    else:
-        x = 20
-        y = (
-            sum(chrmd_df.y_height) + 2 * len(chrmd_df)
-        ) / 2  # height according to genes and add 2 per each chromosome
-
-    fig, axes = create_fig(
-        x,
-        y,
-        chrmd_df,
-        genesmd_df,
-        chr_string,
-        title_dict_plt,
-        plot_background,
-        plot_border,
-        packed,
-        legend,
-    )
+    # Create figure and chromosome plots
+    fig = create_fig(chrmd_df, genesmd_df, chr_string, title_dict_ply, packed)
 
     # Plot genes
     subdf.groupby(id_col).apply(
         lambda subdf: _gby_plot_exons(
             subdf,
-            axes,
             fig,
             chrmd_df,
             genesmd_df,
             id_col,
             showinfo,
-            tag_background,
+            legend,
             transcript_str,
             exon_width,
             transcript_utr_width,
         )
     )
 
+    # Adjust plot display
+    fig.update_layout(
+        plot_bgcolor=plot_background, font_color=plot_border, showlegend=legend
+    )
+    fig.update_xaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
+    fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
+
     # Provide output
-    if to_file is None:
-        # evaluate warning
-        warnings = get_warnings()
-        if tot_ngenes > max_ngenes and warnings:
-            plt_popup_warning(
-                "The provided data contains more genes than the ones plotted."
-            )
-        plt.show()
+    # insert silent information for warnings
+    warnings = get_warnings()
+    if warnings:
+        fig.data[0].customdata = np.array([tot_ngenes, 0, 0])
+        if (
+            "_blackwarning!" in genesmd_df.columns
+            and "_iterwarning!" in genesmd_df.columns
+        ):
+            fig.data[0].customdata = np.array([tot_ngenes, 91124, 91321])
+        elif (
+            "_blackwarning!" in genesmd_df.columns
+            and not "_iterwarning!" in genesmd_df.columns
+        ):
+            fig.data[0].customdata = np.array([tot_ngenes, 91124, 0])
+        elif (
+            not "_blackwarning!" in genesmd_df.columns
+            and "_iterwarning!" in genesmd_df.columns
+        ):
+            fig.data[0].customdata = np.array([tot_ngenes, 0, 91321])
     else:
-        plt.savefig(to_file, format=to_file[-3:])
+        fig.data[0].customdata = np.array(["no warnings"])
+
+    if to_file is None:
+        return fig
+    else:
+        if not file_size:
+            fig.update_layout(width=1600, height=800)
+        else:
+            fig.update_layout(width=file_size[0], height=file_size[1])
+
+        pio.write_image(fig, to_file)
 
 
 def _gby_plot_exons(
     df,
-    axes,
     fig,
     chrmd_df,
     genesmd_df,
     id_col,
     showinfo,
-    tag_background,
+    legend,
     transcript_str,
     exon_width,
     transcript_utr_width,
@@ -256,43 +259,23 @@ def _gby_plot_exons(
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].chrix
     chrom_ix = chrmd_df.index.get_loc(chrom)
-    ax = axes[chrom_ix]
     if "Strand" in df.columns:
         strand = df["Strand"].unique()[0]
     else:
         strand = ""
 
-    # Make gene annotation
-    # get the gene information to print on hover
+    # Get the gene information to print on hover
     # default
     if strand:
-        geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default with strand
+        geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})<br>ID: {genename}"  # default with strand
     else:
-        geneinfo = f"({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default without strand
+        geneinfo = f"({min(df.Start)}, {max(df.End)})<br>ID: {genename}"  # default without strand
 
     # customized
     showinfo_dict = df.iloc[0].to_dict()  # first element of gene rows
     if showinfo:
-        geneinfo += "\n" + showinfo.format(**showinfo_dict)
-
-    # Plot the gene rows as EXONS
-    _apply_gene(
-        transcript_str,
-        df,
-        fig,
-        ax,
-        strand,
-        gene_ix,
-        exon_color,
-        tag_background,
-        geneinfo,
-        exon_width,
-        transcript_utr_width,
-        arrow_size_min,
-        arrow_color,
-        arrow_style,
-        arrow_width,
-    )
+        showinfo = showinfo.replace("\n", "<br>")
+        geneinfo += "<br>" + showinfo.format(**showinfo_dict)
 
     # Evaluate each intron
     sorted_exons = df[["Start", "End"]].sort_values(by="Start")
@@ -300,82 +283,54 @@ def _gby_plot_exons(
     for i in range(len(sorted_exons) - 1):
         start = sorted_exons["End"].iloc[i]
         stop = sorted_exons["Start"].iloc[i + 1]
-        intron_size = coord2inches(fig, ax, start, stop, 0, 0)
-        incl = inches2coord(fig, ax, 0.15)  # how long is the arrow in the plot (OX)
+        intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
+        incl = percent2coord(fig, chrom_ix + 1, 0.003)  # how long in the plot (OX)
 
         # Plot LINE binding exons
-        intron_line = ax.plot(
-            [start, stop], [gene_ix, gene_ix], color=exon_color, linewidth=1, zorder=1
+        # line as rectangle to have annotation
+        x0, x1 = min(df.Start), max(df.End)
+        y0, y1 = gene_ix - exon_width / 150, gene_ix + exon_width / 150
+        exon_line = go.Scatter(
+            x=[x0, x1, x1, x0, x0],
+            y=[y0, y0, y1, y1, y0],
+            fill="toself",
+            fillcolor=exon_color,
+            mode="lines",
+            line=dict(color=exon_color, width=0.5),
+            text=geneinfo,
         )
-
-        # Create annotation for intron
-        make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
+        fig.add_trace(exon_line, row=chrom_ix + 1, col=1)
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
         plot_direction(
-            ax,
+            fig,
             strand,
+            genename,
             intron_size,
             intron_threshold,
             start,
             stop,
             incl,
             gene_ix,
+            chrom_ix,
             exon_width,
             arrow_color,
-            arrow_style,
-            arrow_width,
         )
 
-
-def _plot_row(
-    row,
-    fig,
-    ax,
-    strand,
-    gene_ix,
-    exon_color,
-    tag_background,
-    geneinfo,
-    exon_width,
-):
-    """Plot elements corresponding to one row of one gene."""
-
-    # Exon start and stop
-    start = int(row["Start"])
-    stop = int(row["End"])
-
-    # Plot EXON as rectangle
-    exon_rect = Rectangle(
-        (start, gene_ix - exon_width / 2),
-        stop - start,
-        exon_width,
-        edgecolor=exon_color,
-        facecolor=exon_color,
-        fill=True,
-    )
-    ax.add_patch(exon_rect)
-
-    # create annotation for exon
-    make_annotation(exon_rect, fig, ax, geneinfo, tag_background)
-
-    # Plot DIRECTION ARROW in EXON
-    # decide about placing a direction arrow
-    arrow_size = coord2inches(fig, ax, 0.05 * start, 0.05 * stop, 0, 0)
-    incl = inches2coord(fig, ax, 0.15)  # how long in the plot (OX)
-
-    # create and plot lines
-    plot_direction(
-        ax,
+    # Plot the gene rows
+    _apply_gene(
+        transcript_str,
+        df,
+        fig,
         strand,
-        arrow_size,
-        arrow_size_min,
-        start,
-        stop,
-        incl,
+        genename,
         gene_ix,
+        exon_color,
+        chrom_ix,
+        geneinfo,
         exon_width,
+        transcript_utr_width,
+        legend,
+        arrow_size_min,
         arrow_color,
-        arrow_style,
-        arrow_width,
     )

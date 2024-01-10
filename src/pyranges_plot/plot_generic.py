@@ -1,8 +1,8 @@
 import pyranges
 import plotly.colors
 from .core import get_engine, get_idcol, set_warnings
-from .plot_exons_plt.plot_exons_plt import plot_exons_plt
-from .plot_exons_ply.plot_exons_ply import plot_exons_ply
+from .matplotlib_base.plot_exons_plt import plot_exons_plt
+from .plotly_base.plot_exons_ply import plot_exons_ply
 from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 

@@ -7,7 +7,8 @@ from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
 import matplotlib.cm as cm
-from .core import get_engine, plt_popup_warning, get_warnings
+from .core import get_engine, get_warnings
+from .matplotlib_base._core import plt_popup_warning
 
 
 ############ SUBSET
