@@ -14,7 +14,7 @@ from ..data_preparation import (
 )
 from ._core import coord2percent, percent2coord
 from ._fig_axes import create_fig
-from ._data2plot import plot_direction, _apply_gene
+from ._data2plot import plot_direction, _apply_gene_bridge
 
 
 # plot parameters
@@ -318,7 +318,7 @@ def _gby_plot_exons(
         )
 
     # Plot the gene rows
-    _apply_gene(
+    _apply_gene_bridge(
         transcript_str,
         df,
         fig,

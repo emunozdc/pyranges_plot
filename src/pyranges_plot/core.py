@@ -96,10 +96,6 @@ def get_warnings():
     return warnings
 
 
-
-
-
-
 # Related to default features
 
 
@@ -274,6 +270,3 @@ def print_default(return_keys=False):
 
     if return_keys:
         return set(plot_features_dict_in_use.keys())
-
-
-

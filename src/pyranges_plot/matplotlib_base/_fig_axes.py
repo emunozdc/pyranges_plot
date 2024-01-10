@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 
+
 def create_fig(
     x,
     y,

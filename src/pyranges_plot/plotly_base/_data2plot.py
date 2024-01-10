@@ -16,7 +16,7 @@ def plot_direction(
     exon_width,
     arrow_color,
 ):
-    """xxx"""
+    """Plot the direction arrow in the given item if it proceeds."""
 
     if strand:
         # create and plot direction lines
@@ -84,7 +84,7 @@ def plot_direction(
                 fig.add_trace(arrow_top, row=chrom_ix + 1, col=1)
 
 
-def _apply_gene(
+def _apply_gene_bridge(
     transcript_str,
     df,
     fig,
@@ -100,7 +100,7 @@ def _apply_gene(
     arrow_size_min,
     arrow_color,
 ):
-    """xxx"""
+    """Evaluate data and provide _plot_row with right parameters."""
 
     # NOT transcript strucutre
     if not transcript_str:

@@ -2,7 +2,6 @@ import numpy as np
 import tkinter as tk
 
 
-
 def coord2inches(fig, ax, X0, X1, Y0, Y1):
     """Provides the inches length from the points given. Plt friendly"""
 
@@ -17,6 +16,7 @@ def coord2inches(fig, ax, X0, X1, Y0, Y1):
 
     return inch_len
 
+
 def inches2coord(fig, ax, x_inches):
     """Provides the coordinates distance from the inches given. Plt friendly"""
 
@@ -27,8 +27,6 @@ def inches2coord(fig, ax, x_inches):
     cord_size = float(x_inches / x_scale)
 
     return cord_size
-
-
 
 
 def plt_popup_warning(txt, bkg="#1f1f1f", txtcol="white", botcol="#D6AA00"):

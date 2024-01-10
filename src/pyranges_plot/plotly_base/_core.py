@@ -1,4 +1,3 @@
-
 def coord2percent(fig, trace, X0, X1):
     """Provides the plot percentage length from the points given. Plotly friendly"""
 
@@ -15,9 +14,8 @@ def coord2percent(fig, trace, X0, X1):
     return percent_size
 
 
-
 def percent2coord(fig, trace, x_percent):
-    """Provides the coordinates distance from the plot percentage given. Plt friendly"""
+    """Provides the coordinates distance from the plot percentage given. Plotly friendly"""
 
     if trace == 1:
         trace = ""
