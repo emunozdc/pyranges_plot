@@ -1,10 +1,9 @@
 import pyranges
 import plotly.colors
-from .core import get_engine, get_idcol, set_warnings
+from .core import get_engine, get_idcol, set_warnings, print_default, get_default
+from .data_preparation import make_subset, get_genes_metadata, get_chromosome_metadata
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
-from dash import Dash, dcc, html, Input, Output
-import dash_bootstrap_components as dbc
 
 
 colormap = plotly.colors.qualitative.Alphabet
@@ -40,7 +39,7 @@ def plot(
     engine: str, default None
 
         Library in which the plot sould be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
-        Plotly ['ply'/'plotly']
+        Plotly ['ply'/'plotly'].
 
     id_col: str, default 'gene_id'
 
@@ -86,12 +85,12 @@ def plot(
 
     showinfo: str, default None
 
-        Dataframe information to show in a tooltip when placing the mouse over a gene. This must be
+        Dataframe information to show in a tooltip when placing the mouse over a gene, the given
+        informarion will be added to the default: strand, start-end coordinates and id. This must be
         provided as a string containing the column names of the values to be shown within curly brackets.
         For example if you want to show the value of the pointed gene for the column "col1" a valid showinfo
         string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
-        strings. If you want to introduce a newline you can use "\n". By default, it shows the ID of the
-        gene followed by its start and end position.
+        strings. If you want to introduce a newline you can use "\n".
 
     legend: bool, default False
 
@@ -126,15 +125,15 @@ def plot(
     Examples
     --------
 
-    >>> plot_generic(df, engine='plt', max_ngenes=25, colormap='Set3')
+    >>> plot(df, engine='plt', max_ngenes=25, colormap='Set3')
 
-    >>> plot_generic(df, engine='matplotlib', color_col='Strand', colormap={'+': 'green', '-': 'red'})
+    >>> plot(df, engine='matplotlib', color_col='Strand', colormap={'+': 'green', '-': 'red'})
 
-    >>> plot_generic(df, engine='ply', limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
+    >>> plot(df, engine='ply', limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
 
-    >>> plot_generic(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = ['feature1', 'feature3'])
+    >>> plot(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = "Feature1: {feature1}")
 
-    >>> plot_generic(df, engine='plt', color_col='Strand', packed='False', to_file='my_plot.pdf')
+    >>> plot(df, engine='plt', color_col='Strand', packed=False, to_file='my_plot.pdf')
 
 
     """
@@ -185,121 +184,89 @@ def plot(
     else:
         set_warnings(False)
 
-    try:  # call plot functions
+    try:
+        # PREPARE DATA for plot
+        # Deal with plot features as kargs
+        wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
+        if len(wrong_keys):
+            raise Exception(
+                "The following keys do not match any customizable features: {wrong_keys}.\nCheck the print_default function to see the customizable names"
+            )
+
+        def getvalue(key):
+            if key in kargs:
+                value = kargs[key]
+                return value  ## add invalid data type??
+            else:
+                return get_default(key)
+
+        # Get default plot features
+        feat_dict = {
+            "tag_background": getvalue("tag_background"),
+            "plot_background": getvalue("plot_background"),
+            "plot_border": getvalue("plot_border"),
+            "title_dict_plt": {
+                "family": "sans-serif",
+                "color": getvalue("title_color"),
+                "size": int(getvalue("title_size")) - 5,
+            },
+            "title_dict_ply": {
+                "family": "Arial",
+                "color": getvalue("title_color"),
+                "size": int(getvalue("title_size")),
+            },
+            "exon_width": getvalue("exon_width"),
+            "transcript_utr_width": 0.3 * getvalue("exon_width"),
+        }
+
+        # Make DataFrame subset if needed
+        subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
+
+        # Create genes metadata DataFrame
+        if color_col is None:
+            color_col = id_col
+        genesmd_df = get_genes_metadata(subdf, id_col, color_col, packed, colormap)
+
+        # Create chromosome metadata DataFrame
+        chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
+
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
-                df,
+                subdf=subdf,
+                tot_ngenes=tot_ngenes,
+                feat_dict=feat_dict,
+                genesmd_df=genesmd_df,
+                chrmd_df=chrmd_df,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,
-                color_col=color_col,
-                colormap=colormap,
-                limits=limits,
                 showinfo=showinfo,
                 legend=legend,
                 chr_string=chr_string,
                 packed=packed,
                 to_file=to_file,
                 file_size=file_size,
-                **kargs,
             )
 
         elif engine == "ply" or engine == "plotly":
-            fig = plot_exons_ply(
-                df,
+            plot_exons_ply(
+                subdf=subdf,
+                tot_ngenes=tot_ngenes,
+                feat_dict=feat_dict,
+                genesmd_df=genesmd_df,
+                chrmd_df=chrmd_df,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,
-                color_col=color_col,
-                colormap=colormap,
-                limits=limits,
                 showinfo=showinfo,
                 legend=legend,
                 chr_string=chr_string,
                 packed=packed,
                 to_file=to_file,
                 file_size=file_size,
-                **kargs,
             )
-            if not to_file:
-                app_instance = initialize_dash_app(fig, max_ngenes)
-                app_instance.run_server()
-                # app_instance.run_server(dev_tools_ui=True, dev_tools_props_check=True)
 
         else:
             raise Exception("Please define engine with set_engine().")
     except SystemExit as e:
         print("An error occured:", e)
-
-
-# Plotly - Function to initialize Dash app layout and callbacks
-def initialize_dash_app(fig, max_ngenes):
-    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
-    # create alert and graph components
-    subdf_alert = dbc.Alert(
-        "The provided data contains more genes than the ones plotted.",
-        id="alert-subset",
-        color="warning",
-        dismissable=True,
-        is_open=False,
-    )
-
-    uncol_alert = dbc.Alert(
-        "Some genes do not have a color assigned so they are colored in black.",
-        id="alert-uncolored",
-        color="warning",
-        dismissable=True,
-        is_open=False,
-    )
-
-    iter_alert = dbc.Alert(
-        "The genes are colored by iterating over the given color list.",
-        id="alert-iteration",
-        color="warning",
-        dismissable=True,
-        is_open=False,
-    )
-
-    gr = dcc.Graph(id="genes-plot", figure=fig, style={"height": "800px"})
-
-    # define layout
-    app.layout = html.Div(
-        [dbc.Row([subdf_alert, uncol_alert, iter_alert, gr], justify="around")]
-    )
-
-    # callback function
-    @app.callback(
-        Output("alert-subset", "is_open"),
-        Input("genes-plot", "figure"),
-    )
-    def show_subs_warning(grfig):
-        if grfig["data"][0]["customdata"][0] == "no warnings":
-            return False
-        n_genes = int(grfig["data"][0]["customdata"][0])
-        if n_genes > max_ngenes:
-            return True
-
-    @app.callback(
-        Output("alert-uncolored", "is_open"),
-        Input("genes-plot", "figure"),
-    )
-    def show_uncol_warning(grfig):
-        if grfig["data"][0]["customdata"][0] == "no warnings":
-            return False
-        sign = int(grfig["data"][0]["customdata"][1])
-        if sign == 91124:
-            return True
-
-    @app.callback(
-        Output("alert-iteration", "is_open"),
-        Input("genes-plot", "figure"),
-    )
-    def show_uncol_warning(grfig):
-        if grfig["data"][0]["customdata"][0] == "no warnings":
-            return False
-        sign = int(grfig["data"][0]["customdata"][2])
-        if sign == 91321:
-            return True
-
-    return app
