@@ -80,8 +80,8 @@ For printing, the PyRanges was sorted on Chromosome and Strand.
 
 
 The generated data is a stranded PyRanges object containing 4 genes in 3 chromosomes 
-as shown above. Having this example data in the variable ``p`` we are able to start exploring 
-pyranges_plot options. We can get a plot in a single line:
+as shown above. Having this example data stored in the variable ``p``, we are able to 
+start exploring Pyranges Plot options. We can get a plot in a single line:
 
 
 
@@ -95,7 +95,7 @@ prp.plot(p, engine="plt", id_col="transcript_id")
 
 
 The output is an interactive Matplotlib plot. To obtain it we just need to provide the data, 
-the engine and the name of the id column. However the engine and the id column can be set 
+the engine and the name of the id column. However, the engine and the id column can be set 
 previously so there is no need to specify them anymore while plotting:
 
 
@@ -109,7 +109,7 @@ prp.set_idcol('transcript_id')
 
 Since the data has only 4 genes all of them are plotted, but the function has a default limit 
 of 25, so in a case where the data contains more genes it will only show the top 25, unless 
-the ``max_ngenes`` parameter is specified. For example we can set the maximum number of genes 
+the ``max_ngenes`` parameter is specified. For example, we can set the maximum number of genes 
 as 2. Note that in the case of plotting more than 25 a warning about the plot's integrity 
 will appear.
 
@@ -124,7 +124,7 @@ prp.plot(p, max_ngenes=2)
 
 
 
-Now the plot is based in Plotly because we set it as the engine, though it looks the same as the 
+Now the plot is based on Plotly because we set it as the engine, though it looks the same as the 
 Matplotlib one. Also, both libraries offer interactive zoom options. For Matplotlib…
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_fixex03.png">
@@ -145,7 +145,7 @@ be provided as a dictionary, tuple or PyRanges object:
  - Dictionary where the keys should be the data's chromosome names in string format and the 
  values can be either ``None`` or a tuple indicating the limits. When a chromosome is not 
  specified in the dictionary or it is assigned ``None`` the coordinates will appear as default. 
- - Tuple option sets the limits of all plotted chromosomes as it specifies.
+ - Tuple option sets the limits of all plotted chromosomes as specified.
  - PyRanges object can also be used to define limits, allowing the visualization of one object's 
  genes in another object's range window.
 
@@ -177,8 +177,8 @@ prp.plot(p, color_col="Strand")
 
 
 
-This way we see the "+" strand genes in one color and the "-" in another color. Additionally 
-these colors can be customized through the ``colormap`` parameter to see it more clearly. For 
+This way we see the "+" strand genes in one color and the "-" in another color. Additionally, 
+these colors can be customized through the ``colormap`` parameter. For 
 this case we can specify it as a dictionary in the following way:
 
 
@@ -198,7 +198,7 @@ prp.plot(
 
 The parameter ``colormap`` is very versatile because it accepts dictionaries for specific coloring, 
 but also Matplotlib and Plotly color objects such as colormaps (or even just the string name of 
-these objects) as well as lists of colors. For example we can use the Dark2 Matplotlib colormap, 
+these objects) as well as lists of colors. For example, we can use the Dark2 Matplotlib colormap, 
 even if the plot is based on Plotly:
 
 
@@ -230,18 +230,51 @@ prp.plot(p, packed=False)
 In interactive plots there is the option of showing information about the gene when the mouse is 
 placed over its structure. This information always shows the gene's strand if it exists, the start and 
 end coordinates and the ID. To add information contained in other dataframe columns to the tooltip, 
-the ``showinfo`` parameter should be used in the following way:
+a string should be given to the ``showinfo`` parameter. This string must contain the desired column 
+names within curly brackets as shown in the example. Similarly, the title of the chromosome plots can be customized giving the desired string to 
+the `chr_string` parameter, where the correspondent chromosome value of the data is referred 
+to as {chrom}. An example could be the following: 
 
 
 
 ```python
-prp.plot(p, showinfo=["feature1", "feature2"])
+prp.plot(
+    p, 
+    showinfo="first feature: {feature1}\nsecond feature: {feature2}",
+    chr_string = 'Chr: {chrom}'
+)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex11.png">
 </p>
 
 
+Pyranges Plot also offers the possibility to add a legend by setting the `legend` parameter 
+as `True`.
+
+
+Another interesting feature is showing the transcript structure, so the exons appear as 
+wider rectangles than UTR regions. For that the proper information should be stored in the 
+`"Feature"` column of the data. A usage example is:
+
+```python
+pp = pr.from_dict({
+	"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 4],
+	"Strand": ["+", "+", "-", "-", "+", "+", "+", "+", "-", "-", "-", "-", "+", "+"],
+	"Start": [1, 40, 10, 70, 85, 110, 150, 140, 30100, 30150, 30500, 30647, 29850, 29970],
+	"End": [11, 60, 25, 80, 100, 115, 180, 152, 30300, 30300, 30700, 30700, 29900, 30000],
+	"transcript_id":["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4", "t5", "t5", "t5", "t5", "t6", "t6"],
+	"feature1": ["1", "1", "1", "1", "1", "2", "2", "2", "2", "2", "2", "2", "2", "2"],
+	"feature2": ["A", "A", "B", "B", "C", "C", "C", "D", "E", "E", "E", "E", "F", "F"],
+	"Feature": ["exon", "exon", "CDS", "CDS", "CDS", "CDS", "CDS", "exon", "exon", "CDS", "CDS", "exon", None, None]
+    
+})
+
+prp.plot(pp, transcript_str = True)
+```
+<p align="center">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex12.png">
+</p>
 
 Lastly, some features of the plot appearance can also be customized. The background, plot border or title
 default colors can be checked in the following way:
@@ -261,11 +294,13 @@ prp.print_default()
 |   plot_border   |   black   |          | Color of the line defining the chromosome plots.                       |
 |   title_size    |    18     |          | Size of the plots' titles.                                             |
 |   title_color   | goldenrod |          | Color of the plots' titles.                                            |
+|   exon_width    |    0.4    |          | Height of the exon rectangle in the plot.                              |
 +-----------------+-----------+----------+------------------------------------------------------------------------+
 ```
 
 
-The way to change the default features is using the ``set_default`` function. An example is show below.
+The way to change the default features is using the ``set_default`` function. An example 
+is shown below.
 
 
 ```python
@@ -279,7 +314,7 @@ prp.set_default('title_color', 'magenta')
 prp.plot(p)
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex12.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex13.png">
 </p>
 
 
@@ -298,12 +333,13 @@ prp.print_default()
 |   plot_border   |      #808080       |    *     | Color of the line defining the chromosome plots.                       |
 |   title_size    |         18         |          | Size of the plots' titles.                                             |
 |   title_color   |      magenta       |    *     | Color of the plots' titles.                                            |
+|   exon_width    |        0.4         |          | Height of the exon rectangle in the plot.                              |
 +-----------------+--------------------+----------+------------------------------------------------------------------------+
 ```
 
 To return to the original appearance of the plot, the ``reset_default`` function can restore 
-all or some paramaters. By default it will reset all the features, but it also accepts a string
-for resetting a single feature or a list of strings to reset a few.
+all or some parameters. By default, it will reset all the features, but it also accepts a 
+string for resetting a single feature or a list of strings to reset a few.
 
 
 
@@ -317,8 +353,8 @@ prp.reset_default(['plot_border', 'title_color'])  # reset a few features
 
 Once we are able to get the plot we want, it can be exported to pdf or png format using the 
 ``to\_file`` parameter. This parameter takes a string with the name or path of the file including
-its extension. Additionally, the size can be customize through the ``file_size`` parameter by 
-providing a tuple containig the height and width values.
+its extension. Additionally, the size can be customized through the ``file_size`` parameter by 
+providing a tuple containing the height and width values.
 
 
 
@@ -328,7 +364,7 @@ prp.plot(p, to_file='my_plot.pdf', file_size=(1300, 600))
 
 # An example of some pyranges adjustments and save
 p_subset = p[p.transcript_id.isin(['t3', 't4'])]
-prp.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.png')
+prp.plot(p_subset, colormap='Set3', to_file='t3_t4_plot.png')
 ```
 
 <p align="center">
@@ -339,7 +375,6 @@ prp.plot(p_subset, colormap='Set3', disposition='full', to_file='t3_t4_plot.png'
 
 ## Coming soon
 * Option to turn off introns.
-* New function for displaying data with transcript structure.
 * Accept different PyRanges objects or DataFrames as input for the same plot.
 * Bases will be displayed along coordinates.
 * Colorblind friendly.
