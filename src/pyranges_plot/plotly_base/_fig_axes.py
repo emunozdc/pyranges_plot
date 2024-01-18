@@ -42,7 +42,7 @@ def create_fig(chrmd_df, genesmd_df, chr_string, title_dict_ply, packed):
         y_ticks_name = []
         if not packed:
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
-            y_ticks_name = genesmd_df.groupby(genesmd_df["chrix"]).groups[chrom]
+            y_ticks_name = genesmd_df.groupby("chrix", group_keys=False).groups[chrom]
         fig.update_yaxes(
             range=[y_min, y_max],
             tickvals=y_ticks_val,
