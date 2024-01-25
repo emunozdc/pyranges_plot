@@ -69,3 +69,7 @@ def create_fig(
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
     return fig, axes
+
+
+# def _add_shrink_rects(to_shrink):
+#    """Plot highlight rectangles for shrinked regions in introns_off."""

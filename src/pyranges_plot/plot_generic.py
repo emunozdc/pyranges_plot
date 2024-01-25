@@ -16,7 +16,7 @@ def plot(
     id_col=None,
     warnings=True,
     max_ngenes=25,
-    introns_off = False,
+    introns_off=False,
     transcript_str=False,
     color_col=None,
     colormap=colormap,
@@ -183,11 +183,13 @@ def plot(
 
     # Deal with introns off
     if introns_off:
-        df = df.groupby("Chromosome", group_keys=False).apply(lambda df: introns_shrink(df, thresh = 4))
+        df = df.groupby("Chromosome", group_keys=False).apply(
+            lambda df: introns_shrink(df, thresh=4)
+        )
         df["Start"] = df["Start_adj"]  ##?
         df["End"] = df["End_adj"]  ##?
     else:
-        df["cumdelta"] = [0]*len(df)
+        df["cumdelta"] = [0] * len(df)
         df["delta"] = [0] * len(df)
         df["i_lines"] = [0] * len(df)
 

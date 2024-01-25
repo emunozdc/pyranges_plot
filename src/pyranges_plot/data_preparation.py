@@ -184,7 +184,9 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
         )
     genesmd_df["chrix"] = genesmd_df["Chromosome"].copy()
     genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
-    genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby("chrix", group_keys=False).cumcount()
+    genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
+        "chrix", group_keys=False
+    ).cumcount()
 
     # Assign y-coordinate to genes
     if packed:

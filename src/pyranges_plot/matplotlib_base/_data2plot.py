@@ -157,10 +157,12 @@ def _apply_gene_bridge(
             and df.Feature.str.contains("exon").any()
         ):
             # get coordinates for utr and cds
-            tr_start, cds_start = df.groupby("Feature", group_keys=False).Start.apply(min)[
+            tr_start, cds_start = df.groupby("Feature", group_keys=False).Start.apply(
+                min
+            )[["exon", "CDS"]]
+            tr_end, cds_end = df.groupby("Feature", group_keys=False).End.apply(max)[
                 ["exon", "CDS"]
             ]
-            tr_end, cds_end = df.groupby("Feature", group_keys=False).End.apply(max)[["exon", "CDS"]]
 
             # create utr
             start_utr = Rectangle(
