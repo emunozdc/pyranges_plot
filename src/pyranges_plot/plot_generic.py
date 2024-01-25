@@ -2,6 +2,7 @@ import pyranges
 import plotly.colors
 from .core import get_engine, get_idcol, set_warnings, print_default, get_default
 from .data_preparation import make_subset, get_genes_metadata, get_chromosome_metadata
+from ._introns_off import introns_shrink
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
 
@@ -15,6 +16,7 @@ def plot(
     id_col=None,
     warnings=True,
     max_ngenes=25,
+    introns_off = False,
     transcript_str=False,
     color_col=None,
     colormap=colormap,
@@ -52,6 +54,10 @@ def plot(
     max_ngenes: int, default 20
 
         Maximum number of genes plotted in the dataframe order.
+
+    introns_off: bool, default False
+
+        Whether to compress the intron ranges to facilitate visualization or not.
 
     transcript_str: bool, default False
 
@@ -175,6 +181,16 @@ def plot(
         except SystemExit as e:
             print("An error occured:", e)
 
+    # Deal with introns off
+    if introns_off:
+        df = df.groupby("Chromosome", group_keys=False).apply(lambda df: introns_shrink(df, thresh = 4))
+        df["Start"] = df["Start_adj"]  ##?
+        df["End"] = df["End_adj"]  ##?
+    else:
+        df["cumdelta"] = [0]*len(df)
+        df["delta"] = [0] * len(df)
+        df["i_lines"] = [0] * len(df)
+
     # Deal with engine
     if engine is None:
         engine = get_engine()
@@ -255,6 +271,7 @@ def plot(
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
+                to_shrink=to_shrink,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,

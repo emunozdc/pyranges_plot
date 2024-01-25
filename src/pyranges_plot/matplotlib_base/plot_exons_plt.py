@@ -26,6 +26,7 @@ def plot_exons_plt(
     feat_dict,
     genesmd_df,
     chrmd_df,
+    to_shrink=None,
     max_ngenes=25,
     id_col="gene_id",
     transcript_str=False,
@@ -159,18 +160,35 @@ def _gby_plot_exons(
     )
 
     # Evaluate each intron
-    sorted_exons = df[["Start", "End"]].sort_values(by="Start")
+    sorted_exons = df[["Start", "End", "cumdelta", "delta", "i_lines"]].sort_values(by="Start")
 
     for i in range(len(sorted_exons) - 1):
         start = sorted_exons["End"].iloc[i]
         stop = sorted_exons["Start"].iloc[i + 1]
+        cumdelta = sorted_exons["cumdelta"].iloc[i+1]
+        delta = sorted_exons["delta"].iloc[i+1]
+        intron_lines = sorted_exons["i_lines"].iloc[i+1]
+
         intron_size = coord2inches(fig, ax, start, stop, 0, 0)
         incl = inches2coord(fig, ax, 0.15)  # how long is the arrow in the plot (OX)
 
         # Plot LINE binding exons
-        intron_line = ax.plot(
-            [start, stop], [gene_ix, gene_ix], color=exon_color, linewidth=1, zorder=1
-        )
+        # consider shrinked introns
+        if cumdelta and intron_lines:
+            intron_line = ax.plot(
+                [start, stop], [gene_ix, gene_ix], color=exon_color, linewidth=0.5, linestyle = '--', zorder=1
+            )
+            for fix_intron_range in intron_lines:
+                if sorted_exons["Start"].iloc[i] > fix_intron_range[0]: # the intron starts before the exon "ghost intron"
+                    fix_intron_range[0] = sorted_exons["Start"].iloc[i]
+                intron_line = ax.plot(
+                    [fix_intron_range[0], fix_intron_range[1]], [gene_ix, gene_ix], color=exon_color, linewidth=1, zorder=1
+                )
+
+        else:
+            intron_line = ax.plot(
+                [start, stop], [gene_ix, gene_ix], color=exon_color, linewidth=1, zorder=1
+            )
 
         # Create annotation for intron
         make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
