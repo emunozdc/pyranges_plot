@@ -26,7 +26,7 @@ def plot_exons_plt(
     feat_dict,
     genesmd_df,
     chrmd_df,
-    to_shrink=None,
+    ts_data,
     max_ngenes=25,
     id_col="gene_id",
     transcript_str=False,
@@ -62,6 +62,7 @@ def plot_exons_plt(
         y,
         chrmd_df,
         genesmd_df,
+        ts_data,
         chr_string,
         title_dict_plt,
         plot_background,
@@ -176,7 +177,7 @@ def _gby_plot_exons(
 
         # Plot LINE binding exons
         # consider shrinked introns
-        if cumdelta and intron_lines:
+        if cumdelta >  sorted_exons["cumdelta"].iloc[i]:
             intron_line = ax.plot(
                 [start, stop],
                 [gene_ix, gene_ix],
@@ -185,18 +186,20 @@ def _gby_plot_exons(
                 linestyle="--",
                 zorder=1,
             )
-            for fix_intron_range in intron_lines:
-                if (
-                    sorted_exons["Start"].iloc[i] > fix_intron_range[0]
-                ):  # the intron starts before the exon "ghost intron"
-                    fix_intron_range[0] = sorted_exons["Start"].iloc[i]
-                intron_line = ax.plot(
-                    [fix_intron_range[0], fix_intron_range[1]],
-                    [gene_ix, gene_ix],
-                    color=exon_color,
-                    linewidth=1,
-                    zorder=1,
-                )
+
+            if intron_lines:
+                for fix_intron_range in intron_lines:
+                    if (
+                        sorted_exons["Start"].iloc[i] > fix_intron_range[0]
+                    ):  # the intron starts before the exon "ghost intron"
+                        fix_intron_range[0] = sorted_exons["Start"].iloc[i]
+                    fix_intron_line = ax.plot(
+                        [fix_intron_range[0], fix_intron_range[1]],
+                        [gene_ix, gene_ix],
+                        color=exon_color,
+                        linewidth=1,
+                        zorder=1,
+                    )
 
         else:
             intron_line = ax.plot(

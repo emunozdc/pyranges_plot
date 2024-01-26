@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
+from matplotlib.patches import Rectangle
 
 
 def create_fig(
@@ -8,6 +9,7 @@ def create_fig(
     y,
     chrmd_df,
     genesmd_df,
+    ts_data,
     chr_string,
     title_dict_plt,
     plot_background,
@@ -61,6 +63,27 @@ def create_fig(
         ax.set_yticks(y_ticks_val)
         ax.set_yticklabels(y_ticks_name)
 
+        # Add shrink rectangles
+        if ts_data:
+            rects_df = ts_data[str(i+1)] #### THIS HAS TO BE CHROMOSOME VALUE not i+1
+            rects_df["cumdelta_end"] = rects_df["cumdelta"]
+            rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(periods=1, fill_value=0)
+            rects_df["Start"] -= rects_df["cumdelta_start"]
+            rects_df["End"] -= rects_df["cumdelta_end"]
+
+            for a, b in zip(rects_df["Start"], rects_df["End"]):
+                exon_rect = Rectangle(
+                    (a, y_min - 1),
+                    b - a,
+                    y_max + 1,
+                    edgecolor='grey',
+                    facecolor='grey',
+                    alpha=0.2,
+                    #fill=True, # option1
+                    fill=None, hatch='///', linewidth=0 # option2
+                )
+                ax.add_patch(exon_rect)
+
     plt.subplots_adjust(hspace=0.7)
     # Create legend
     if legend:
@@ -71,5 +94,3 @@ def create_fig(
     return fig, axes
 
 
-# def _add_shrink_rects(to_shrink):
-#    """Plot highlight rectangles for shrinked regions in introns_off."""

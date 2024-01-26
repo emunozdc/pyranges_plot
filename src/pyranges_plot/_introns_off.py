@@ -1,7 +1,8 @@
 import pyranges as pr
 
 
-def introns_shrink(df, thresh=0):
+def introns_shrink(df, ts_data, thresh=0):
+    chrom = df["Chromosome"].iloc[0]
     p = pr.from_dict(df.to_dict())
 
     # Calculate shrinkable intron ranges
@@ -25,11 +26,7 @@ def introns_shrink(df, thresh=0):
     to_shrink.cumdelta = to_shrink.df["delta"].cumsum()
 
     # Store to shrink data
-    # if not ts_data:
-    #    ts_data = to_shrink
-    # else:
-    #    ts_data = pr.concat([ts_data, to_shrink])
-    # print(ts_data)
+    ts_data[chrom] = to_shrink.df
 
     # Match ranges where not shrinked intron lines must be placed
     # associate proper cumdelta to fixed intron lines
@@ -129,7 +126,7 @@ def introns_shrink(df, thresh=0):
     result = result.sort_values("Start")
     result = result.fillna({"cumdelta": 0, "delta": 0, "i_lines": 0})
     result["cumdelta"] = result["cumdelta"].replace(0, method="ffill").apply(int)
-    # result["delta"] = result['delta'].replace(0, method='ffill').apply(int)
+
     # adjust coordinates
     # result["Start"] -= result["cumdelta"]
     # result["End"] -= result["cumdelta"]

@@ -194,7 +194,6 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
         genesmd_df = genesmd_df.groupby("chrix", group_keys=False).apply(
             _genesmd_packed
         )  # add packed ycoord column
-        # genesmd_df = genesmd_df.reset_index(level="chrix", drop=True)
 
     else:
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]

@@ -182,12 +182,14 @@ def plot(
             print("An error occured:", e)
 
     # Deal with introns off
+    ts_data = {}
     if introns_off:
         df = df.groupby("Chromosome", group_keys=False).apply(
-            lambda df: introns_shrink(df, thresh=4)
+            lambda df: introns_shrink(df, ts_data, thresh=4)
         )
         df["Start"] = df["Start_adj"]  ##?
         df["End"] = df["End_adj"]  ##?
+
     else:
         df["cumdelta"] = [0] * len(df)
         df["delta"] = [0] * len(df)
@@ -255,6 +257,7 @@ def plot(
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
+                ts_data=ts_data,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,
