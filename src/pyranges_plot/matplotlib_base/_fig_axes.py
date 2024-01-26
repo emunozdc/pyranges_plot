@@ -65,9 +65,11 @@ def create_fig(
 
         # Add shrink rectangles
         if ts_data:
-            rects_df = ts_data[str(i+1)] #### THIS HAS TO BE CHROMOSOME VALUE not i+1
+            rects_df = ts_data[str(i + 1)]  #### THIS HAS TO BE CHROMOSOME VALUE not i+1
             rects_df["cumdelta_end"] = rects_df["cumdelta"]
-            rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(periods=1, fill_value=0)
+            rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(
+                periods=1, fill_value=0
+            )
             rects_df["Start"] -= rects_df["cumdelta_start"]
             rects_df["End"] -= rects_df["cumdelta_end"]
 
@@ -76,11 +78,13 @@ def create_fig(
                     (a, y_min - 1),
                     b - a,
                     y_max + 1,
-                    edgecolor='grey',
-                    facecolor='grey',
+                    edgecolor="grey",
+                    facecolor="grey",
                     alpha=0.2,
-                    #fill=True, # option1
-                    fill=None, hatch='///', linewidth=0 # option2
+                    # fill=True, # option1
+                    fill=None,
+                    hatch="///",
+                    linewidth=0,  # option2
                 )
                 ax.add_patch(exon_rect)
 
@@ -92,5 +96,3 @@ def create_fig(
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
     return fig, axes
-
-

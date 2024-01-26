@@ -177,7 +177,7 @@ def _gby_plot_exons(
 
         # Plot LINE binding exons
         # consider shrinked introns
-        if cumdelta >  sorted_exons["cumdelta"].iloc[i]:
+        if cumdelta > sorted_exons["cumdelta"].iloc[i]:
             intron_line = ax.plot(
                 [start, stop],
                 [gene_ix, gene_ix],
