@@ -150,7 +150,9 @@ def _gby_plot_exons(
         geneinfo += "<br>" + showinfo.format(**showinfo_dict)
 
     # Evaluate each intron
-    sorted_exons = df[["Start", "End", "cumdelta", "delta", "i_lines"]].sort_values(by="Start")
+    sorted_exons = df[["Start", "End", "cumdelta", "delta", "i_lines"]].sort_values(
+        by="Start"
+    )
 
     for i in range(len(sorted_exons) - 1):
         start = sorted_exons["End"].iloc[i]
@@ -172,7 +174,7 @@ def _gby_plot_exons(
                 fill="toself",
                 fillcolor=plot_background,
                 mode="lines",
-                line=dict(color=exon_color, width=0.5, dash='longdash'),
+                line=dict(color=exon_color, width=0.5, dash="longdash"),
                 hoverinfo="text",
                 text=geneinfo,
             )
@@ -182,7 +184,7 @@ def _gby_plot_exons(
             if intron_lines:
                 for fix_intron_range in intron_lines:
                     if (
-                            sorted_exons["Start"].iloc[i] > fix_intron_range[0]
+                        sorted_exons["Start"].iloc[i] > fix_intron_range[0]
                     ):  # the intron starts before the exon "ghost intron"
                         fix_intron_range[0] = sorted_exons["Start"].iloc[i]
                     x0, x1 = fix_intron_range
@@ -199,7 +201,6 @@ def _gby_plot_exons(
                     )
                     fig.add_trace(fix_intron_line, row=chrom_ix + 1, col=1)
 
-
         # not shrinked introns
         else:
             x0, x1 = start, stop
@@ -210,7 +211,7 @@ def _gby_plot_exons(
                 fill="toself",
                 fillcolor=exon_color,
                 mode="lines",
-                line=dict(color=exon_color, width=0.5, dash='solid'),
+                line=dict(color=exon_color, width=0.5, dash="solid"),
                 hoverinfo="text",
                 text=geneinfo,
             )

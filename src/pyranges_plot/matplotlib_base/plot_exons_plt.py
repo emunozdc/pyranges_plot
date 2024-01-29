@@ -201,7 +201,9 @@ def _gby_plot_exons(
                         linewidth=1,
                         zorder=1,
                     )
-                    make_annotation(fix_intron_line[0], fig, ax, geneinfo, tag_background)
+                    make_annotation(
+                        fix_intron_line[0], fig, ax, geneinfo, tag_background
+                    )
         # not shrinked exons
         else:
             intron_line = ax.plot(
