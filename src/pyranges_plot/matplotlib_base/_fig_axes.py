@@ -65,6 +65,7 @@ def create_fig(
 
         # Add shrink rectangles
         if ts_data:
+            print(ts_data)
             rects_df = ts_data[str(i + 1)]  #### THIS HAS TO BE CHROMOSOME VALUE not i+1
             rects_df["cumdelta_end"] = rects_df["cumdelta"]
             rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(
@@ -74,7 +75,7 @@ def create_fig(
             rects_df["End"] -= rects_df["cumdelta_end"]
 
             for a, b in zip(rects_df["Start"], rects_df["End"]):
-                exon_rect = Rectangle(
+                ts_range = Rectangle(
                     (a, y_min - 1),
                     b - a,
                     y_max + 1,
@@ -86,7 +87,7 @@ def create_fig(
                     hatch="///",
                     linewidth=0,  # option2
                 )
-                ax.add_patch(exon_rect)
+                ax.add_patch(ts_range)
 
     plt.subplots_adjust(hspace=0.7)
     # Create legend

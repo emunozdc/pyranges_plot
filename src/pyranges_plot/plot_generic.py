@@ -276,7 +276,7 @@ def plot(
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
-                to_shrink=to_shrink,
+                ts_data=ts_data,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,

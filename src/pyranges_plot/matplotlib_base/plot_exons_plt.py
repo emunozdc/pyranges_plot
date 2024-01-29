@@ -169,7 +169,6 @@ def _gby_plot_exons(
         start = sorted_exons["End"].iloc[i]
         stop = sorted_exons["Start"].iloc[i + 1]
         cumdelta = sorted_exons["cumdelta"].iloc[i + 1]
-        delta = sorted_exons["delta"].iloc[i + 1]
         intron_lines = sorted_exons["i_lines"].iloc[i + 1]
 
         intron_size = coord2inches(fig, ax, start, stop, 0, 0)
@@ -186,7 +185,9 @@ def _gby_plot_exons(
                 linestyle="--",
                 zorder=1,
             )
+            make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
 
+            # fixed intron lines
             if intron_lines:
                 for fix_intron_range in intron_lines:
                     if (
@@ -200,7 +201,8 @@ def _gby_plot_exons(
                         linewidth=1,
                         zorder=1,
                     )
-
+                    make_annotation(fix_intron_line[0], fig, ax, geneinfo, tag_background)
+        # not shrinked exons
         else:
             intron_line = ax.plot(
                 [start, stop],

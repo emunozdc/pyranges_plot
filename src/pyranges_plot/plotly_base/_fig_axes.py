@@ -2,7 +2,7 @@ import plotly.subplots as sp
 import plotly.graph_objects as go
 
 
-def create_fig(chrmd_df, genesmd_df, chr_string, title_dict_ply, packed):
+def create_fig(chrmd_df, genesmd_df, ts_data, chr_string, title_dict_ply, packed):
     """Generate the figure and axes fitting the data."""
 
     titles = [chr_string.format(**locals()) for chrom in chrmd_df.index]
@@ -51,5 +51,36 @@ def create_fig(chrmd_df, genesmd_df, chr_string, title_dict_ply, packed):
             row=i + 1,
             col=1,
         )
+
+        # Add shrink rectangles
+        if ts_data:
+            print(ts_data)
+            rects_df = ts_data[str(i + 1)]  #### THIS HAS TO BE CHROMOSOME VALUE not i+1
+            rects_df["cumdelta_end"] = rects_df["cumdelta"]
+            rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(
+                periods=1, fill_value=0
+            )
+            rects_df["Start"] -= rects_df["cumdelta_start"]
+            rects_df["End"] -= rects_df["cumdelta_end"]
+
+            for a, b in zip(rects_df["Start"], rects_df["End"]):
+                x0, x1 = a, b
+                y0, y1 = y_min-1, y_max+1
+                fig.add_trace(
+                    go.Scatter(
+                        x=[x0, x1, x1, x0, x0],
+                        y=[y0, y0, y1, y1, y0],
+                        fill="tonexty",
+                        fillcolor="white",
+                        fillpattern_shape='/',
+                        fillpattern_solidity=0.3,
+                        line={'color': "whitesmoke"},
+                        hoverinfo=None,
+                        #opacity=0.1,
+                        line_width=0,
+                    ),
+                    row=i + 1,
+                    col=1,
+                )
 
     return fig
