@@ -226,24 +226,18 @@ def reset_default(varname="all"):
 def print_default(return_keys=False):
     """xxx"""
 
-    # prepare data to print
+    # store data
     plot_features_dict_in_use = get_default()
-    feat_df = pd.DataFrame.from_dict(
-        plot_features_dict_in_use,
-        orient="index",
-        columns=["Value", "Description", "Modified"],
-    )
 
-    # Calculate column sizes
-    name_sz = max([len(val) for val in plot_features_dict_in_use])
-    value_sz = max([len(str(val)) for val in feat_df["Value"]])
-    if value_sz < 5:  # value has a minimum of 5
-        value_sz = 5
-    mod_sz = 8  # according to "Modified" length
-    desc_sz = max([len(val) for val in feat_df["Description"]])
+    # prepare data to print
+    if not return_keys:
+        feat_df = pd.DataFrame.from_dict(
+            plot_features_dict_in_use,
+            orient="index",
+            columns=["Value", "Description", "Modified"],
+        )
 
-    # Function to format row
-    def format_row(key, value):
+        # Calculate column sizes
         name_sz = max([len(val) for val in plot_features_dict_in_use])
         value_sz = max([len(str(val)) for val in feat_df["Value"]])
         if value_sz < 5:  # value has a minimum of 5
@@ -251,22 +245,31 @@ def print_default(return_keys=False):
         mod_sz = 8  # according to "Modified" length
         desc_sz = max([len(val) for val in feat_df["Description"]])
 
-        return f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {value[1]:<{desc_sz}} |"
+        # Function to format row
+        def format_row(key, value):
+            name_sz = max([len(val) for val in plot_features_dict_in_use])
+            value_sz = max([len(str(val)) for val in feat_df["Value"]])
+            if value_sz < 5:  # value has a minimum of 5
+                value_sz = 5
+            mod_sz = 8  # according to "Modified" length
+            desc_sz = max([len(val) for val in feat_df["Description"]])
 
-    # Create table header
-    header = f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+\n"
-    header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Modified':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
-    header += f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
+            return f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {value[1]:<{desc_sz}} |"
 
-    # Create table rows
-    rows = "\n".join([format_row(key, value) for key, value in feat_df.iterrows()])
+        # Create table header
+        header = f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+\n"
+        header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Modified':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
+        header += f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
 
-    # Print table
-    print(header)
-    print(rows)
-    print(
-        f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
-    )
+        # Create table rows
+        rows = "\n".join([format_row(key, value) for key, value in feat_df.iterrows()])
+
+        # Print table
+        print(header)
+        print(rows)
+        print(
+            f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
+        )
 
     if return_keys:
         return set(plot_features_dict_in_use.keys())

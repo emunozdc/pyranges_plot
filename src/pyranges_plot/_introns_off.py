@@ -1,21 +1,40 @@
 import pyranges as pr
+import pandas as pd
 
 
-def introns_shrink(df, ts_data, thresh=0):
+def get_introns(p):
+    """Calculate introns df from a PyRanges object."""
+
+    if "Feature" in p.columns:
+        introns = p.df[p.df["Feature"] == "exon"]
+    else:
+        introns = p.df
+
+    # intron start is exon end shifted
+    introns["End"] = introns.groupby("transcript_id")["End"].shift()
+    introns.dropna(inplace=True)
+    # intron end is exon start
+    introns.rename(columns={"Start": "End", "End": "Start"}, inplace=True)
+    introns["Feature"] = ["intron"] * len(introns)
+
+    return pr.from_dict(introns.to_dict())
+
+
+def introns_shrink(df, ts_data, fil_data, thresh=0):
+    """Calculate intron resizes and provide info for plotting"""
+
     chrom = df["Chromosome"].iloc[0]
     p = pr.from_dict(df.to_dict())
 
     # Calculate shrinkable intron ranges
     # get flexible introns
     p = p.sort(by=["transcript_id", "Start"])
-    introns = p.features.introns(by="gene")
+    introns = get_introns(p)
     exons = p[p.Feature == "exon"]
     flex_introns = introns.subtract(exons)
 
     # get coordinate shift (delta) and cumulative coordinate shift (cumdelta)
-    to_shrink = flex_introns.merge(
-        strand=False, count=True, count_col="count"
-    )  # unique
+    to_shrink = flex_introns.merge(strand=False)  # unique ranges
     to_shrink = to_shrink[to_shrink.End - to_shrink.Start > thresh]  # filtered
     to_shrink.delta = (
         to_shrink.df["End"] - to_shrink.df["Start"]
@@ -25,115 +44,33 @@ def introns_shrink(df, ts_data, thresh=0):
     ), "PyRanges not sorted."
     to_shrink.cumdelta = to_shrink.df["delta"].cumsum()
 
-    # Store to shrink data
+    # store to shrink data
     ts_data[chrom] = to_shrink.df
 
-    # Match ranges where not shrinked intron lines must be placed
-    # associate proper cumdelta to fixed intron lines
-    inters = introns.intersect(exons, strandedness=False)
-    inters = inters.df.merge(
-        to_shrink.df,
-        how="left",
-        left_on=["Start"],
-        right_on=["End"],
-        suffixes=("", "_y"),
-    ).fillna({"cumdelta": 0, "delta": 0})
-    inters = inters.sort_values("Start")
-    inters["cumdelta"] = inters["cumdelta"].replace(0, method="ffill")
-    inters.drop(["Chromosome_y", "Start_y", "End_y", "count"], axis=1, inplace=True)
-    inters = pr.from_dict(inters.to_dict())
+    # Calculate exons coordinate shift
+    exons = pd.concat([exons.df, to_shrink.df])
+    exons.sort_values("Start", inplace=True)
+    exons = exons.fillna({"cumdelta": 0})
+    exons["cumdelta"] = exons["cumdelta"].replace(0, method="ffill")
+    # match exons with its cumdelta
+    exons = pr.from_dict(exons[exons["Feature"] == "exon"].to_dict())
 
-    # relate fixed intron lines to each intron
-    introns = introns.join(inters, how="left", suffix="_line").df
-    introns.rename(columns={"cumdelta": "cumdelta_line"}, inplace=True)
-    introns["delta"] = introns["delta"].replace(-1, 0)
+    # Calculate fixed intron lines (FILs) and store in dictionary
+    inters = introns.intersect(exons, strandedness=False).df
+    inters["Feature"] = ["FIL"] * len(inters)
+    fils = pd.concat([inters, to_shrink.df])
+    fils.sort_values("Start", inplace=True)
+    fils = fils.fillna({"cumdelta": 0})
+    fils["cumdelta"] = fils["cumdelta"].replace(0, method="ffill")
+    fils = fils[fils["Feature"] == "FIL"]
+    fils["Start_adj"] = fils["Start"] - fils["cumdelta"]
+    fils["End_adj"] = fils["End"] - fils["cumdelta"]
+    fil_data[chrom] = fils
 
-    # adjust fixed intron coordinates
-    introns["Start_line"] -= introns["cumdelta_line"]
-    introns["End_line"] -= introns["cumdelta_line"]
-    introns["i_lines"] = introns.apply(
-        lambda row: [row["Start_line"], row["End_line"]]
-        if row["Start_line"] != 0 and row["End_line"] != 0
-        else None,
-        axis=1,
-    )
-
-    # store all fixed intron lines from one intron in a list to plot it later
-    introns = (
-        introns.groupby(["Start", "End"], group_keys=False)
-        .agg(
-            {
-                "Chromosome": "first",
-                "Strand": "first",
-                "transcript_id": "first",
-                "gene_id": "first",
-                "Feature": "first",
-                "i_lines": lambda lines: [
-                    interval for interval in lines if interval is not None
-                ],
-                "delta": "first",
-            }
-        )
-        .reset_index()
-    )
-
-    introns = pr.from_dict(introns.to_dict())
-
-    # Calculate coordinate shift for each intron
-    # keep highest cumdelta for each intron
-    intronsdf = introns.join(to_shrink, how="left").df
-    intronsdf["cumdelta"] = intronsdf["cumdelta"].replace(-1, 0)
-
-    intronsdf = (
-        intronsdf.groupby(["Start", "End"], group_keys=False)
-        .agg(
-            {
-                "Chromosome": "first",
-                "Strand": "first",
-                "transcript_id": "first",
-                "gene_id": "first",
-                "Feature": "first",
-                "cumdelta": "max",
-                "delta": "first",
-                "i_lines": "first",
-            }
-        )
-        .reset_index()
-    )
-
-    # fill cumdelta empty values correctly
-    intronsdf = intronsdf.sort_values(by="Start")
-    intronsdf["cumdelta"] = intronsdf["cumdelta"].replace(-1, 0)
-    intronsdf["cumdelta"] = intronsdf["cumdelta"].replace(0, method="ffill")
-    intronsdf["num_exon"] = (
-        intronsdf.groupby("transcript_id", group_keys=False).cumcount() + 1
-    )
-
-    # Match introns-exons and calculate coordinates shift for exons
-    exons = exons.df
-    exons["num_exon"] = exons.groupby(
-        "transcript_id", group_keys=False
-    ).cumcount()  # not needed
-    result = exons.merge(
-        intronsdf,
-        how="left",
-        left_on=["transcript_id", "Start"],
-        right_on=["transcript_id", "End"],
-        suffixes=("", "_y"),
-    )
-
-    # fill cumdelta
-    result = result.sort_values("Start")
-    result = result.fillna({"cumdelta": 0, "delta": 0, "i_lines": 0})
-    result["cumdelta"] = result["cumdelta"].replace(0, method="ffill").apply(int)
-
-    # adjust coordinates
-    # result["Start"] -= result["cumdelta"]
-    # result["End"] -= result["cumdelta"]
+    # Adjust coordinates
+    result = exons.df
     result["Start_adj"] = result["Start"] - result["cumdelta"]
     result["End_adj"] = result["End"] - result["cumdelta"]
 
-    # return result
-    return result[
-        list(p.columns) + ["Start_adj", "End_adj", "cumdelta", "delta", "i_lines"]
-    ]
+    # Provide result
+    return result[list(p.columns) + ["Start_adj", "End_adj", "cumdelta", "delta"]]

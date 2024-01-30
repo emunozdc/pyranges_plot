@@ -27,6 +27,7 @@ def plot_exons_plt(
     genesmd_df,
     chrmd_df,
     ts_data,
+    fil_data,
     max_ngenes=25,
     id_col="gene_id",
     transcript_str=False,
@@ -36,6 +37,7 @@ def plot_exons_plt(
     packed=True,
     to_file=None,
     file_size=None,
+    warnings=None,
 ):
     """xxx"""
 
@@ -79,6 +81,7 @@ def plot_exons_plt(
             fig,
             chrmd_df,
             genesmd_df,
+            fil_data,
             id_col,
             showinfo,
             tag_background,
@@ -91,7 +94,6 @@ def plot_exons_plt(
     # Provide output
     if to_file is None:
         # evaluate warning
-        warnings = get_warnings()
         if tot_ngenes > max_ngenes and warnings:
             plt_popup_warning(
                 "The provided data contains more genes than the ones plotted."
@@ -107,6 +109,7 @@ def _gby_plot_exons(
     fig,
     chrmd_df,
     genesmd_df,
+    fil_data,
     id_col,
     showinfo,
     tag_background,
@@ -161,15 +164,12 @@ def _gby_plot_exons(
     )
 
     # Evaluate each intron
-    sorted_exons = df[["Start", "End", "cumdelta", "delta", "i_lines"]].sort_values(
-        by="Start"
-    )
+    sorted_exons = df[["Start", "End", "cumdelta"]].sort_values(by="Start")
 
     for i in range(len(sorted_exons) - 1):
         start = sorted_exons["End"].iloc[i]
         stop = sorted_exons["Start"].iloc[i + 1]
         cumdelta = sorted_exons["cumdelta"].iloc[i + 1]
-        intron_lines = sorted_exons["i_lines"].iloc[i + 1]
 
         intron_size = coord2inches(fig, ax, start, stop, 0, 0)
         incl = inches2coord(fig, ax, 0.15)  # how long is the arrow in the plot (OX)
@@ -187,23 +187,6 @@ def _gby_plot_exons(
             )
             make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
 
-            # fixed intron lines
-            if intron_lines:
-                for fix_intron_range in intron_lines:
-                    if (
-                        sorted_exons["Start"].iloc[i] > fix_intron_range[0]
-                    ):  # the intron starts before the exon "ghost intron"
-                        fix_intron_range[0] = sorted_exons["Start"].iloc[i]
-                    fix_intron_line = ax.plot(
-                        [fix_intron_range[0], fix_intron_range[1]],
-                        [gene_ix, gene_ix],
-                        color=exon_color,
-                        linewidth=1,
-                        zorder=1,
-                    )
-                    make_annotation(
-                        fix_intron_line[0], fig, ax, geneinfo, tag_background
-                    )
         # not shrinked exons
         else:
             intron_line = ax.plot(
@@ -214,7 +197,7 @@ def _gby_plot_exons(
                 zorder=1,
             )
 
-        # Create annotation for intron
+        # Create annotation for intron line
         make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
@@ -232,3 +215,18 @@ def _gby_plot_exons(
             arrow_style,
             arrow_width,
         )
+
+    # Plot fixed intron lines (FILs) of the gene
+    if fil_data:
+        if genename in list(fil_data[chrom][id_col]):
+            for ix, line in fil_data[chrom][
+                fil_data[chrom][id_col] == genename
+            ].iterrows():
+                fix_intron_line = ax.plot(
+                    [line["Start_adj"], line["End_adj"]],
+                    [gene_ix, gene_ix],
+                    color=exon_color,
+                    linewidth=1,
+                    zorder=1,
+                )
+                make_annotation(fix_intron_line[0], fig, ax, geneinfo, tag_background)

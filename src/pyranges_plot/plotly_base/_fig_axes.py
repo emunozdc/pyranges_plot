@@ -2,7 +2,9 @@ import plotly.subplots as sp
 import plotly.graph_objects as go
 
 
-def create_fig(chrmd_df, genesmd_df, ts_data, chr_string, title_dict_ply, packed):
+def create_fig(
+    chrmd_df, genesmd_df, ts_data, chr_string, title_dict_ply, packed, plot_background
+):
     """Generate the figure and axes fitting the data."""
 
     titles = [chr_string.format(**locals()) for chrom in chrmd_df.index]
@@ -71,7 +73,7 @@ def create_fig(chrmd_df, genesmd_df, ts_data, chr_string, title_dict_ply, packed
                         x=[x0, x1, x1, x0, x0],
                         y=[y0, y0, y1, y1, y0],
                         fill="tonexty",
-                        fillcolor="white",
+                        fillcolor=plot_background,
                         fillpattern_shape="/",
                         fillpattern_solidity=0.3,
                         line={"color": "whitesmoke"},

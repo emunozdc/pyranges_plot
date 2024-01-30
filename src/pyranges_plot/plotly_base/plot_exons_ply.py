@@ -36,6 +36,7 @@ def plot_exons_ply(
     packed=True,
     to_file=None,
     file_size=None,
+    warnings=None,
 ):
     """xxx"""
 
@@ -48,7 +49,15 @@ def plot_exons_ply(
     transcript_utr_width = feat_dict["transcript_utr_width"]
 
     # Create figure and chromosome plots
-    fig = create_fig(chrmd_df, genesmd_df, ts_data, chr_string, title_dict_ply, packed)
+    fig = create_fig(
+        chrmd_df,
+        genesmd_df,
+        ts_data,
+        chr_string,
+        title_dict_ply,
+        packed,
+        plot_background,
+    )
 
     # Plot genes
     subdf.groupby(id_col, group_keys=False).apply(
@@ -76,7 +85,6 @@ def plot_exons_ply(
 
     # Provide output
     # insert silent information for warnings
-    warnings = get_warnings()
     if warnings:
         fig.data[0].customdata = np.array([tot_ngenes, 0, 0])
         if (

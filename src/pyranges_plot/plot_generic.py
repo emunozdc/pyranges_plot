@@ -1,6 +1,13 @@
 import pyranges
 import plotly.colors
-from .core import get_engine, get_idcol, set_warnings, print_default, get_default
+from .core import (
+    get_engine,
+    get_idcol,
+    set_warnings,
+    print_default,
+    get_default,
+    get_warnings,
+)
 from .data_preparation import make_subset, get_genes_metadata, get_chromosome_metadata
 from ._introns_off import introns_shrink
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
@@ -14,7 +21,7 @@ def plot(
     df,
     engine=None,
     id_col=None,
-    warnings=True,
+    warnings=None,
     max_ngenes=25,
     introns_off=False,
     transcript_str=False,
@@ -183,9 +190,10 @@ def plot(
 
     # Deal with introns off
     ts_data = {}
+    fil_data = {}
     if introns_off:
         df = df.groupby("Chromosome", group_keys=False).apply(
-            lambda df: introns_shrink(df, ts_data, thresh=4)
+            lambda df: introns_shrink(df, ts_data, fil_data, thresh=4)
         )
         df["Start"] = df["Start_adj"]  ##?
         df["End"] = df["End_adj"]  ##?
@@ -199,10 +207,8 @@ def plot(
     if engine is None:
         engine = get_engine()
 
-    if warnings:
-        set_warnings(True)
-    else:
-        set_warnings(False)
+    if warnings is None:
+        warnings = get_warnings()
 
     try:
         # PREPARE DATA for plot
@@ -258,6 +264,7 @@ def plot(
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
                 ts_data=ts_data,
+                fil_data=fil_data,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,
@@ -267,6 +274,7 @@ def plot(
                 packed=packed,
                 to_file=to_file,
                 file_size=file_size,
+                warnings=warnings,
             )
 
         elif engine == "ply" or engine == "plotly":
@@ -286,6 +294,7 @@ def plot(
                 packed=packed,
                 to_file=to_file,
                 file_size=file_size,
+                warnings=warnings,
             )
 
         else:

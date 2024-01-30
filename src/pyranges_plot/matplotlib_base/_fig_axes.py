@@ -65,7 +65,6 @@ def create_fig(
 
         # Add shrink rectangles
         if ts_data:
-            print(ts_data)
             rects_df = ts_data[str(i + 1)]  #### THIS HAS TO BE CHROMOSOME VALUE not i+1
             rects_df["cumdelta_end"] = rects_df["cumdelta"]
             rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(
