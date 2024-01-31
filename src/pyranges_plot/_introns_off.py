@@ -20,11 +20,12 @@ def get_introns(p):
     return pr.from_dict(introns.to_dict())
 
 
-def introns_shrink(df, ts_data, fil_data, thresh=0):
+def introns_shrink(df, ts_data, fil_data):
     """Calculate intron resizes and provide info for plotting"""
 
     chrom = df["Chromosome"].iloc[0]
     p = pr.from_dict(df.to_dict())
+    thresh = df["shrink_threshold"].iloc[0]
 
     # Calculate shrinkable intron ranges
     # get flexible introns

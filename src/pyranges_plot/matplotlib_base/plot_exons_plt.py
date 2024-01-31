@@ -164,6 +164,7 @@ def _gby_plot_exons(
     )
 
     # Evaluate each intron
+
     sorted_exons = df[["Start", "End", "cumdelta"]].sort_values(by="Start")
 
     for i in range(len(sorted_exons) - 1):

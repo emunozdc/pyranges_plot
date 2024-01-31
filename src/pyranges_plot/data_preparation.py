@@ -11,6 +11,19 @@ from .core import get_engine, get_warnings
 from .matplotlib_base._core import plt_popup_warning
 
 
+############ COMPUTE INTRONS OFF THRESHOLD
+def compute_thresh(df, chrmd_df):
+    """Get threshold from limits"""
+
+    chrom = df["Chromosome"].iloc[0]
+    limit_range = chrmd_df.loc[chrom]["min_max"][1] - chrmd_df.loc[chrom]["min_max"][0]
+    df["shrink_threshold"] = [int(df["shrink_threshold"].iloc[0] * limit_range)] * len(
+        df
+    )
+
+    return df
+
+
 ############ SUBSET
 def make_subset(df, id_col, max_ngenes):
     """xxx"""

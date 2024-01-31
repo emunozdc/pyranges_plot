@@ -8,7 +8,12 @@ from .core import (
     get_default,
     get_warnings,
 )
-from .data_preparation import make_subset, get_genes_metadata, get_chromosome_metadata
+from .data_preparation import (
+    make_subset,
+    get_genes_metadata,
+    get_chromosome_metadata,
+    compute_thresh,
+)
 from ._introns_off import introns_shrink
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
@@ -24,6 +29,7 @@ def plot(
     warnings=None,
     max_ngenes=25,
     introns_off=False,
+    shrink_threshold=0.05,
     transcript_str=False,
     color_col=None,
     colormap=colormap,
@@ -65,6 +71,12 @@ def plot(
     introns_off: bool, default False
 
         Whether to compress the intron ranges to facilitate visualization or not.
+
+    shrink_threshold: {float, int}}, default 0.05
+
+        Minimum lenght of an intron in order for it to be shrinked. When threshold is float, it
+        represents the percentage of the plot space, while an int threshold represents number
+        of position or base pairs.
 
     transcript_str: bool, default False
 
@@ -188,21 +200,6 @@ def plot(
         except SystemExit as e:
             print("An error occured:", e)
 
-    # Deal with introns off
-    ts_data = {}
-    fil_data = {}
-    if introns_off:
-        df = df.groupby("Chromosome", group_keys=False).apply(
-            lambda df: introns_shrink(df, ts_data, fil_data, thresh=4)
-        )
-        df["Start"] = df["Start_adj"]  ##?
-        df["End"] = df["End_adj"]  ##?
-
-    else:
-        df["cumdelta"] = [0] * len(df)
-        df["delta"] = [0] * len(df)
-        df["i_lines"] = [0] * len(df)
-
     # Deal with engine
     if engine is None:
         engine = get_engine()
@@ -254,6 +251,32 @@ def plot(
         genesmd_df = get_genes_metadata(subdf, id_col, color_col, packed, colormap)
 
         # Create chromosome metadata DataFrame
+        chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
+
+        # Deal with introns off
+        # compute threshold
+        if isinstance(shrink_threshold, int):
+            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+        elif isinstance(shrink_threshold, float):
+            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+            subdf = subdf.groupby("Chromosome", group_keys=False).apply(
+                lambda x: compute_thresh(x, chrmd_df)
+            )
+
+        # adapt coordinates to shrinked
+        ts_data = {}
+        fil_data = {}
+        if introns_off:
+            subdf = subdf.groupby("Chromosome", group_keys=False).apply(
+                lambda subdf: introns_shrink(subdf, ts_data, fil_data)
+            )
+            subdf["Start"] = subdf["Start_adj"]  ##?
+            subdf["End"] = subdf["End_adj"]  ##?
+
+        else:
+            subdf["cumdelta"] = [0] * len(df)
+
+        ### COMPUTE NEW LIMITS in chrmd_df
         chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
 
         if engine == "plt" or engine == "matplotlib":
