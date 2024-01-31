@@ -27,6 +27,7 @@ def plot_exons_ply(
     genesmd_df,
     chrmd_df,
     ts_data,
+    fil_data,
     max_ngenes=25,
     id_col="gene_id",
     transcript_str=False,
@@ -66,6 +67,7 @@ def plot_exons_ply(
             fig,
             chrmd_df,
             genesmd_df,
+            fil_data,
             id_col,
             showinfo,
             legend,
@@ -123,6 +125,7 @@ def _gby_plot_exons(
     fig,
     chrmd_df,
     genesmd_df,
+    fil_data,
     id_col,
     showinfo,
     legend,
@@ -157,16 +160,32 @@ def _gby_plot_exons(
         showinfo = showinfo.replace("\n", "<br>")
         geneinfo += "<br>" + showinfo.format(**showinfo_dict)
 
-    # Evaluate each intron
-    sorted_exons = df[["Start", "End", "cumdelta", "delta", "i_lines"]].sort_values(
-        by="Start"
+    # add to plot
+    x0, x1 = min(df["Start"]), max(df["End"])
+    y0, y1 = gene_ix - exon_width / 160, gene_ix + exon_width / 160
+
+    fig.add_trace(
+        go.Scatter(
+            x=[x0, x1, x1, x0, x0],
+            y=[y0, y0, y1, y1, y0],
+            fill="toself",
+            fillcolor=plot_background,
+            mode="lines",
+            line=dict(color=exon_color, width=0),
+            hoverinfo="text",
+            text=geneinfo,
+        ),
+        row=chrom_ix + 1,
+        col=1,
     )
+
+    # Evaluate each intron
+    sorted_exons = df[["Start", "End", "cumdelta"]].sort_values(by="Start")
 
     for i in range(len(sorted_exons) - 1):
         start = sorted_exons["End"].iloc[i]
         stop = sorted_exons["Start"].iloc[i + 1]
         cumdelta = sorted_exons["cumdelta"].iloc[i + 1]
-        intron_lines = sorted_exons["i_lines"].iloc[i + 1]
 
         intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
         incl = percent2coord(fig, chrom_ix + 1, 0.003)  # how long in the plot (OX)
@@ -175,53 +194,26 @@ def _gby_plot_exons(
         # consider shrinked introns
         if cumdelta > sorted_exons["cumdelta"].iloc[i]:
             x0, x1 = start, stop
-            y0, y1 = gene_ix - exon_width / 160, gene_ix + exon_width / 160
+            y0, y1 = gene_ix, gene_ix
             intron_line = go.Scatter(
-                x=[x0, x1, x1, x0, x0],
-                y=[y0, y0, y1, y1, y0],
-                fill="toself",
-                fillcolor=plot_background,
+                x=[x0, x1],
+                y=[y0, y1],
                 mode="lines",
-                line=dict(color=exon_color, width=0.5, dash="longdash"),
-                hoverinfo="text",
-                text=geneinfo,
+                line=dict(color=exon_color, width=0.7, dash="dash"),
+                hoverinfo="skip",
             )
             fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
-
-            # fixed intron lines
-            if intron_lines:
-                for fix_intron_range in intron_lines:
-                    if (
-                        sorted_exons["Start"].iloc[i] > fix_intron_range[0]
-                    ):  # the intron starts before the exon "ghost intron"
-                        fix_intron_range[0] = sorted_exons["Start"].iloc[i]
-                    x0, x1 = fix_intron_range
-                    y0, y1 = gene_ix - exon_width / 140, gene_ix + exon_width / 140
-                    fix_intron_line = go.Scatter(
-                        x=[x0, x1, x1, x0, x0],
-                        y=[y0, y0, y1, y1, y0],
-                        fill="toself",
-                        fillcolor=exon_color,
-                        mode="lines",
-                        line=dict(color=exon_color, width=0.5),
-                        hoverinfo="text",
-                        text=geneinfo,
-                    )
-                    fig.add_trace(fix_intron_line, row=chrom_ix + 1, col=1)
 
         # not shrinked introns
         else:
             x0, x1 = start, stop
-            y0, y1 = gene_ix - exon_width / 140, gene_ix + exon_width / 140
+            y0, y1 = gene_ix, gene_ix
             intron_line = go.Scatter(
-                x=[x0, x1, x1, x0, x0],
-                y=[y0, y0, y1, y1, y0],
-                fill="toself",
-                fillcolor=exon_color,
+                x=[x0, x1],
+                y=[y0, y1],
                 mode="lines",
-                line=dict(color=exon_color, width=0.5, dash="solid"),
-                hoverinfo="text",
-                text=geneinfo,
+                line=dict(color=exon_color, width=0.7, dash="solid"),
+                hoverinfo="skip",
             )
             fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
@@ -240,6 +232,25 @@ def _gby_plot_exons(
             exon_width,
             arrow_color,
         )
+
+    # Plot fixed intron lines (FILs) of the gene
+    if fil_data:
+        if genename in list(fil_data[chrom][id_col]):
+            for ix, line in fil_data[chrom][
+                fil_data[chrom][id_col] == genename
+            ].iterrows():
+                x0 = line["Start_adj"]
+                x1 = line["End_adj"]
+                y0 = gene_ix
+                y1 = y0
+                fix_intron_line = go.Scatter(
+                    x=[x0, x1],
+                    y=[y0, y1],
+                    mode="lines",
+                    line=dict(color=exon_color, width=0.7),
+                    hoverinfo="skip",
+                )
+                fig.add_trace(fix_intron_line, row=chrom_ix + 1, col=1)
 
     # Plot the gene rows
     _apply_gene_bridge(

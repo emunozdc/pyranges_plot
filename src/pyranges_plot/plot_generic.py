@@ -285,6 +285,7 @@ def plot(
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
                 ts_data=ts_data,
+                fil_data=fil_data,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,
