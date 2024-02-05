@@ -20,7 +20,7 @@ def get_introns(p):
     return pr.from_dict(introns.to_dict())
 
 
-def introns_shrink(df, ts_data, fil_data):
+def introns_shrink(df, ts_data):
     """Calculate intron resizes and provide info for plotting"""
 
     chrom = df["Chromosome"].iloc[0]
@@ -44,6 +44,9 @@ def introns_shrink(df, ts_data, fil_data):
         to_shrink.df
     ), "PyRanges not sorted."
     to_shrink.cumdelta = to_shrink.df["delta"].cumsum()
+    # store adjusted coord to plot shrinked intron regions
+    to_shrink.Start_adj = to_shrink.Start - to_shrink.cumdelta.shift().fillna(0)
+    to_shrink.End_adj = to_shrink.End - to_shrink.cumdelta
 
     # store to shrink data
     ts_data[chrom] = to_shrink.df
@@ -54,22 +57,9 @@ def introns_shrink(df, ts_data, fil_data):
     exons = exons.fillna({"cumdelta": 0})
     exons["cumdelta"] = exons["cumdelta"].replace(0, method="ffill")
     # match exons with its cumdelta
-    exons = pr.from_dict(exons[exons["Feature"] == "exon"].to_dict())
-
-    # Calculate fixed intron lines (FILs) and store in dictionary
-    inters = introns.intersect(exons, strandedness=False).df
-    inters["Feature"] = ["FIL"] * len(inters)
-    fils = pd.concat([inters, to_shrink.df])
-    fils.sort_values("Start", inplace=True)
-    fils = fils.fillna({"cumdelta": 0})
-    fils["cumdelta"] = fils["cumdelta"].replace(0, method="ffill")
-    fils = fils[fils["Feature"] == "FIL"]
-    fils["Start_adj"] = fils["Start"] - fils["cumdelta"]
-    fils["End_adj"] = fils["End"] - fils["cumdelta"]
-    fil_data[chrom] = fils
+    result = exons[exons["Feature"] == "exon"]
 
     # Adjust coordinates
-    result = exons.df
     result["Start_adj"] = result["Start"] - result["cumdelta"]
     result["End_adj"] = result["End"] - result["cumdelta"]
 

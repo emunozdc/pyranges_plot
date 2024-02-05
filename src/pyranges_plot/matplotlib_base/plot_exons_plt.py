@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
-from ..core import get_warnings
-from ._core import coord2inches, inches2coord, plt_popup_warning
+import pandas as pd
+
+from ._core import plt_popup_warning
 from ._fig_axes import create_fig
 from ._data2plot import (
-    make_annotation,
-    plot_direction,
     _apply_gene_bridge,
+    plot_introns,
 )
 
 # plot parameters
@@ -27,7 +27,6 @@ def plot_exons_plt(
     genesmd_df,
     chrmd_df,
     ts_data,
-    fil_data,
     max_ngenes=25,
     id_col="gene_id",
     transcript_str=False,
@@ -38,6 +37,9 @@ def plot_exons_plt(
     to_file=None,
     file_size=None,
     warnings=None,
+    tick_pos_d=None,
+    ori_tick_pos_d=None,
+    tick_val_d=None,
 ):
     """xxx"""
 
@@ -71,6 +73,9 @@ def plot_exons_plt(
         plot_border,
         packed,
         legend,
+        tick_pos_d,
+        ori_tick_pos_d,
+        tick_val_d,
     )
 
     # Plot genes
@@ -81,7 +86,7 @@ def plot_exons_plt(
             fig,
             chrmd_df,
             genesmd_df,
-            fil_data,
+            ts_data,
             id_col,
             showinfo,
             tag_background,
@@ -109,7 +114,7 @@ def _gby_plot_exons(
     fig,
     chrmd_df,
     genesmd_df,
-    fil_data,
+    ts_data,
     id_col,
     showinfo,
     tag_background,
@@ -163,71 +168,26 @@ def _gby_plot_exons(
         arrow_width,
     )
 
-    # Evaluate each intron
+    # Plot INTRON lines
+    sorted_exons = df[["Start", "End"]].sort_values(by="Start")
+    if ts_data:
+        ts_chrom = ts_data[chrom]
+    else:
+        ts_chrom = pd.DataFrame()
 
-    sorted_exons = df[["Start", "End", "cumdelta"]].sort_values(by="Start")
-
-    for i in range(len(sorted_exons) - 1):
-        start = sorted_exons["End"].iloc[i]
-        stop = sorted_exons["Start"].iloc[i + 1]
-        cumdelta = sorted_exons["cumdelta"].iloc[i + 1]
-
-        intron_size = coord2inches(fig, ax, start, stop, 0, 0)
-        incl = inches2coord(fig, ax, 0.15)  # how long is the arrow in the plot (OX)
-
-        # Plot LINE binding exons
-        # consider shrinked introns
-        if cumdelta > sorted_exons["cumdelta"].iloc[i]:
-            intron_line = ax.plot(
-                [start, stop],
-                [gene_ix, gene_ix],
-                color=exon_color,
-                linewidth=0.5,
-                linestyle="--",
-                zorder=1,
-            )
-            make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
-
-        # not shrinked exons
-        else:
-            intron_line = ax.plot(
-                [start, stop],
-                [gene_ix, gene_ix],
-                color=exon_color,
-                linewidth=1,
-                zorder=1,
-            )
-
-        # Create annotation for intron line
-        make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
-
-        # Plot DIRECTION ARROW in INTRONS if strand is known
-        plot_direction(
-            ax,
-            strand,
-            intron_size,
-            intron_threshold,
-            start,
-            stop,
-            incl,
-            gene_ix,
-            exon_width,
-            arrow_color,
-            arrow_style,
-            arrow_width,
-        )
-
-    # Plot fixed intron lines (FILs) of the gene
-    if fil_data:
-        if genename in list(fil_data[chrom][id_col]):
-            for ix, line in fil_data[chrom][
-                fil_data[chrom][id_col] == genename
-            ].iterrows():
-                fix_intron_line = ax.plot(
-                    [line["Start_adj"], line["End_adj"]],
-                    [gene_ix, gene_ix],
-                    color=exon_color,
-                    linewidth=1,
-                    zorder=1,
-                )
-                make_annotation(fix_intron_line[0], fig, ax, geneinfo, tag_background)
+    plot_introns(
+        sorted_exons,
+        ts_chrom,
+        fig,
+        ax,
+        geneinfo,
+        tag_background,
+        gene_ix,
+        exon_color,
+        strand,
+        intron_threshold,
+        exon_width,
+        arrow_color,
+        arrow_style,
+        arrow_width,
+    )

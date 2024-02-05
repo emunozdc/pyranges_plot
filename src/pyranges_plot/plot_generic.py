@@ -265,10 +265,9 @@ def plot(
 
         # adapt coordinates to shrinked
         ts_data = {}
-        fil_data = {}
         if introns_off:
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
-                lambda subdf: introns_shrink(subdf, ts_data, fil_data)
+                lambda subdf: introns_shrink(subdf, ts_data)
             )
             subdf["Start"] = subdf["Start_adj"]  ##?
             subdf["End"] = subdf["End_adj"]  ##?
@@ -276,8 +275,42 @@ def plot(
         else:
             subdf["cumdelta"] = [0] * len(df)
 
-        ### COMPUTE NEW LIMITS in chrmd_df
-        chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
+        # Compute new axis values and positions if introns off
+        tick_pos_d = {}
+        ori_tick_pos_d = {}
+        tick_val_d = {}
+        if ts_data:
+            for chr in ts_data.keys():
+                ori_tick_pos = []
+                tick_pos = []
+                tick_val = []
+                pos = [
+                    [a, b] for a, b in zip(ts_data[chr]["Start"], ts_data[chr]["End"])
+                ]
+                cdel = list(ts_data[chr]["cumdelta"])
+
+                for i in range(len(pos)):
+                    if i == 0:
+                        tick_pos.append(pos[i][0])
+                        tick_pos.append(pos[i][1] - cdel[i])
+                        ori_tick_pos.append(pos[i][0])
+                        ori_tick_pos.append(pos[i][1])
+                    else:
+                        tick_pos.append(pos[i][0] - cdel[i - 1])
+                        tick_pos.append(pos[i][1] - cdel[i])
+                        ori_tick_pos.append(pos[i][0])
+                        ori_tick_pos.append(pos[i][1])
+
+                    tick_val += pos[i]
+
+                tick_pos_d[chr] = tick_pos
+                ori_tick_pos_d[chr] = ori_tick_pos
+                tick_val_d[chr] = tick_val
+
+        ### COMPUTE NEW LIMITS in chrmd_df  (adapt to limits defined by coord!!!!!)
+        chrmd_df = get_chromosome_metadata(
+            subdf, id_col, limits, genesmd_df
+        )  # temp solution
 
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
@@ -287,7 +320,6 @@ def plot(
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
                 ts_data=ts_data,
-                fil_data=fil_data,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,
@@ -298,6 +330,9 @@ def plot(
                 to_file=to_file,
                 file_size=file_size,
                 warnings=warnings,
+                tick_pos_d=tick_pos_d,
+                ori_tick_pos_d=ori_tick_pos_d,
+                tick_val_d=tick_val_d,
             )
 
         elif engine == "ply" or engine == "plotly":
@@ -308,7 +343,6 @@ def plot(
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
                 ts_data=ts_data,
-                fil_data=fil_data,
                 max_ngenes=max_ngenes,
                 id_col=id_col,
                 transcript_str=transcript_str,

@@ -16,6 +16,9 @@ def create_fig(
     plot_border,
     packed,
     legend,
+    tick_pos_d,
+    ori_tick_pos_d,
+    tick_val_d,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -49,6 +52,36 @@ def create_fig(
         ax.xaxis.set_major_formatter(ScalarFormatter())
         ax.xaxis.get_major_formatter().set_scientific(False)  # not scientific notation
         ax.xaxis.get_major_formatter().set_useOffset(False)  # not offset notation
+        # consider introns off
+        if tick_pos_d:
+            original_ticks = [
+                int(tick.get_text().replace("−", "-")) for tick in ax.get_xticklabels()
+            ]
+            jump = original_ticks[1] - original_ticks[0]
+            to_add = []
+            for ii in range(1, len(tick_pos_d[chrom]) - 1, 2):
+                not_shr0 = tick_pos_d[chrom][ii]
+                not_shr1 = tick_pos_d[chrom][ii + 1]
+                if (not_shr1 - not_shr0) > jump:
+                    add_lines0 = jump - (not_shr0 % jump) + not_shr0
+                    add_lines1 = jump - (not_shr1 % jump) + not_shr1
+                    to_add += [num for num in range(add_lines0, add_lines1, jump)]
+
+            to_add_val = to_add.copy()
+
+            for itick in range(len(to_add)):
+                for ix, row in ts_data[chrom].iterrows():
+                    if row["End"] - row["cumdelta"] <= to_add[itick]:
+                        cdel = row["cumdelta"]
+                    else:
+                        break
+                to_add[itick] -= cdel
+            # print(to_add)
+            # print(to_add_val)
+            # print(tick_pos_d[chrom] + to_add)
+            # print(tick_val_d[chrom] + to_add_val)
+            ax.set_xticks(sorted(tick_pos_d[chrom] + to_add_val))
+            ax.set_xticklabels(sorted(tick_val_d[chrom] + to_add))
 
         # set y axis limits
         y_min = 0

@@ -1,5 +1,6 @@
 from ._core import coord2percent, percent2coord
 import plotly.graph_objects as go
+import pandas as pd
 
 
 def plot_direction(
@@ -319,3 +320,124 @@ def _plot_row(
         exon_width,
         arrow_color,
     )
+
+
+def plot_introns(
+    sorted_exons,
+    ts_chrom,
+    fig,
+    gene_ix,
+    exon_color,
+    chrom_ix,
+    strand,
+    genename,
+    intron_threshold,
+    exon_width,
+    arrow_color,
+):
+    """Plot intron lines as needed."""
+
+    for i in range(len(sorted_exons) - 1):
+        # define intron
+        start = sorted_exons["End"].iloc[i]
+        stop = sorted_exons["Start"].iloc[i + 1]
+
+        # NOT introns off
+        if ts_chrom.empty:
+            ts_intron = pd.DataFrame()
+
+        # INTRONS OFF
+        else:
+            ts_intron = ts_chrom[
+                (ts_chrom["Start_adj"] >= start) & (ts_chrom["Start_adj"] < stop)
+            ].reset_index()
+
+        # Plot LINES binding exons
+        # No to-shrink regions in intron
+        if ts_intron.empty:
+            # create continuous line
+            x0, x1 = start, stop
+            y0, y1 = gene_ix, gene_ix
+            intron_line = go.Scatter(
+                x=[x0, x1],
+                y=[y0, y1],
+                mode="lines",
+                line=dict(color=exon_color, width=0.7, dash="solid"),
+                hoverinfo="skip",
+            )
+            fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
+
+        # Intron has to-shrink regions
+        else:
+            # alternating fixed and to-shrink regions or vice versa
+            prev_tsend = None
+
+            # Iterate over to-shrink regions
+            for ix, row in ts_intron.iterrows():
+                # (1) Add previous fixed region if needed
+                # consider intron starts with fixed region
+                if not prev_tsend and row["Start_adj"] != start:
+                    prev_tsend = start
+
+                # create continuous line
+                x0, x1 = prev_tsend, row["Start_adj"]
+                y0, y1 = gene_ix, gene_ix
+                intron_line = go.Scatter(
+                    x=[x0, x1],
+                    y=[y0, y1],
+                    mode="lines",
+                    line=dict(color=exon_color, width=0.7, dash="solid"),
+                    hoverinfo="skip",
+                )
+                fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
+
+                # (2) Add to-shrink region
+                x0, x1 = row["Start_adj"], row["End_adj"]
+                y0, y1 = gene_ix, gene_ix
+                intron_line = go.Scatter(
+                    x=[x0, x1],
+                    y=[y0, y1],
+                    mode="lines",
+                    line=dict(color=exon_color, width=0.7, dash="dash"),
+                    hoverinfo="skip",
+                )
+                fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
+
+                # (3) Add final fixed region if needed
+                if (ix == len(ts_intron) - 1) and (row["End_adj"] != stop):
+                    # add last fixed region
+                    # create continuous line
+                    x0, x1 = row["End_adj"], stop
+                    y0, y1 = gene_ix, gene_ix
+                    intron_line = go.Scatter(
+                        x=[x0, x1],
+                        y=[y0, y1],
+                        mode="lines",
+                        line=dict(color=exon_color, width=0.7, dash="solid"),
+                        hoverinfo="skip",
+                    )
+                    fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
+
+                # store interval end for next iteration
+                prev_tsend = row["End_adj"]
+
+                # Plot DIRECTION ARROW in INTRONS if strand is known
+                intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
+                incl = percent2coord(
+                    fig, chrom_ix + 1, 0.003
+                )  # how long in the plot (OX)
+
+                plot_direction(
+                    fig,
+                    strand,
+                    genename,
+                    intron_size,
+                    intron_threshold,
+                    start,
+                    stop,
+                    incl,
+                    gene_ix,
+                    chrom_ix,
+                    exon_width,
+                    arrow_color,
+                )

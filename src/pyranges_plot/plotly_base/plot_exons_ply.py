@@ -1,11 +1,11 @@
 import plotly.graph_objects as go
 import plotly.colors
 import plotly.io as pio
+import pandas as pd
 import numpy as np
-from ..core import get_warnings
-from ._core import coord2percent, percent2coord, initialize_dash_app
+from ._core import initialize_dash_app
 from ._fig_axes import create_fig
-from ._data2plot import plot_direction, _apply_gene_bridge
+from ._data2plot import plot_introns, _apply_gene_bridge
 
 
 # plot parameters
@@ -27,7 +27,6 @@ def plot_exons_ply(
     genesmd_df,
     chrmd_df,
     ts_data,
-    fil_data,
     max_ngenes=25,
     id_col="gene_id",
     transcript_str=False,
@@ -67,7 +66,7 @@ def plot_exons_ply(
             fig,
             chrmd_df,
             genesmd_df,
-            fil_data,
+            ts_data,
             id_col,
             showinfo,
             legend,
@@ -125,7 +124,7 @@ def _gby_plot_exons(
     fig,
     chrmd_df,
     genesmd_df,
-    fil_data,
+    ts_data,
     id_col,
     showinfo,
     legend,
@@ -160,7 +159,7 @@ def _gby_plot_exons(
         showinfo = showinfo.replace("\n", "<br>")
         geneinfo += "<br>" + showinfo.format(**showinfo_dict)
 
-    # add to plot
+    # add annotation for introns to plot
     x0, x1 = min(df["Start"]), max(df["End"])
     y0, y1 = gene_ix - exon_width / 160, gene_ix + exon_width / 160
 
@@ -179,78 +178,26 @@ def _gby_plot_exons(
         col=1,
     )
 
-    # Evaluate each intron
+    # Plot INTRON lines
     sorted_exons = df[["Start", "End", "cumdelta"]].sort_values(by="Start")
+    if ts_data:
+        ts_chrom = ts_data[chrom]
+    else:
+        ts_chrom = pd.DataFrame()
 
-    for i in range(len(sorted_exons) - 1):
-        start = sorted_exons["End"].iloc[i]
-        stop = sorted_exons["Start"].iloc[i + 1]
-        cumdelta = sorted_exons["cumdelta"].iloc[i + 1]
-
-        intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
-        incl = percent2coord(fig, chrom_ix + 1, 0.003)  # how long in the plot (OX)
-
-        # Plot LINE binding exons (as rectangle to have annotation)
-        # consider shrinked introns
-        if cumdelta > sorted_exons["cumdelta"].iloc[i]:
-            x0, x1 = start, stop
-            y0, y1 = gene_ix, gene_ix
-            intron_line = go.Scatter(
-                x=[x0, x1],
-                y=[y0, y1],
-                mode="lines",
-                line=dict(color=exon_color, width=0.7, dash="dash"),
-                hoverinfo="skip",
-            )
-            fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
-
-        # not shrinked introns
-        else:
-            x0, x1 = start, stop
-            y0, y1 = gene_ix, gene_ix
-            intron_line = go.Scatter(
-                x=[x0, x1],
-                y=[y0, y1],
-                mode="lines",
-                line=dict(color=exon_color, width=0.7, dash="solid"),
-                hoverinfo="skip",
-            )
-            fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
-
-        # Plot DIRECTION ARROW in INTRONS if strand is known
-        plot_direction(
-            fig,
-            strand,
-            genename,
-            intron_size,
-            intron_threshold,
-            start,
-            stop,
-            incl,
-            gene_ix,
-            chrom_ix,
-            exon_width,
-            arrow_color,
-        )
-
-    # Plot fixed intron lines (FILs) of the gene
-    if fil_data:
-        if genename in list(fil_data[chrom][id_col]):
-            for ix, line in fil_data[chrom][
-                fil_data[chrom][id_col] == genename
-            ].iterrows():
-                x0 = line["Start_adj"]
-                x1 = line["End_adj"]
-                y0 = gene_ix
-                y1 = y0
-                fix_intron_line = go.Scatter(
-                    x=[x0, x1],
-                    y=[y0, y1],
-                    mode="lines",
-                    line=dict(color=exon_color, width=0.7),
-                    hoverinfo="skip",
-                )
-                fig.add_trace(fix_intron_line, row=chrom_ix + 1, col=1)
+    plot_introns(
+        sorted_exons,
+        ts_chrom,
+        fig,
+        gene_ix,
+        exon_color,
+        chrom_ix,
+        strand,
+        genename,
+        intron_threshold,
+        exon_width,
+        arrow_color,
+    )
 
     # Plot the gene rows
     _apply_gene_bridge(

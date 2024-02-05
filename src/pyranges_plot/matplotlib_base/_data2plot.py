@@ -1,5 +1,6 @@
 from ._core import coord2inches, inches2coord
 from matplotlib.patches import Rectangle
+import pandas as pd
 
 
 def make_annotation(item, fig, ax, geneinfo, tag_background):
@@ -318,3 +319,122 @@ def _plot_row(
         arrow_style,
         arrow_width,
     )
+
+
+def plot_introns(
+    sorted_exons,
+    ts_chrom,
+    fig,
+    ax,
+    geneinfo,
+    tag_background,
+    gene_ix,
+    exon_color,
+    strand,
+    intron_threshold,
+    exon_width,
+    arrow_color,
+    arrow_style,
+    arrow_width,
+):
+    """Plot intron lines as needed."""
+
+    for i in range(len(sorted_exons) - 1):
+        # define intron
+        start = sorted_exons["End"].iloc[i]
+        stop = sorted_exons["Start"].iloc[i + 1]
+
+        # NOT introns off
+        if ts_chrom.empty:
+            ts_intron = pd.DataFrame()
+
+        # INTRONS OFF
+        else:
+            ts_intron = ts_chrom[
+                (ts_chrom["Start_adj"] >= start) & (ts_chrom["Start_adj"] < stop)
+            ].reset_index()
+
+        # Plot LINES binding exons
+        # No to-shrink regions in intron
+        if ts_intron.empty:
+            # create continuous line
+            intron_line = ax.plot(
+                [start, stop],
+                [gene_ix, gene_ix],
+                color=exon_color,
+                linewidth=1,
+                zorder=1,
+            )
+            # add to plot with annotation
+            make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
+
+        # Intron has to-shrink regions
+        else:
+            # alternating fixed and to-shrink regions or vice versa
+            prev_tsend = None
+
+            # Iterate over to-shrink regions
+            for ix, row in ts_intron.iterrows():
+                # (1) Add previous fixed region if needed
+                # consider intron starts with fixed region
+                if not prev_tsend and row["Start_adj"] != start:
+                    prev_tsend = start
+
+                # create continuous line
+                intron_line = ax.plot(
+                    [prev_tsend, row["Start_adj"]],
+                    [gene_ix, gene_ix],
+                    color=exon_color,
+                    linewidth=1,
+                    zorder=1,
+                )
+                # add to plot with annotation
+                make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
+
+                # (2) Add to-shrink region
+                intron_line = ax.plot(
+                    [row["Start_adj"], row["End_adj"]],
+                    [gene_ix, gene_ix],
+                    color=exon_color,
+                    linewidth=0.5,
+                    linestyle="--",
+                    zorder=1,
+                )
+                # add to plot with annotation
+                make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
+
+                # (3) Add final fixed region if needed
+                if (ix == len(ts_intron) - 1) and (row["End_adj"] != stop):
+                    # add last fixed region
+                    # create continuous line
+                    intron_line = ax.plot(
+                        [row["End_adj"], stop],
+                        [gene_ix, gene_ix],
+                        color=exon_color,
+                        linewidth=1,
+                        zorder=1,
+                    )
+                    # add to plot with annotation
+                    make_annotation(intron_line[0], fig, ax, geneinfo, tag_background)
+
+                # store interval end for next iteration
+                prev_tsend = row["End_adj"]
+
+        intron_size = coord2inches(fig, ax, start, stop, 0, 0)
+        incl = inches2coord(fig, ax, 0.15)  # how long is the arrow in the plot (OX)
+
+        # Plot DIRECTION ARROW in INTRONS if strand is known
+        plot_direction(
+            ax,
+            strand,
+            intron_size,
+            intron_threshold,
+            start,
+            stop,
+            incl,
+            gene_ix,
+            exon_width,
+            arrow_color,
+            arrow_style,
+            arrow_width,
+        )
