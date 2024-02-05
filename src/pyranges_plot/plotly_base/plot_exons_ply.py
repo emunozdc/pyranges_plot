@@ -137,6 +137,7 @@ def _gby_plot_exons(
 
     # Gene parameters
     genename = df[id_col].iloc[0]
+    df["legend_tag"] = [genename] + [""] * (len(df) - 1)
     gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].chrix
@@ -173,6 +174,7 @@ def _gby_plot_exons(
             line=dict(color=exon_color, width=0),
             hoverinfo="text",
             text=geneinfo,
+            showlegend=False,
         ),
         row=chrom_ix + 1,
         col=1,

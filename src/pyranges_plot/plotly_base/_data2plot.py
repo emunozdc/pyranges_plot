@@ -272,7 +272,11 @@ def _plot_row(
 ):
     """Plot elements corresponding to one row of one gene."""
 
+    if legend:
+        legend = bool(row["legend_tag"])
+
     # Exon start and stop
+    print(row)
     start = int(row["Start"])
     stop = int(row["End"])
     # convert to coordinates for rectangle
@@ -293,7 +297,7 @@ def _plot_row(
             line=dict(color=exon_color),
             text=geneinfo,
             hoverinfo="text",
-            name=genename,
+            name=row["legend_tag"],
             showlegend=legend,
         ),
         row=chrom_ix + 1,
@@ -364,6 +368,7 @@ def plot_introns(
                 mode="lines",
                 line=dict(color=exon_color, width=0.7, dash="solid"),
                 hoverinfo="skip",
+                showlegend=False,
             )
             fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
@@ -388,6 +393,7 @@ def plot_introns(
                     mode="lines",
                     line=dict(color=exon_color, width=0.7, dash="solid"),
                     hoverinfo="skip",
+                    showlegend=False,
                 )
                 fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
@@ -400,6 +406,7 @@ def plot_introns(
                     mode="lines",
                     line=dict(color=exon_color, width=0.7, dash="dash"),
                     hoverinfo="skip",
+                    showlegend=False,
                 )
                 fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
@@ -415,6 +422,7 @@ def plot_introns(
                         mode="lines",
                         line=dict(color=exon_color, width=0.7, dash="solid"),
                         hoverinfo="skip",
+                        showlegend=False,
                     )
                     fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
