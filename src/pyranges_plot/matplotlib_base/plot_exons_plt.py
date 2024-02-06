@@ -39,7 +39,6 @@ def plot_exons_plt(
     warnings=None,
     tick_pos_d=None,
     ori_tick_pos_d=None,
-    tick_val_d=None,
 ):
     """xxx"""
 
@@ -75,7 +74,6 @@ def plot_exons_plt(
         legend,
         tick_pos_d,
         ori_tick_pos_d,
-        tick_val_d,
     )
 
     # Plot genes

@@ -3,7 +3,15 @@ import plotly.graph_objects as go
 
 
 def create_fig(
-    chrmd_df, genesmd_df, ts_data, chr_string, title_dict_ply, packed, plot_background
+    chrmd_df,
+    genesmd_df,
+    ts_data,
+    chr_string,
+    title_dict_ply,
+    packed,
+    plot_background,
+    tick_pos_d,
+    ori_tick_pos_d,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -37,6 +45,43 @@ def create_fig(
             col=1,
         )  # add 5% to limit coordinates range
 
+        # consider introns off
+        if tick_pos_d:
+            #     # get previous default ticks
+            #     ##### adapt to plotly
+            #     original_ticks = [
+            #         int(tick.get_text().replace("−", "-")) for tick in ax.get_xticklabels()
+            #     ]
+            #     jump = original_ticks[1] - original_ticks[0]
+            #
+            #     # find previous ticks that should be conserved
+            #     to_add_val = []
+            #     for ii in range(1, len(ori_tick_pos_d[chrom]) - 1, 2):
+            #         not_shr0 = ori_tick_pos_d[chrom][ii]
+            #         not_shr1 = ori_tick_pos_d[chrom][ii + 1]
+            #         to_add_val += [i for i in original_ticks if not_shr0 < i <= not_shr1]
+            #
+            #     # compute new coordinates of conserved previous ticks
+            #     to_add = to_add_val.copy()
+            #     for itick in range(len(to_add)):
+            #         # get proper cumdelta
+            #         for ix, row in ts_data[chrom].iterrows():
+            #             if row["End"] <= to_add[itick]:
+            #                 cdel = row["cumdelta"]
+            #             else:
+            #                 break
+            #         to_add[itick] -= cdel
+            #
+            # set new ticks
+            fig.update_xaxes(
+                tickvals=tick_pos_d[chrom],  # sorted(tick_pos_d[chrom] + to_add),
+                ticktext=ori_tick_pos_d[
+                    chrom
+                ],  # sorted(ori_tick_pos_d[chrom] + to_add_val),
+                row=i + 1,
+                col=1,
+            )
+
         # set y axis limits
         y_min = 0
         y_max = chrmd_df.iloc[i].y_height
@@ -56,7 +101,6 @@ def create_fig(
 
         # Add shrink rectangles
         if ts_data:
-            print(ts_data)
             rects_df = ts_data[chrom]
             rects_df["cumdelta_end"] = rects_df["cumdelta"]
             rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(

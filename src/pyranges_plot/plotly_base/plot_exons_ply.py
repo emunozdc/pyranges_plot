@@ -37,6 +37,8 @@ def plot_exons_ply(
     to_file=None,
     file_size=None,
     warnings=None,
+    tick_pos_d=None,
+    ori_tick_pos_d=None,
 ):
     """xxx"""
 
@@ -57,6 +59,8 @@ def plot_exons_ply(
         title_dict_ply,
         packed,
         plot_background,
+        tick_pos_d,
+        ori_tick_pos_d,
     )
 
     # Plot genes

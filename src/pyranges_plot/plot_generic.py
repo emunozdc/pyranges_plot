@@ -335,7 +335,6 @@ def plot(
                 warnings=warnings,
                 tick_pos_d=tick_pos_d,
                 ori_tick_pos_d=ori_tick_pos_d,
-                tick_val_d=tick_val_d,
             )
 
         elif engine == "ply" or engine == "plotly":
@@ -356,6 +355,8 @@ def plot(
                 to_file=to_file,
                 file_size=file_size,
                 warnings=warnings,
+                tick_pos_d=tick_pos_d,
+                ori_tick_pos_d=ori_tick_pos_d,
             )
 
         else:
