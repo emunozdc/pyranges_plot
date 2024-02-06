@@ -119,7 +119,7 @@ def plot(
 
     legend: bool, default False
 
-        Whether or not the legend should appear in the plot.
+        Whether the legend should appear in the plot.
 
     chr_string: str, default "Chromosome {chrom}"
 
@@ -265,10 +265,13 @@ def plot(
 
         # adapt coordinates to shrinked
         ts_data = {}
+        subdf["oriStart"] = subdf["Start"]
+        subdf["oriEnd"] = subdf["End"]
         if introns_off:
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
                 lambda subdf: introns_shrink(subdf, ts_data)
             )
+
             subdf["Start"] = subdf["Start_adj"]  ##?
             subdf["End"] = subdf["End_adj"]  ##?
 

@@ -95,6 +95,7 @@ def _apply_gene_bridge(
     exon_color,
     chrom_ix,
     geneinfo,
+    showinfo,
     exon_width,
     transcript_utr_width,
     legend,
@@ -114,7 +115,7 @@ def _apply_gene_bridge(
                 gene_ix,
                 exon_color,
                 chrom_ix,
-                geneinfo,
+                showinfo,
                 exon_width,
                 legend,
                 arrow_size_min,
@@ -195,7 +196,7 @@ def _apply_gene_bridge(
                     gene_ix,
                     exon_color,
                     chrom_ix,
-                    geneinfo,
+                    showinfo,
                     exon_width,
                     legend,
                     arrow_size_min,
@@ -218,7 +219,7 @@ def _apply_gene_bridge(
                     gene_ix,
                     exon_color,
                     chrom_ix,
-                    geneinfo,
+                    showinfo,
                     exon_width,
                     legend,
                     arrow_size_min,
@@ -242,7 +243,7 @@ def _apply_gene_bridge(
                     gene_ix,
                     exon_color,
                     chrom_ix,
-                    geneinfo,
+                    showinfo,
                     exon_width,
                     legend,
                     arrow_size_min,
@@ -264,7 +265,7 @@ def _plot_row(
     gene_ix,
     exon_color,
     chrom_ix,
-    geneinfo,
+    showinfo,
     exon_width,
     legend,
     arrow_size_min,
@@ -272,6 +273,20 @@ def _plot_row(
 ):
     """Plot elements corresponding to one row of one gene."""
 
+    # Get the gene information to print on hover
+    # default
+    if strand:
+        geneinfo = f"[{strand}] ({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default with strand
+    else:
+        geneinfo = f"({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default without strand
+
+    # customized
+    showinfo_dict = row.to_dict()  # first element of gene rows
+    if showinfo:
+        showinfo = showinfo.replace("\n", "<br>")
+        geneinfo += "<br>" + showinfo.format(**showinfo_dict)
+
+    # consider legend
     if legend:
         legend = bool(row["legend_tag"])
 

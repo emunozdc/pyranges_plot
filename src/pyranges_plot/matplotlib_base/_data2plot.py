@@ -119,7 +119,8 @@ def _apply_gene_bridge(
     gene_ix,
     exon_color,
     tag_background,
-    geneinfo,
+    genename,
+    showinfo,
     exon_width,
     transcript_utr_width,
     arrow_size_min,
@@ -128,7 +129,6 @@ def _apply_gene_bridge(
     arrow_width,
 ):
     """Evaluate data and provide _plot_row with right parameters."""
-
     # NOT transcript strucutre
     if not transcript_str:
         df.apply(
@@ -140,7 +140,8 @@ def _apply_gene_bridge(
                 gene_ix,
                 exon_color,
                 tag_background,
-                geneinfo,
+                genename,
+                showinfo,
                 exon_width,
                 arrow_size_min,
                 arrow_color,
@@ -200,7 +201,8 @@ def _apply_gene_bridge(
                     gene_ix,
                     exon_color,
                     tag_background,
-                    geneinfo,
+                    genename,
+                    showinfo,
                     exon_width,
                     arrow_size_min,
                     arrow_color,
@@ -225,7 +227,8 @@ def _apply_gene_bridge(
                     gene_ix,
                     exon_color,
                     tag_background,
-                    geneinfo,
+                    genename,
+                    showinfo,
                     transcript_utr_width,
                     arrow_size_min,
                     arrow_color,
@@ -249,7 +252,8 @@ def _apply_gene_bridge(
                     gene_ix,
                     exon_color,
                     tag_background,
-                    geneinfo,
+                    genename,
+                    showinfo,
                     exon_width,
                     arrow_size_min,
                     arrow_color,
@@ -272,7 +276,8 @@ def _plot_row(
     gene_ix,
     exon_color,
     tag_background,
-    geneinfo,
+    genename,
+    showinfo,
     exon_width,
     arrow_size_min,
     arrow_color,
@@ -280,6 +285,19 @@ def _plot_row(
     arrow_width,
 ):
     """Plot elements corresponding to one row of one gene."""
+
+    # Make gene annotation
+    # get the gene information to print on hover
+    # default
+    if strand:
+        geneinfo = f"[{strand}] ({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default with strand
+    else:
+        geneinfo = f"({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default without strand
+
+    # customized
+    showinfo_dict = row.to_dict()  # first element of gene rows
+    if showinfo:
+        geneinfo += "\n" + showinfo.format(**showinfo_dict)
 
     # Exon start and stop
     start = int(row["Start"])

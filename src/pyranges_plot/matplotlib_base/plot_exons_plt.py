@@ -140,9 +140,9 @@ def _gby_plot_exons(
     # get the gene information to print on hover
     # default
     if strand:
-        geneinfo = f"[{strand}] ({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default with strand
+        geneinfo = f"[{strand}] ({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default with strand
     else:
-        geneinfo = f"({min(df.Start)}, {max(df.End)})\nID: {genename}"  # default without strand
+        geneinfo = f"({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default without strand
 
     # customized
     showinfo_dict = df.iloc[0].to_dict()  # first element of gene rows
@@ -159,7 +159,8 @@ def _gby_plot_exons(
         gene_ix,
         exon_color,
         tag_background,
-        geneinfo,
+        genename,
+        showinfo,
         exon_width,
         transcript_utr_width,
         arrow_size_min,
