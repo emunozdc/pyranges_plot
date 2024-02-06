@@ -10,7 +10,7 @@ def create_fig(
     chrmd_df,
     genesmd_df,
     ts_data,
-    chr_string,
+    title_chr,
     title_dict_plt,
     plot_background,
     plot_border,
@@ -33,7 +33,7 @@ def create_fig(
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
-        ax.set_title(chr_string.format(**locals()), fontdict=title_dict_plt)
+        ax.set_title(title_chr.format(**locals()), fontdict=title_dict_plt)
         ax.set_facecolor(plot_background)
         plt.setp(ax.spines.values(), color=plot_border)
         plt.setp([ax.get_xticklines(), ax.get_yticklines()], color=plot_border)

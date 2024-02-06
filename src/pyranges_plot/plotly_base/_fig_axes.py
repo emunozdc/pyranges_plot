@@ -6,7 +6,7 @@ def create_fig(
     chrmd_df,
     genesmd_df,
     ts_data,
-    chr_string,
+    title_chr,
     title_dict_ply,
     packed,
     plot_background,
@@ -15,7 +15,7 @@ def create_fig(
 ):
     """Generate the figure and axes fitting the data."""
 
-    titles = [chr_string.format(**locals()) for chrom in chrmd_df.index]
+    titles = [title_chr.format(**locals()) for chrom in chrmd_df.index]
     fig = sp.make_subplots(
         rows=len(chrmd_df),
         cols=1,

@@ -36,7 +36,7 @@ def plot(
     limits=None,
     showinfo=None,
     legend=False,
-    chr_string="Chromosome {chrom}",
+    title_chr="Chromosome {chrom}",
     packed=True,
     to_file=None,
     file_size=None,
@@ -121,7 +121,7 @@ def plot(
 
         Whether the legend should appear in the plot.
 
-    chr_string: str, default "Chromosome {chrom}"
+    title_chr: str, default "Chromosome {chrom}"
 
         String providing the desired titile for the chromosome plots. It should be given in a way where
         the chromosome value in the data is indicated as {chrom}.
@@ -328,7 +328,7 @@ def plot(
                 transcript_str=transcript_str,
                 showinfo=showinfo,
                 legend=legend,
-                chr_string=chr_string,
+                title_chr=title_chr,
                 packed=packed,
                 to_file=to_file,
                 file_size=file_size,
@@ -350,7 +350,7 @@ def plot(
                 transcript_str=transcript_str,
                 showinfo=showinfo,
                 legend=legend,
-                chr_string=chr_string,
+                title_chr=title_chr,
                 packed=packed,
                 to_file=to_file,
                 file_size=file_size,
