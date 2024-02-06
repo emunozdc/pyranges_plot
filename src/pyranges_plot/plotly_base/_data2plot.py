@@ -276,11 +276,9 @@ def _plot_row(
     # Get the gene information to print on hover
     # default
     if strand:
-        geneinfo = f"[{strand}] ({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default with strand
+        geneinfo = f"[{strand}] ({row.oriStart}, {row.oriEnd})<br>ID: {genename}"  # default with strand
     else:
-        geneinfo = (
-            f"({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default without strand
-        )
+        geneinfo = f"({row.oriStart}, {row.oriEnd})<br>ID: {genename}"  # default without strand
 
     # customized
     showinfo_dict = row.to_dict()  # first element of gene rows

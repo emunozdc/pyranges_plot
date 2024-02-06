@@ -158,12 +158,6 @@ def _gby_plot_exons(
     else:
         geneinfo = f"({min(df.oriStart)}, {max(df.oriEnd)})<br>ID: {genename}"  # default without strand
 
-    # customized
-    showinfo_dict = df.iloc[0].to_dict()  # first element of gene rows
-    if showinfo:
-        showinfo = showinfo.replace("\n", "<br>")
-        geneinfo += "<br>" + showinfo.format(**showinfo_dict)
-
     # add annotation for introns to plot
     x0, x1 = min(df["Start"]), max(df["End"])
     y0, y1 = gene_ix - exon_width / 160, gene_ix + exon_width / 160

@@ -142,11 +142,6 @@ def _gby_plot_exons(
     else:
         geneinfo = f"({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default without strand
 
-    # customized
-    showinfo_dict = df.iloc[0].to_dict()  # first element of gene rows
-    if showinfo:
-        geneinfo += "\n" + showinfo.format(**showinfo_dict)
-
     # Plot the gene rows as EXONS
     _apply_gene_bridge(
         transcript_str,
