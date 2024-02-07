@@ -232,6 +232,7 @@ def plot(
             },
             "exon_width": getvalue("exon_width"),
             "transcript_utr_width": 0.3 * getvalue("exon_width"),
+            "plotly_port": getvalue("plotly_port"),
         }
         shrink_threshold = getvalue("shrink_threshold")
 

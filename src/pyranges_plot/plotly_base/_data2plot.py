@@ -291,7 +291,6 @@ def _plot_row(
         legend = bool(row["legend_tag"])
 
     # Exon start and stop
-    print(row)
     start = int(row["Start"])
     stop = int(row["End"])
     # convert to coordinates for rectangle

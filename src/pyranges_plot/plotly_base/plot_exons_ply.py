@@ -49,6 +49,7 @@ def plot_exons_ply(
     title_dict_ply = feat_dict["title_dict_ply"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
+    plotly_port = feat_dict["plotly_port"]
 
     # Create figure and chromosome plots
     fig = create_fig(
@@ -112,7 +113,7 @@ def plot_exons_ply(
 
     if to_file is None:
         app_instance = initialize_dash_app(fig, max_ngenes)
-        app_instance.run_server()
+        app_instance.run(port=plotly_port)
 
     else:
         if not file_size:

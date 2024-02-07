@@ -16,6 +16,7 @@ plot_features_dict = {
         "Minimum lenght of an intron in order for it to be shrinked while using the introns_off feature. When threshold is float, it represents the percentage of the plot space, while an int threshold represents number of position or base pairs.",
         " ",
     ),
+    "plotly_port": (8050, "Port to run plotly app.", " "),
 }
 
 

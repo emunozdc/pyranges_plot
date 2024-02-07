@@ -321,5 +321,5 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
     # Store plot y height
     chrmd_df["y_height"] = genesmd_df.groupby("chrix", group_keys=False).ycoord.max()
     chrmd_df["y_height"] += 1  # count from 1
-    print(chrmd_df)
+
     return chrmd_df
