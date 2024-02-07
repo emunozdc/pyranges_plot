@@ -1,4 +1,4 @@
-from ._core import coord2inches, inches2coord
+from ._core import coord2percent, percent2coord
 from matplotlib.patches import Rectangle
 import pandas as pd
 
@@ -332,8 +332,8 @@ def _plot_row(
 
     # Plot DIRECTION ARROW in EXON
     # decide about placing a direction arrow
-    arrow_size = coord2inches(fig, ax, 0.05 * start, 0.05 * stop, 0, 0)
-    incl = inches2coord(fig, ax, 0.15)  # how long in the plot (OX)
+    arrow_size = coord2percent(ax, 0.05 * start, 0.05 * stop)
+    incl = percent2coord(ax, 0.003)  # how long in the plot (OX)
 
     # create and plot lines
     if not dir_flag:
@@ -454,8 +454,8 @@ def plot_introns(
                 # store interval end for next iteration
                 prev_tsend = row["End_adj"]
 
-        intron_size = coord2inches(fig, ax, start, stop, 0, 0)
-        incl = inches2coord(fig, ax, 0.15)  # how long is the arrow in the plot (OX)
+        intron_size = coord2percent(ax, start, stop)
+        incl = percent2coord(ax, 0.003)  # how long is the arrow in the plot (OX)
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
         dir_flag = plot_direction(

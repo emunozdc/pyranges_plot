@@ -8,16 +8,7 @@ from ._data2plot import (
     plot_introns,
 )
 
-# plot parameters
-arrow_width = 1
-arrow_color = "grey"
 arrow_style = "round"
-arrow_size_max = 0.3
-arrow_size_min = 0.1
-intron_threshold = 0.3
-
-
-# PLOT_EXONS FUNCTIONS
 
 
 def plot_exons_plt(
@@ -49,6 +40,10 @@ def plot_exons_plt(
     title_dict_plt = feat_dict["title_dict_plt"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
+    arrow_line_width = feat_dict["arrow_line_width"]
+    arrow_color = feat_dict["arrow_color"]
+    arrow_size_min = feat_dict["arrow_size_min"]
+    intron_threshold = feat_dict["intron_threshold"]
 
     # Create figure and axes
     if file_size:
@@ -91,6 +86,10 @@ def plot_exons_plt(
             transcript_str,
             exon_width,
             transcript_utr_width,
+            intron_threshold,
+            arrow_line_width,
+            arrow_color,
+            arrow_size_min,
         )
     )
 
@@ -119,6 +118,10 @@ def _gby_plot_exons(
     transcript_str,
     exon_width,
     transcript_utr_width,
+    intron_threshold,
+    arrow_line_width,
+    arrow_color,
+    arrow_size_min,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -164,7 +167,7 @@ def _gby_plot_exons(
         exon_width,
         arrow_color,
         arrow_style,
-        arrow_width,
+        arrow_line_width,
     )
 
     # Plot the gene rows as EXONS
@@ -184,6 +187,6 @@ def _gby_plot_exons(
         arrow_size_min,
         arrow_color,
         arrow_style,
-        arrow_width,
+        arrow_line_width,
         dir_flag,
     )

@@ -8,18 +8,6 @@ from ._fig_axes import create_fig
 from ._data2plot import plot_introns, _apply_gene_bridge
 
 
-# plot parameters
-colormap = plotly.colors.sequential.thermal
-arrow_width = 1
-arrow_color = "grey"
-arrow_size_max = 0.02
-arrow_size_min = 0.005
-intron_threshold = 0.03
-
-
-# PLOT_EXONS FUNCTIONS
-
-
 def plot_exons_ply(
     subdf,
     tot_ngenes,
@@ -50,6 +38,10 @@ def plot_exons_ply(
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     plotly_port = feat_dict["plotly_port"]
+    arrow_line_width = feat_dict["arrow_line_width"]
+    arrow_color = feat_dict["arrow_color"]
+    arrow_size_min = feat_dict["arrow_size_min"]
+    intron_threshold = feat_dict["intron_threshold"]
 
     # Create figure and chromosome plots
     fig = create_fig(
@@ -79,6 +71,10 @@ def plot_exons_ply(
             exon_width,
             transcript_utr_width,
             plot_background,
+            arrow_line_width,
+            arrow_color,
+            arrow_size_min,
+            intron_threshold,
         )
     )
 
@@ -137,6 +133,10 @@ def _gby_plot_exons(
     exon_width,
     transcript_utr_width,
     plot_background,
+    arrow_line_width,
+    arrow_color,
+    arrow_size_min,
+    intron_threshold,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -198,6 +198,7 @@ def _gby_plot_exons(
         intron_threshold,
         exon_width,
         arrow_color,
+        arrow_line_width,
     )
 
     # Plot the gene rows
@@ -217,5 +218,6 @@ def _gby_plot_exons(
         legend,
         arrow_size_min,
         arrow_color,
+        arrow_line_width,
         dir_flag,
     )

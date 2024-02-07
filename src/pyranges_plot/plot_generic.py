@@ -233,6 +233,10 @@ def plot(
             "exon_width": getvalue("exon_width"),
             "transcript_utr_width": 0.3 * getvalue("exon_width"),
             "plotly_port": getvalue("plotly_port"),
+            "arrow_line_width": getvalue("arrow_line_width"),
+            "arrow_color": getvalue("arrow_color"),
+            "arrow_size_min": getvalue("arrow_size_min"),
+            "intron_threshold": getvalue("intron_threshold"),
         }
         shrink_threshold = getvalue("shrink_threshold")
 

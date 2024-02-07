@@ -16,6 +16,7 @@ def plot_direction(
     chrom_ix,
     exon_width,
     arrow_color,
+    arrow_line_width,
 ):
     """Plot the direction arrow in the given item if it proceeds."""
 
@@ -48,7 +49,7 @@ def plot_direction(
                     x=bot_plus[0],
                     y=bot_plus[1],
                     mode="lines",
-                    line=go.scatter.Line(color=arrow_color, width=1),
+                    line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
                     name=genename,
                     hoverinfo="skip",
@@ -57,7 +58,7 @@ def plot_direction(
                     x=top_plus[0],
                     y=top_plus[1],
                     mode="lines",
-                    line=go.scatter.Line(color=arrow_color, width=1),
+                    line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
                     name=genename,
                     hoverinfo="skip",
@@ -70,7 +71,7 @@ def plot_direction(
                     x=bot_minus[0],
                     y=bot_minus[1],
                     mode="lines",
-                    line=go.scatter.Line(color=arrow_color, width=1),
+                    line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
                     name=genename,
                     hoverinfo="skip",
@@ -79,7 +80,7 @@ def plot_direction(
                     x=top_minus[0],
                     y=top_minus[1],
                     mode="lines",
-                    line=go.scatter.Line(color=arrow_color, width=1),
+                    line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
                     name=genename,
                     hoverinfo="skip",
@@ -105,6 +106,7 @@ def _apply_gene_bridge(
     legend,
     arrow_size_min,
     arrow_color,
+    arrow_line_width,
     dir_flag,
 ):
     """Evaluate data and provide _plot_row with right parameters."""
@@ -125,6 +127,7 @@ def _apply_gene_bridge(
                 legend,
                 arrow_size_min,
                 arrow_color,
+                arrow_line_width,
                 dir_flag,
             ),
             axis=1,
@@ -207,6 +210,7 @@ def _apply_gene_bridge(
                     legend,
                     arrow_size_min,
                     arrow_color,
+                    arrow_line_width,
                     dir_flag,
                 ),
                 axis=1,
@@ -231,6 +235,7 @@ def _apply_gene_bridge(
                     legend,
                     arrow_size_min,
                     arrow_color,
+                    arrow_line_width,
                     dir_flag,
                 ),
                 axis=1,
@@ -256,6 +261,7 @@ def _apply_gene_bridge(
                     legend,
                     arrow_size_min,
                     arrow_color,
+                    arrow_line_width,
                     dir_flag,
                 ),
                 axis=1,
@@ -279,6 +285,7 @@ def _plot_row(
     legend,
     arrow_size_min,
     arrow_color,
+    arrow_line_width,
     dir_flag,
 ):
     """Plot elements corresponding to one row of one gene."""
@@ -348,6 +355,7 @@ def _plot_row(
             chrom_ix,
             exon_width,
             arrow_color,
+            arrow_line_width,
         )
 
 
@@ -363,6 +371,7 @@ def plot_introns(
     intron_threshold,
     exon_width,
     arrow_color,
+    arrow_line_width,
 ):
     """Plot intron lines as needed."""
 
@@ -473,6 +482,7 @@ def plot_introns(
                     chrom_ix,
                     exon_width,
                     arrow_color,
+                    arrow_line_width,
                 )
 
     return dir_flag

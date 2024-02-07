@@ -17,6 +17,22 @@ plot_features_dict = {
         " ",
     ),
     "plotly_port": (8050, "Port to run plotly app.", " "),
+    "arrow_line_width": (
+        1,
+        "Line width of the arrow lines (for stranded PyRanges).",
+        " ",
+    ),
+    "arrow_color": ("grey", "Direction arrow color (for stranded PyRanges).", " "),
+    "arrow_size_min": (
+        0.002,
+        "Minimum size of the arrow to plot direction in exons if necessary. Provided as a float correspondig to the plot fraction or percentage.",
+        " ",
+    ),
+    "intron_threshold": (
+        0.07,
+        "Minimum size of the intron to plot direction in it. Provided as a float correspondig to the plot fraction or percentage.",
+        " ",
+    ),
 }
 
 
