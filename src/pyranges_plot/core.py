@@ -223,6 +223,21 @@ def reset_default(varname="all"):
             print("An error occured:", e)
 
 
+def divide_desc(desc, cutoff):
+    """Divide long feature description in lines."""
+
+    lines_l = []
+    while len(desc) > cutoff:
+        for i in range(59, -1, -1):
+            if desc[i] == " ":
+                lines_l.append(desc[:i])
+                desc = desc[i + 1 :]
+                break
+    lines_l.append(desc)
+
+    return lines_l
+
+
 def print_default(return_keys=False):
     """xxx"""
 
@@ -242,23 +257,26 @@ def print_default(return_keys=False):
         value_sz = max([len(str(val)) for val in feat_df["Value"]])
         if value_sz < 5:  # value has a minimum of 5
             value_sz = 5
-        mod_sz = 8  # according to "Modified" length
-        desc_sz = max([len(val) for val in feat_df["Description"]])
+        mod_sz = 11  # according to "Is modified" length
+        desc_sz = 60
 
         # Function to format row
         def format_row(key, value):
-            name_sz = max([len(val) for val in plot_features_dict_in_use])
-            value_sz = max([len(str(val)) for val in feat_df["Value"]])
-            if value_sz < 5:  # value has a minimum of 5
-                value_sz = 5
-            mod_sz = 8  # according to "Modified" length
-            desc_sz = max([len(val) for val in feat_df["Description"]])
+            if len(value[1]) <= 60:
+                return f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {value[1]:<{desc_sz}} |"
 
-            return f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {value[1]:<{desc_sz}} |"
+            else:
+                lines_l = divide_desc(value[1], cutoff=desc_sz)
+                fstr = f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {lines_l[0]:<{desc_sz}} |"
+                empty = " "
+                for i in range(1, len(lines_l)):
+                    fstr += f"\n| {empty:^{name_sz}} | {empty:^{value_sz}} | {empty:^{mod_sz}} | {lines_l[i]:<{desc_sz}} |"
+
+                return fstr
 
         # Create table header
         header = f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+\n"
-        header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Modified':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
+        header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Is modified':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
         header += f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
 
         # Create table rows

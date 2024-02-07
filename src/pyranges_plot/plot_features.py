@@ -11,6 +11,11 @@ plot_features_dict = {
     "title_size": (18, "Size of the plots' titles.", " "),
     "title_color": ("goldenrod", "Color of the plots' titles.", " "),
     "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
+    "shrink_threshold": (
+        0.05,
+        "Minimum lenght of an intron in order for it to be shrinked while using the introns_off feature. When threshold is float, it represents the percentage of the plot space, while an int threshold represents number of position or base pairs.",
+        " ",
+    ),
 }
 
 

@@ -3,7 +3,6 @@ import plotly.colors
 from .core import (
     get_engine,
     get_idcol,
-    set_warnings,
     print_default,
     get_default,
     get_warnings,
@@ -29,7 +28,6 @@ def plot(
     warnings=None,
     max_ngenes=25,
     introns_off=False,
-    shrink_threshold=0.05,
     transcript_str=False,
     color_col=None,
     colormap=colormap,
@@ -71,12 +69,6 @@ def plot(
     introns_off: bool, default False
 
         Whether to compress the intron ranges to facilitate visualization or not.
-
-    shrink_threshold: {float, int}}, default 0.05
-
-        Minimum lenght of an intron in order for it to be shrinked. When threshold is float, it
-        represents the percentage of the plot space, while an int threshold represents number
-        of position or base pairs.
 
     transcript_str: bool, default False
 
@@ -241,6 +233,7 @@ def plot(
             "exon_width": getvalue("exon_width"),
             "transcript_utr_width": 0.3 * getvalue("exon_width"),
         }
+        shrink_threshold = getvalue("shrink_threshold")
 
         # Make DataFrame subset if needed
         subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
