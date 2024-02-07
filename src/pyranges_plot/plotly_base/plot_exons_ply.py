@@ -186,7 +186,7 @@ def _gby_plot_exons(
     else:
         ts_chrom = pd.DataFrame()
 
-    plot_introns(
+    dir_flag = plot_introns(
         sorted_exons,
         ts_chrom,
         fig,
@@ -217,4 +217,5 @@ def _gby_plot_exons(
         legend,
         arrow_size_min,
         arrow_color,
+        dir_flag,
     )

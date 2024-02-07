@@ -54,9 +54,12 @@ def plot_direction(
 ):
     """Plot the direction arrow in the given item if it proceeds."""
 
+    dir_flag = 0
+
     if strand:
         # create and plot direction lines
         if item_size > item_threshold:
+            dir_flag = 1
             ##diagonal_line = OX arrow extension(item middle point +- incl), OY arrow extension (item middle point + half of exon width)
             top_plus = (
                 [(start + stop) / 2 + incl, (start + stop) / 2 - incl],
@@ -109,6 +112,8 @@ def plot_direction(
                     solid_capstyle=arrow_style,
                 )
 
+    return dir_flag
+
 
 def _apply_gene_bridge(
     transcript_str,
@@ -127,6 +132,7 @@ def _apply_gene_bridge(
     arrow_color,
     arrow_style,
     arrow_width,
+    dir_flag,
 ):
     """Evaluate data and provide _plot_row with right parameters."""
     # NOT transcript strucutre
@@ -147,6 +153,7 @@ def _apply_gene_bridge(
                 arrow_color,
                 arrow_style,
                 arrow_width,
+                dir_flag,
             ),
             axis=1,
         )
@@ -208,6 +215,7 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_style,
                     arrow_width,
+                    dir_flag,
                 ),
                 axis=1,
             )
@@ -234,6 +242,7 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_style,
                     arrow_width,
+                    dir_flag,
                 ),
                 axis=1,
             )
@@ -259,6 +268,7 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_style,
                     arrow_width,
+                    dir_flag,
                 ),
                 axis=1,
             )
@@ -283,6 +293,7 @@ def _plot_row(
     arrow_color,
     arrow_style,
     arrow_width,
+    dir_flag,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -325,20 +336,21 @@ def _plot_row(
     incl = inches2coord(fig, ax, 0.15)  # how long in the plot (OX)
 
     # create and plot lines
-    plot_direction(
-        ax,
-        strand,
-        arrow_size,
-        arrow_size_min,
-        start,
-        stop,
-        incl,
-        gene_ix,
-        exon_width,
-        arrow_color,
-        arrow_style,
-        arrow_width,
-    )
+    if not dir_flag:
+        plot_direction(
+            ax,
+            strand,
+            arrow_size,
+            arrow_size_min,
+            start,
+            stop,
+            incl,
+            gene_ix,
+            exon_width,
+            arrow_color,
+            arrow_style,
+            arrow_width,
+        )
 
 
 def plot_introns(
@@ -358,6 +370,8 @@ def plot_introns(
     arrow_width,
 ):
     """Plot intron lines as needed."""
+
+    dir_flag = 0
 
     for i in range(len(sorted_exons) - 1):
         # define intron
@@ -444,7 +458,7 @@ def plot_introns(
         incl = inches2coord(fig, ax, 0.15)  # how long is the arrow in the plot (OX)
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
-        plot_direction(
+        dir_flag = plot_direction(
             ax,
             strand,
             intron_size,
@@ -458,3 +472,5 @@ def plot_introns(
             arrow_style,
             arrow_width,
         )
+
+    return dir_flag

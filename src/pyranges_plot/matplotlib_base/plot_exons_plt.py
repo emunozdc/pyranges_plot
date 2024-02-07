@@ -142,6 +142,31 @@ def _gby_plot_exons(
     else:
         geneinfo = f"({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default without strand
 
+    # Plot INTRON lines
+    sorted_exons = df[["Start", "End"]].sort_values(by="Start")
+    sorted_exons["intron_dir_flag"] = [0] * len(sorted_exons)
+    if ts_data:
+        ts_chrom = ts_data[chrom]
+    else:
+        ts_chrom = pd.DataFrame()
+
+    dir_flag = plot_introns(
+        sorted_exons,
+        ts_chrom,
+        fig,
+        ax,
+        geneinfo,
+        tag_background,
+        gene_ix,
+        exon_color,
+        strand,
+        intron_threshold,
+        exon_width,
+        arrow_color,
+        arrow_style,
+        arrow_width,
+    )
+
     # Plot the gene rows as EXONS
     _apply_gene_bridge(
         transcript_str,
@@ -160,28 +185,5 @@ def _gby_plot_exons(
         arrow_color,
         arrow_style,
         arrow_width,
-    )
-
-    # Plot INTRON lines
-    sorted_exons = df[["Start", "End"]].sort_values(by="Start")
-    if ts_data:
-        ts_chrom = ts_data[chrom]
-    else:
-        ts_chrom = pd.DataFrame()
-
-    plot_introns(
-        sorted_exons,
-        ts_chrom,
-        fig,
-        ax,
-        geneinfo,
-        tag_background,
-        gene_ix,
-        exon_color,
-        strand,
-        intron_threshold,
-        exon_width,
-        arrow_color,
-        arrow_style,
-        arrow_width,
+        dir_flag,
     )

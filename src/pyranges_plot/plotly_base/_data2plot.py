@@ -19,9 +19,12 @@ def plot_direction(
 ):
     """Plot the direction arrow in the given item if it proceeds."""
 
+    dir_flag = 0
+
     if strand:
         # create and plot direction lines
         if item_size > item_threshold:
+            dir_flag = 1
             ##diagonal_line = OX arrow extension(item middle point +- incl), OY arrow extension (item middle point + half of exon width)
             top_plus = (
                 [(start + stop) / 2 + incl, (start + stop) / 2 - incl],
@@ -83,6 +86,7 @@ def plot_direction(
                 )
                 fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
                 fig.add_trace(arrow_top, row=chrom_ix + 1, col=1)
+    return dir_flag
 
 
 def _apply_gene_bridge(
@@ -101,6 +105,7 @@ def _apply_gene_bridge(
     legend,
     arrow_size_min,
     arrow_color,
+    dir_flag,
 ):
     """Evaluate data and provide _plot_row with right parameters."""
 
@@ -120,6 +125,7 @@ def _apply_gene_bridge(
                 legend,
                 arrow_size_min,
                 arrow_color,
+                dir_flag,
             ),
             axis=1,
         )
@@ -201,6 +207,7 @@ def _apply_gene_bridge(
                     legend,
                     arrow_size_min,
                     arrow_color,
+                    dir_flag,
                 ),
                 axis=1,
             )
@@ -224,6 +231,7 @@ def _apply_gene_bridge(
                     legend,
                     arrow_size_min,
                     arrow_color,
+                    dir_flag,
                 ),
                 axis=1,
             )
@@ -248,6 +256,7 @@ def _apply_gene_bridge(
                     legend,
                     arrow_size_min,
                     arrow_color,
+                    dir_flag,
                 ),
                 axis=1,
             )
@@ -270,6 +279,7 @@ def _plot_row(
     legend,
     arrow_size_min,
     arrow_color,
+    dir_flag,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -324,20 +334,21 @@ def _plot_row(
     incl = percent2coord(fig, chrom_ix + 1, 0.003)  # how long in the plot (OX)
 
     # create and plot lines
-    plot_direction(
-        fig,
-        strand,
-        genename,
-        arrow_size,
-        arrow_size_min,
-        start,
-        stop,
-        incl,
-        gene_ix,
-        chrom_ix,
-        exon_width,
-        arrow_color,
-    )
+    if not dir_flag:
+        plot_direction(
+            fig,
+            strand,
+            genename,
+            arrow_size,
+            arrow_size_min,
+            start,
+            stop,
+            incl,
+            gene_ix,
+            chrom_ix,
+            exon_width,
+            arrow_color,
+        )
 
 
 def plot_introns(
@@ -449,7 +460,7 @@ def plot_introns(
                     fig, chrom_ix + 1, 0.003
                 )  # how long in the plot (OX)
 
-                plot_direction(
+                dir_flag = plot_direction(
                     fig,
                     strand,
                     genename,
@@ -463,3 +474,5 @@ def plot_introns(
                     exon_width,
                     arrow_color,
                 )
+
+    return dir_flag
