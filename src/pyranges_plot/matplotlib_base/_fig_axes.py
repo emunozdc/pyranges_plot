@@ -3,6 +3,8 @@ import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.patches import Rectangle
 
+from pyranges_plot.core import cumdelting
+
 
 def create_fig(
     x,
@@ -43,6 +45,7 @@ def create_fig(
         # set x axis limits
         x_min, x_max = chrmd_df.iloc[i]["min_max"]
         x_rang = x_max - x_min
+
         ax.set_xlim(
             x_min - 0.05 * x_rang, x_max + 0.05 * x_rang
         )  # add 5% to limit coordinates range
@@ -58,6 +61,7 @@ def create_fig(
             original_ticks = [
                 int(tick.get_text().replace("−", "-")) for tick in ax.get_xticklabels()
             ]
+
             jump = original_ticks[1] - original_ticks[0]
 
             # find previous ticks that should be conserved
@@ -69,18 +73,21 @@ def create_fig(
 
             # compute new coordinates of conserved previous ticks
             to_add = to_add_val.copy()
-            for itick in range(len(to_add)):
-                # get proper cumdelta
-                for ix, row in ts_data[chrom].iterrows():
-                    if row["End"] <= to_add[itick]:
-                        cdel = row["cumdelta"]
-                    else:
-                        break
-                to_add[itick] -= cdel
+            to_add = cumdelting(to_add, ts_data, chrom)
 
             # set new ticks
-            ax.set_xticks(sorted(tick_pos_d[chrom] + to_add))
-            ax.set_xticklabels(sorted(ori_tick_pos_d[chrom] + to_add_val))
+            x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
+            # do not add ticks beyond adjusted limits
+            x_ticks_val = [
+                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
+            ]
+            x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
+                : len(x_ticks_val)
+            ]
+
+            # adjust names
+            ax.set_xticks(x_ticks_val)
+            ax.set_xticklabels(x_ticks_name)
 
         # set y axis limits
         y_min = 0

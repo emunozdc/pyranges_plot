@@ -291,3 +291,18 @@ def print_default(return_keys=False):
 
     if return_keys:
         return set(plot_features_dict_in_use.keys())
+
+
+def cumdelting(num_l, ts_data, chrom):
+    """Update a list of numbers according to cumdelta."""
+
+    for i in range(len(num_l)):
+        # get proper cumdelta
+        for ix, row in ts_data[chrom].iterrows():
+            if row["End"] <= num_l[i]:
+                cdel = row["cumdelta"]
+            else:
+                break
+        num_l[i] -= cdel
+
+    return num_l
