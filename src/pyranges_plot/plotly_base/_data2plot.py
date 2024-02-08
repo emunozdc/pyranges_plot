@@ -463,26 +463,24 @@ def plot_introns(
                 # store interval end for next iteration
                 prev_tsend = row["End_adj"]
 
-                # Plot DIRECTION ARROW in INTRONS if strand is known
-                intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
-                incl = percent2coord(
-                    fig, chrom_ix + 1, 0.003
-                )  # how long in the plot (OX)
+        # Plot DIRECTION ARROW in INTRONS if strand is known
+        intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
+        incl = percent2coord(fig, chrom_ix + 1, 0.003)  # how long in the plot (OX)
 
-                dir_flag = plot_direction(
-                    fig,
-                    strand,
-                    genename,
-                    intron_size,
-                    intron_threshold,
-                    start,
-                    stop,
-                    incl,
-                    gene_ix,
-                    chrom_ix,
-                    exon_width,
-                    arrow_color,
-                    arrow_line_width,
-                )
+        dir_flag = plot_direction(
+            fig,
+            strand,
+            genename,
+            intron_size,
+            intron_threshold,
+            start,
+            stop,
+            incl,
+            gene_ix,
+            chrom_ix,
+            exon_width,
+            arrow_color,
+            arrow_line_width,
+        )
 
     return dir_flag

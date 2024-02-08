@@ -192,12 +192,13 @@ def plot(
         except SystemExit as e:
             print("An error occured:", e)
 
+    # Deal with warnings
+    if warnings is None:
+        warnings = get_warnings()
+
     # Deal with engine
     if engine is None:
         engine = get_engine()
-
-    if warnings is None:
-        warnings = get_warnings()
 
     try:
         # PREPARE DATA for plot
@@ -205,7 +206,7 @@ def plot(
         wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
         if len(wrong_keys):
             raise Exception(
-                "The following keys do not match any customizable features: {wrong_keys}.\nCheck the print_default function to see the customizable names"
+                "The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
             )
 
         def getvalue(key):
@@ -230,15 +231,15 @@ def plot(
                 "color": getvalue("title_color"),
                 "size": int(getvalue("title_size")),
             },
-            "exon_width": getvalue("exon_width"),
-            "transcript_utr_width": 0.3 * getvalue("exon_width"),
+            "exon_width": float(getvalue("exon_width")),
+            "transcript_utr_width": 0.3 * float(getvalue("exon_width")),
             "plotly_port": getvalue("plotly_port"),
-            "arrow_line_width": getvalue("arrow_line_width"),
+            "arrow_line_width": float(getvalue("arrow_line_width")),
             "arrow_color": getvalue("arrow_color"),
-            "arrow_size_min": getvalue("arrow_size_min"),
+            "arrow_size_min": float(getvalue("arrow_size_min")),
             "intron_threshold": getvalue("intron_threshold"),
         }
-        shrink_threshold = getvalue("shrink_threshold")
+        intron_threshold = feat_dict["intron_threshold"]
 
         # Make DataFrame subset if needed
         subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
@@ -253,10 +254,11 @@ def plot(
 
         # Deal with introns off
         # compute threshold
-        if isinstance(shrink_threshold, int):
-            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-        elif isinstance(shrink_threshold, float):
-            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+        print(intron_threshold)
+        if isinstance(intron_threshold, int):
+            subdf["shrink_threshold"] = [intron_threshold] * len(subdf)
+        elif isinstance(intron_threshold, float):
+            subdf["shrink_threshold"] = [intron_threshold] * len(subdf)
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
                 lambda x: compute_thresh(x, chrmd_df)
             )
@@ -285,25 +287,33 @@ def plot(
             for chr in ts_data.keys():
                 ori_tick_pos = []
                 tick_pos = []
-                tick_val = []
-                pos = [
-                    [a, b] for a, b in zip(ts_data[chr]["Start"], ts_data[chr]["End"])
-                ]
-                cdel = list(ts_data[chr]["cumdelta"])
 
-                for i in range(len(pos)):
-                    if i == 0:
-                        tick_pos.append(pos[i][0])
-                        tick_pos.append(pos[i][1] - cdel[i])
-                    else:
-                        tick_pos.append(pos[i][0] - cdel[i - 1])
-                        tick_pos.append(pos[i][1] - cdel[i])
+                # nothing to shrink
+                if ts_data[chr].empty:
+                    tick_pos_d[chr] = []
+                    ori_tick_pos_d[chr] = []
 
-                    ori_tick_pos.append(pos[i][0])
-                    ori_tick_pos.append(pos[i][1])
+                else:
+                    pos = [
+                        [a, b]
+                        for a, b in zip(ts_data[chr]["Start"], ts_data[chr]["End"])
+                    ]
+                    cdel = list(ts_data[chr]["cumdelta"])
 
-                tick_pos_d[chr] = tick_pos
-                ori_tick_pos_d[chr] = ori_tick_pos
+                    # update tick positions for shrinked regions and keep original values as names
+                    for i in range(len(pos)):
+                        if i == 0:
+                            tick_pos.append(pos[i][0])
+                            tick_pos.append(pos[i][1] - cdel[i])
+                        else:
+                            tick_pos.append(pos[i][0] - cdel[i - 1])
+                            tick_pos.append(pos[i][1] - cdel[i])
+
+                        ori_tick_pos.append(pos[i][0])
+                        ori_tick_pos.append(pos[i][1])
+
+                    tick_pos_d[chr] = tick_pos
+                    ori_tick_pos_d[chr] = ori_tick_pos
 
         ### COMPUTE NEW LIMITS in chrmd_df  (adapt to limits defined by coord!!!!!)
         if not limit_flag:

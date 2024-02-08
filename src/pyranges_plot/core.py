@@ -297,6 +297,7 @@ def cumdelting(num_l, ts_data, chrom):
     """Update a list of numbers according to cumdelta."""
 
     for i in range(len(num_l)):
+        cdel = 0
         # get proper cumdelta
         for ix, row in ts_data[chrom].iterrows():
             if row["End"] <= num_l[i]:

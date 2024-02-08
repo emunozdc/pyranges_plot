@@ -37,6 +37,19 @@ def introns_shrink(df, ts_data):
     # get coordinate shift (delta) and cumulative coordinate shift (cumdelta)
     to_shrink = flex_introns.merge(strand=False)  # unique ranges
     to_shrink = to_shrink[to_shrink.End - to_shrink.Start > thresh]  # filtered
+    # nohing to shrink
+    if to_shrink.empty:
+        ts_data[chrom] = pd.DataFrame(
+            columns=["Chromosome", "Start", "End", "Start_adj", "End_adj", "cumdelta"]
+        )
+        result = p.df
+        result["Start_adj"] = result["Start"]
+        result["End_adj"] = result["End"]
+        result["delta"] = [0] * len(result)
+        result["cumdelta"] = [0] * len(result)
+        result = result[result["Feature"] == "exon"]
+        return result
+
     to_shrink.delta = (
         to_shrink.df["End"] - to_shrink.df["Start"]
     ) - thresh  # calculate coord shift considering margins

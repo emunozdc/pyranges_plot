@@ -60,16 +60,30 @@ def create_fig(
             # get previous default ticks
             original_ticks = [
                 int(tick.get_text().replace("−", "-")) for tick in ax.get_xticklabels()
-            ]
+            ][1:]
 
             jump = original_ticks[1] - original_ticks[0]
 
             # find previous ticks that should be conserved
             to_add_val = []
-            for ii in range(1, len(ori_tick_pos_d[chrom]) - 1, 2):
-                not_shr0 = ori_tick_pos_d[chrom][ii]
-                not_shr1 = ori_tick_pos_d[chrom][ii + 1]
-                to_add_val += [i for i in original_ticks if not_shr0 < i <= not_shr1]
+            # there is data to shrink
+            if ori_tick_pos_d[chrom]:
+                to_add_val += [
+                    tick
+                    for tick in original_ticks
+                    if tick < min(ori_tick_pos_d[chrom])
+                    or tick > max(ori_tick_pos_d[chrom])
+                ]
+                for ii in range(1, len(ori_tick_pos_d[chrom]) - 1, 2):
+                    not_shr0 = ori_tick_pos_d[chrom][ii]
+                    not_shr1 = ori_tick_pos_d[chrom][ii + 1]
+                    to_add_val += [
+                        i for i in original_ticks if not_shr0 < i <= not_shr1
+                    ]
+
+            # nothing to shrink
+            else:
+                to_add_val += original_ticks
 
             # compute new coordinates of conserved previous ticks
             to_add = to_add_val.copy()
