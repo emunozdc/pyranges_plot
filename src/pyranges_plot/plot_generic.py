@@ -238,8 +238,9 @@ def plot(
             "arrow_color": getvalue("arrow_color"),
             "arrow_size_min": float(getvalue("arrow_size_min")),
             "intron_threshold": getvalue("intron_threshold"),
+            "shrink_threshold": getvalue("shrink_threshold"),
         }
-        intron_threshold = feat_dict["intron_threshold"]
+        shrink_threshold = feat_dict["shrink_threshold"]
 
         # Make DataFrame subset if needed
         subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
@@ -254,11 +255,10 @@ def plot(
 
         # Deal with introns off
         # compute threshold
-        print(intron_threshold)
-        if isinstance(intron_threshold, int):
-            subdf["shrink_threshold"] = [intron_threshold] * len(subdf)
-        elif isinstance(intron_threshold, float):
-            subdf["shrink_threshold"] = [intron_threshold] * len(subdf)
+        if isinstance(shrink_threshold, int):
+            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+        elif isinstance(shrink_threshold, float):
+            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
                 lambda x: compute_thresh(x, chrmd_df)
             )
@@ -267,7 +267,7 @@ def plot(
         ts_data = {}
         subdf["oriStart"] = subdf["Start"]
         subdf["oriEnd"] = subdf["End"]
-        limit_flag = 0
+        limit_flag = 0  # should limits be recalculated
         if introns_off:
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
                 lambda subdf: introns_shrink(subdf, ts_data)
@@ -275,55 +275,52 @@ def plot(
 
             subdf["Start"] = subdf["Start_adj"]  ##?
             subdf["End"] = subdf["End_adj"]  ##?
-            limit_flag = 1
 
-        else:
-            subdf["cumdelta"] = [0] * len(df)
-
-        # Compute new axis values and positions if introns off
-        tick_pos_d = {}
-        ori_tick_pos_d = {}
-        if ts_data:
-            for chr in ts_data.keys():
-                ori_tick_pos = []
-                tick_pos = []
-
-                # nothing to shrink
-                if ts_data[chr].empty:
-                    tick_pos_d[chr] = []
-                    ori_tick_pos_d[chr] = []
-
-                else:
-                    pos = [
-                        [a, b]
-                        for a, b in zip(ts_data[chr]["Start"], ts_data[chr]["End"])
-                    ]
-                    cdel = list(ts_data[chr]["cumdelta"])
-
-                    # update tick positions for shrinked regions and keep original values as names
-                    for i in range(len(pos)):
-                        if i == 0:
-                            tick_pos.append(pos[i][0])
-                            tick_pos.append(pos[i][1] - cdel[i])
-                        else:
-                            tick_pos.append(pos[i][0] - cdel[i - 1])
-                            tick_pos.append(pos[i][1] - cdel[i])
-
-                        ori_tick_pos.append(pos[i][0])
-                        ori_tick_pos.append(pos[i][1])
-
-                    tick_pos_d[chr] = tick_pos
-                    ori_tick_pos_d[chr] = ori_tick_pos
-
-        ### COMPUTE NEW LIMITS in chrmd_df  (adapt to limits defined by coord!!!!!)
-        if not limit_flag:
-            chrmd_df = get_chromosome_metadata(
-                subdf, id_col, limits, genesmd_df
-            )  # temp solution
-        else:
+            # recompute limits
             chrmd_df = get_chromosome_metadata(
                 subdf, id_col, limits, genesmd_df, ts_data=ts_data
             )
+
+            tick_pos_d = {}
+            ori_tick_pos_d = {}
+
+            # compute new axis values and positions if needed
+            if ts_data:
+                for chr in ts_data.keys():
+                    # add to-shrinked reagions limits to axis
+                    ori_tick_pos = []
+                    tick_pos = []
+
+                    if ts_data[chr].empty:  # nothing to shrink
+                        tick_pos_d[chr] = []
+                        ori_tick_pos_d[chr] = []
+
+                    else:
+                        pos = [
+                            [a, b]
+                            for a, b in zip(ts_data[chr]["Start"], ts_data[chr]["End"])
+                        ]
+                        cdel = list(ts_data[chr]["cumdelta"])
+
+                        # update tick positions for shrinked regions and keep original values as names
+                        for i in range(len(pos)):
+                            if i == 0:
+                                tick_pos.append(pos[i][0])
+                                tick_pos.append(pos[i][1] - cdel[i])
+                            else:
+                                tick_pos.append(pos[i][0] - cdel[i - 1])
+                                tick_pos.append(pos[i][1] - cdel[i])
+
+                            ori_tick_pos.append(pos[i][0])
+                            ori_tick_pos.append(pos[i][1])
+
+                        tick_pos_d[chr] = tick_pos
+                        ori_tick_pos_d[chr] = ori_tick_pos
+
+        else:
+            subdf["cumdelta"] = [0] * len(df)
+            tick_pos_d = {}
+            ori_tick_pos_d = {}
 
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(

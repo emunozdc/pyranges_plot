@@ -29,7 +29,7 @@ plot_features_dict = {
         " ",
     ),
     "intron_threshold": (
-        0.07,
+        0.04,
         "Minimum size of the intron to plot direction in it. Provided as a float correspondig to the plot fraction or percentage.",
         " ",
     ),

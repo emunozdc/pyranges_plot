@@ -13,8 +13,8 @@ def subset_test():
         }
     ).df
 
-    result_subset = make_subset(df, "transcript_id", 3)
-    expected_subset = pr.from_dict(
+    result_subset, _ = make_subset(df, "transcript_id", 3)
+    expected_subset, _ = pr.from_dict(
         {
             "Chromosme": [1, 1, 2],
             "Start": [10, 20, 10],
