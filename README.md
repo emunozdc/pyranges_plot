@@ -120,7 +120,7 @@ and for Plotly.
 </p>
 
 
-### Playing with limits
+### :left_right_arrow: Playing with limits
 
 Since the data has only 4 genes all of them are plotted, but the function has a default limit 
 of 25, so in a case where the data contains more genes it will only show the top 25, unless 
@@ -214,7 +214,7 @@ prp.plot(p, colormap="Dark2")
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex09.png">
 </p>
 
-### Display options
+### :eyes: Display options
 
 The disposition of the genes is by default a packed disposition, so the genes are 
 preferentially placed one beside the other. But this disposition can be displayed 
@@ -284,7 +284,7 @@ prp.plot(pp, transcript_str = True)
 Lastly, some features of the plot appearance can also be customized. The background, plot border or title
 default colors can be checked in the following way:
 
-### Appearance customizations
+### :art: Appearance customizations
 
 There are some features of the plot appearance which can also be customized, like the 
 background, plot border or titles. To see and modify these values the `print_default` and 
