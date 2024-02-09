@@ -375,6 +375,8 @@ def plot_introns(
 ):
     """Plot intron lines as needed."""
 
+    dir_flag = 0
+
     for i in range(len(sorted_exons) - 1):
         # define intron
         start = sorted_exons["End"].iloc[i]

@@ -5,16 +5,16 @@ Gene visualization package for dataframe objects generated with [PyRanges](https
 
 
 ## Overview
-The goal is getting a plot displaying a series of genes contained in a dataframe 
-from a PyRanges object. It displays the genes' intron-exon structure in its 
-corresponding chromosome.
+The goal is getting a plot displaying a series of genes contained in a PyRanges 
+object. It displays the genes' intron-exon structure in its corresponding 
+chromosome, enabling easy visualization of your PyRanges data.
 
-There are some features to be defined by the user, one is the plot's **engine** 
-since it can be based on Matplotlib or Plotly, the other is the name of the 
-**gene ID** column in the data. The rest of features can either be left as default 
-or be customized. In example, the plot shows the first 25 genes of the dataframe 
-by default, but this can be modified. It is worth noting that the order of the genes 
-will be conserved.
+To obtain the plot there are some features to be defined by the user, one is the 
+**engine** since it can be based on Matplotlib or Plotly, the other is the name 
+of the **gene ID** column in your data. The rest of features can either be left 
+as default or be customized. In example, the plot shows the first 25 genes of the 
+dataframe by default, but this can be modified. It is worth noting that the order 
+of the genes will be conserved when performing the subset.
 
 In the case of coloring, Pyranges Plot offers a wide versatility. The data feature 
 (column) according to which the genes will be colored is by default the gene ID, but 
@@ -22,9 +22,9 @@ this "color column" can be selected manually. Color specifications can be left a
 default colormap (``plotly.colors.qualitative.Alphabet``) or be provided as dictionaries, 
 lists or color objects from either Matplotlib or Plotly regardless of the chosen engine. 
 When a colormap or list of colors is specified, the colors assigned to the genes will 
-iterate over the provided ones following the color column pattern. In the case of concrete 
-color instructions such as dictionary, the genes will be colored according to it while the 
-non-specified ones will be colored in black.
+iterate over the provided ones following the color column pattern. In the case of 
+concrete color instructions such as dictionary, the genes will be colored according 
+to it while the non-specified ones will be colored in black.
 
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/general_ex.png">
@@ -43,7 +43,8 @@ pip install pyranges-plot
 
 
 ## Examples
-Next we will test pyranges\_plot visualization options using the ``plot`` function. 
+### Minimal version
+Next we will test pyranges_plot visualization options using the ``plot`` function. 
 For that we will be using a PyRanges object generated from a dictionary.
 
 ```python
@@ -95,17 +96,31 @@ prp.plot(p, engine="plt", id_col="transcript_id")
 
 
 The output is an interactive Matplotlib plot. To obtain it we just need to provide the data, 
-the engine and the name of the id column. However, the engine and the id column can be set 
+the engine and the name of the ID column. However, the engine and the ID column can be set 
 previously so there is no need to specify them anymore while plotting:
 
 
 
 ```python
-# For engine use 'plotly' or 'ply' for Plotly plots and 'matplotlib' or 'plt' for Matplotlib plots
+# As engine use 'plotly' or 'ply' for Plotly plots and 'matplotlib' or 'plt' for Matplotlib plots
 prp.set_engine('plotly')
 prp.set_idcol('transcript_id')
 ```
 
+Now the plots will be based on Plotly because we set it as the engine, though they will look 
+the same as the Matplotlib ones. Also, both libraries offer interactive zoom options. For 
+Matplotlib…
+<p align="center">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_fixex03.png">
+</p>
+
+and for Plotly.
+<p align="center">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_fixex04.png">
+</p>
+
+
+### Playing with limits
 
 Since the data has only 4 genes all of them are plotted, but the function has a default limit 
 of 25, so in a case where the data contains more genes it will only show the top 25, unless 
@@ -124,19 +139,6 @@ prp.plot(p, max_ngenes=2)
 
 
 
-Now the plot is based on Plotly because we set it as the engine, though it looks the same as the 
-Matplotlib one. Also, both libraries offer interactive zoom options. For Matplotlib…
-<p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_fixex03.png">
-</p>
-
-and for Plotly.
-<p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_fixex04.png">
-</p>
-
-
-
 Another pyranges_plot functionality is allowing to define the plots' coordinate limits through 
 the ``limits`` parameter. The default limits show some space between the first and last 
 plotted exons of each chromosome, but these can be customized. The user can decide to change 
@@ -144,7 +146,7 @@ all or some of the coordinate limits leaving the rest as default if desired. The
 be provided as a dictionary, tuple or PyRanges object:
  - Dictionary where the keys should be the data's chromosome names in string format and the 
  values can be either ``None`` or a tuple indicating the limits. When a chromosome is not 
- specified in the dictionary or it is assigned ``None`` the coordinates will appear as default. 
+ specified in the dictionary, or it is assigned ``None`` the coordinates will appear as default. 
  - Tuple option sets the limits of all plotted chromosomes as specified.
  - PyRanges object can also be used to define limits, allowing the visualization of one object's 
  genes in another object's range window.
@@ -162,6 +164,8 @@ prp.plot(p, limits=(0,300))
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex06.png">
 </p>
 
+
+### :rainbow: Coloring
 
 We can try to color the genes according to the strand column instead of the ID (default). For 
 that the ``color_col`` parameter should be used.
@@ -210,16 +214,18 @@ prp.plot(p, colormap="Dark2")
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex09.png">
 </p>
 
+### Display options
 
-
-The disposition of the genes is by default a packed disposition, so the genes are preferentially 
-placed one beside the other preferentially. But this disposition can be displayed as 'full' if the 
-user wants to display each gene under the other by setting the ``packed`` parameter as ``False``.
+The disposition of the genes is by default a packed disposition, so the genes are 
+preferentially placed one beside the other. But this disposition can be displayed 
+as 'full' if the user wants to display one gene under the other by setting the 
+``packed`` parameter as ``False``. Also, a legend can be added by setting the `legend`
+parameter to `True`.
 
 
 
 ```python
-prp.plot(p, packed=False)
+prp.plot(p, packed=False, legend = True)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex10.png">
@@ -232,7 +238,7 @@ placed over its structure. This information always shows the gene's strand if it
 end coordinates and the ID. To add information contained in other dataframe columns to the tooltip, 
 a string should be given to the ``showinfo`` parameter. This string must contain the desired column 
 names within curly brackets as shown in the example. Similarly, the title of the chromosome plots can be customized giving the desired string to 
-the `chr_string` parameter, where the correspondent chromosome value of the data is referred 
+the `title_chr` parameter, where the correspondent chromosome value of the data is referred 
 to as {chrom}. An example could be the following: 
 
 
@@ -241,7 +247,7 @@ to as {chrom}. An example could be the following:
 prp.plot(
     p, 
     showinfo="first feature: {feature1}\nsecond feature: {feature2}",
-    chr_string = 'Chr: {chrom}'
+    title_chr = 'Chr: {chrom}'
 )
 ```
 <p align="center">
@@ -249,8 +255,7 @@ prp.plot(
 </p>
 
 
-Pyranges Plot also offers the possibility to add a legend by setting the `legend` parameter 
-as `True`.
+
 
 
 Another interesting feature is showing the transcript structure, so the exons appear as 
@@ -279,29 +284,46 @@ prp.plot(pp, transcript_str = True)
 Lastly, some features of the plot appearance can also be customized. The background, plot border or title
 default colors can be checked in the following way:
 
+### Appearance customizations
 
+There are some features of the plot appearance which can also be customized, like the 
+background, plot border or titles. To see and modify these values the `print_default` and 
+`set_default` functions should be used.
 
 ```python
 # Check the default values
 prp.print_default()
 ```
 ```
-+-----------------+-----------+----------+------------------------------------------------------------------------+
-|     Feature     |   Value   | Modified |                              Description                               |
-+-----------------+-----------+----------+------------------------------------------------------------------------+
-| tag_background  |   grey    |          | Background color of the tooltip annotation for the gene in Matplotlib. |
-| plot_background |   white   |          | Background color for the chromosomes plots.                            |
-|   plot_border   |   black   |          | Color of the line defining the chromosome plots.                       |
-|   title_size    |    18     |          | Size of the plots' titles.                                             |
-|   title_color   | goldenrod |          | Color of the plots' titles.                                            |
-|   exon_width    |    0.4    |          | Height of the exon rectangle in the plot.                              |
-+-----------------+-----------+----------+------------------------------------------------------------------------+
++------------------+-----------+-------------+--------------------------------------------------------------+
+|     Feature      |   Value   | Is modified |                         Description                          |
++------------------+-----------+-------------+--------------------------------------------------------------+
+|  tag_background  |   grey    |             | Background color of the tooltip annotation for the gene in   |
+|                  |           |             | Matplotlib.                                                  |
+| plot_background  |   white   |             | Background color for the chromosomes plots.                  |
+|   plot_border    |   black   |             | Color of the line defining the chromosome plots.             |
+|    title_size    |    18     |             | Size of the plots' titles.                                   |
+|   title_color    | goldenrod |             | Color of the plots' titles.                                  |
+|    exon_width    |    0.4    |             | Height of the exon rectangle in the plot.                    |
+| shrink_threshold |   0.05    |             | Minimum lenght of an intron in order for it to be shrinked   |
+|                  |           |             | while using the introns_off feature. When threshold is       |
+|                  |           |             | float, it represents the percentage of the plot space,       |
+|                  |           |             | while an int threshold represents number of position or      |
+|                  |           |             | base pairs.                                                  |
+|   plotly_port    |   8050    |             | Port to run plotly app.                                      |
+| arrow_line_width |     1     |             | Line width of the arrow lines (for stranded PyRanges).       |
+|   arrow_color    |   grey    |             | Direction arrow color (for stranded PyRanges).               |
+|  arrow_size_min  |   0.002   |             | Minimum size of the arrow to plot direction in exons if      |
+|                  |           |             | necessary. Provided as a float correspondig to the plot      |
+|                  |           |             | fraction or percentage.                                      |
+| intron_threshold |   0.04    |             | Minimum size of the intron to plot direction in it.          |
+|                  |           |             | Provided as a float correspondig to the plot fraction or     |
+|                  |           |             | percentage.                                                  |
++------------------+-----------+-------------+--------------------------------------------------------------+
+
 ```
 
-
-The way to change the default features is using the ``set_default`` function. An example 
-is shown below.
-
+Once you found the feature you would like to modify, it can be modified.
 
 ```python
 
@@ -325,19 +347,35 @@ Now the modified values will be marked when checking the default values:
 prp.print_default()
 ```
 ```
-+-----------------+--------------------+----------+------------------------------------------------------------------------+
-|     Feature     |       Value        | Modified |                              Description                               |
-+-----------------+--------------------+----------+------------------------------------------------------------------------+
-| tag_background  |        grey        |          | Background color of the tooltip annotation for the gene in Matplotlib. |
-| plot_background | rgb(173, 216, 230) |    *     | Background color for the chromosomes plots.                            |
-|   plot_border   |      #808080       |    *     | Color of the line defining the chromosome plots.                       |
-|   title_size    |         18         |          | Size of the plots' titles.                                             |
-|   title_color   |      magenta       |    *     | Color of the plots' titles.                                            |
-|   exon_width    |        0.4         |          | Height of the exon rectangle in the plot.                              |
-+-----------------+--------------------+----------+------------------------------------------------------------------------+
++------------------+--------------------+-------------+--------------------------------------------------------------+
+|     Feature      |       Value        | Is modified |                         Description                          |
++------------------+--------------------+-------------+--------------------------------------------------------------+
+|  tag_background  |        grey        |             | Background color of the tooltip annotation for the gene in   |
+|                  |                    |             | Matplotlib.                                                  |
+| plot_background  | rgb(173, 216, 230) |      *      | Background color for the chromosomes plots.                  |
+|   plot_border    |      #808080       |      *      | Color of the line defining the chromosome plots.             |
+|    title_size    |         18         |             | Size of the plots' titles.                                   |
+|   title_color    |      magenta       |      *      | Color of the plots' titles.                                  |
+|    exon_width    |        0.4         |             | Height of the exon rectangle in the plot.                    |
+| shrink_threshold |        0.05        |             | Minimum lenght of an intron in order for it to be shrinked   |
+|                  |                    |             | while using the introns_off feature. When threshold is       |
+|                  |                    |             | float, it represents the percentage of the plot space,       |
+|                  |                    |             | while an int threshold represents number of position or      |
+|                  |                    |             | base pairs.                                                  |
+|   plotly_port    |        8050        |             | Port to run plotly app.                                      |
+| arrow_line_width |         1          |             | Line width of the arrow lines (for stranded PyRanges).       |
+|   arrow_color    |        grey        |             | Direction arrow color (for stranded PyRanges).               |
+|  arrow_size_min  |       0.002        |             | Minimum size of the arrow to plot direction in exons if      |
+|                  |                    |             | necessary. Provided as a float correspondig to the plot      |
+|                  |                    |             | fraction or percentage.                                      |
+| intron_threshold |        0.04        |             | Minimum size of the intron to plot direction in it.          |
+|                  |                    |             | Provided as a float correspondig to the plot fraction or     |
+|                  |                    |             | percentage.                                                  |
++------------------+--------------------+-------------+--------------------------------------------------------------+
+
 ```
 
-To return to the original appearance of the plot, the ``reset_default`` function can restore 
+To return to the original appearance of the plot, the `reset_default` function can restore 
 all or some parameters. By default, it will reset all the features, but it also accepts a 
 string for resetting a single feature or a list of strings to reset a few.
 
@@ -352,7 +390,7 @@ prp.reset_default(['plot_border', 'title_color'])  # reset a few features
 
 
 Once we are able to get the plot we want, it can be exported to pdf or png format using the 
-``to\_file`` parameter. This parameter takes a string with the name or path of the file including
+``to_file`` parameter. This parameter takes a string with the name or path of the file including
 its extension. Additionally, the size can be customized through the ``file_size`` parameter by 
 providing a tuple containing the height and width values.
 

@@ -254,15 +254,6 @@ def plot(
         chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
 
         # Deal with introns off
-        # compute threshold
-        if isinstance(shrink_threshold, int):
-            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-        elif isinstance(shrink_threshold, float):
-            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-            subdf = subdf.groupby("Chromosome", group_keys=False).apply(
-                lambda x: compute_thresh(x, chrmd_df)
-            )
-
         # adapt coordinates to shrinked
         ts_data = {}
         subdf["oriStart"] = subdf["Start"]
@@ -271,6 +262,15 @@ def plot(
         ori_tick_pos_d = {}
 
         if introns_off:
+            # compute threshold
+            if isinstance(shrink_threshold, int):
+                subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+            elif isinstance(shrink_threshold, float):
+                subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+                subdf = subdf.groupby("Chromosome", group_keys=False).apply(
+                    lambda x: compute_thresh(x, chrmd_df)
+                )
+
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
                 lambda subdf: introns_shrink(subdf, ts_data)
             )
