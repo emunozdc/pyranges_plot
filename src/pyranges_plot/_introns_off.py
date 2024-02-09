@@ -78,3 +78,37 @@ def introns_shrink(df, ts_data):
 
     # Provide result
     return result[list(p.columns) + ["Start_adj", "End_adj", "cumdelta", "delta"]]
+
+
+def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
+    """Calculate shrinked axis values according to original coordinates."""
+
+    for chr in ts_data.keys():
+        # add to-shrinked reagions limits to axis
+        ori_tick_pos = []
+        tick_pos = []
+
+        if ts_data[chr].empty:  # nothing to shrink
+            tick_pos_d[chr] = []
+            ori_tick_pos_d[chr] = []
+
+        else:
+            pos = [[a, b] for a, b in zip(ts_data[chr]["Start"], ts_data[chr]["End"])]
+            cdel = list(ts_data[chr]["cumdelta"])
+
+            # update tick positions for shrinked regions and keep original values as names
+            for i in range(len(pos)):
+                if i == 0:
+                    tick_pos.append(pos[i][0])
+                    tick_pos.append(pos[i][1] - cdel[i])
+                else:
+                    tick_pos.append(pos[i][0] - cdel[i - 1])
+                    tick_pos.append(pos[i][1] - cdel[i])
+
+                ori_tick_pos.append(pos[i][0])
+                ori_tick_pos.append(pos[i][1])
+
+            tick_pos_d[chr] = tick_pos
+            ori_tick_pos_d[chr] = ori_tick_pos
+
+    return (tick_pos_d, ori_tick_pos_d)

@@ -13,7 +13,7 @@ from .data_preparation import (
     get_chromosome_metadata,
     compute_thresh,
 )
-from ._introns_off import introns_shrink
+from ._introns_off import introns_shrink, recalc_axis
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
 
@@ -267,60 +267,29 @@ def plot(
         ts_data = {}
         subdf["oriStart"] = subdf["Start"]
         subdf["oriEnd"] = subdf["End"]
-        limit_flag = 0  # should limits be recalculated
+        tick_pos_d = {}
+        ori_tick_pos_d = {}
+
         if introns_off:
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
                 lambda subdf: introns_shrink(subdf, ts_data)
             )
-
-            subdf["Start"] = subdf["Start_adj"]  ##?
-            subdf["End"] = subdf["End_adj"]  ##?
+            subdf["Start"] = subdf["Start_adj"]
+            subdf["End"] = subdf["End_adj"]
 
             # recompute limits
             chrmd_df = get_chromosome_metadata(
                 subdf, id_col, limits, genesmd_df, ts_data=ts_data
             )
 
-            tick_pos_d = {}
-            ori_tick_pos_d = {}
-
             # compute new axis values and positions if needed
             if ts_data:
-                for chr in ts_data.keys():
-                    # add to-shrinked reagions limits to axis
-                    ori_tick_pos = []
-                    tick_pos = []
-
-                    if ts_data[chr].empty:  # nothing to shrink
-                        tick_pos_d[chr] = []
-                        ori_tick_pos_d[chr] = []
-
-                    else:
-                        pos = [
-                            [a, b]
-                            for a, b in zip(ts_data[chr]["Start"], ts_data[chr]["End"])
-                        ]
-                        cdel = list(ts_data[chr]["cumdelta"])
-
-                        # update tick positions for shrinked regions and keep original values as names
-                        for i in range(len(pos)):
-                            if i == 0:
-                                tick_pos.append(pos[i][0])
-                                tick_pos.append(pos[i][1] - cdel[i])
-                            else:
-                                tick_pos.append(pos[i][0] - cdel[i - 1])
-                                tick_pos.append(pos[i][1] - cdel[i])
-
-                            ori_tick_pos.append(pos[i][0])
-                            ori_tick_pos.append(pos[i][1])
-
-                        tick_pos_d[chr] = tick_pos
-                        ori_tick_pos_d[chr] = ori_tick_pos
+                tick_pos_d, ori_tick_pos_d = recalc_axis(
+                    ts_data, tick_pos_d, ori_tick_pos_d
+                )
 
         else:
-            subdf["cumdelta"] = [0] * len(df)
-            tick_pos_d = {}
-            ori_tick_pos_d = {}
+            subdf["cumdelta"] = [0] * len(subdf)
 
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
@@ -367,6 +336,8 @@ def plot(
             )
 
         else:
-            raise Exception("Please define engine with set_engine().")
+            raise Exception(
+                "Please define engine with set_engine() or specifying it with the 'engine' parameter."
+            )
     except SystemExit as e:
         print("An error occured:", e)
