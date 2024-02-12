@@ -204,7 +204,7 @@ def plot(
         # PREPARE DATA for plot
         # Deal with plot features as kargs
         wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
-        if len(wrong_keys):
+        if wrong_keys:
             raise Exception(
                 "The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
             )
@@ -237,6 +237,7 @@ def plot(
             "arrow_line_width": float(getvalue("arrow_line_width")),
             "arrow_color": getvalue("arrow_color"),
             "arrow_size_min": float(getvalue("arrow_size_min")),
+            "arrow_size": float(getvalue("arrow_size")),
             "intron_threshold": getvalue("intron_threshold"),
             "shrink_threshold": getvalue("shrink_threshold"),
         }

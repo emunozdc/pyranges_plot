@@ -133,6 +133,7 @@ def _apply_gene_bridge(
     arrow_style,
     arrow_width,
     dir_flag,
+    arrow_size,
 ):
     """Evaluate data and provide _plot_row with right parameters."""
     # NOT transcript strucutre
@@ -154,6 +155,7 @@ def _apply_gene_bridge(
                 arrow_style,
                 arrow_width,
                 dir_flag,
+                arrow_size,
             ),
             axis=1,
         )
@@ -216,6 +218,7 @@ def _apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
+                    arrow_size,
                 ),
                 axis=1,
             )
@@ -243,6 +246,7 @@ def _apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
+                    arrow_size,
                 ),
                 axis=1,
             )
@@ -269,6 +273,7 @@ def _apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
+                    arrow_size,
                 ),
                 axis=1,
             )
@@ -294,6 +299,7 @@ def _plot_row(
     arrow_style,
     arrow_width,
     dir_flag,
+    arrow_size,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -333,7 +339,7 @@ def _plot_row(
     # Plot DIRECTION ARROW in EXON
     # decide about placing a direction arrow
     arrow_size = coord2percent(ax, 0.05 * start, 0.05 * stop)
-    incl = percent2coord(ax, 0.003)  # how long in the plot (OX)
+    incl = percent2coord(ax, arrow_size / 2)  # how long in the plot (OX)
 
     # create and plot lines
     if not dir_flag:
@@ -368,6 +374,7 @@ def plot_introns(
     arrow_color,
     arrow_style,
     arrow_width,
+    arrow_size,
 ):
     """Plot intron lines as needed."""
 
@@ -455,7 +462,9 @@ def plot_introns(
                 prev_tsend = row["End_adj"]
 
         intron_size = coord2percent(ax, start, stop)
-        incl = percent2coord(ax, 0.003)  # how long is the arrow in the plot (OX)
+        incl = percent2coord(
+            ax, arrow_size / 2
+        )  # how long is the arrow in the plot (OX)
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
         dir_flag = plot_direction(

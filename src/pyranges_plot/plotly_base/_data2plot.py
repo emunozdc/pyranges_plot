@@ -108,6 +108,7 @@ def _apply_gene_bridge(
     arrow_color,
     arrow_line_width,
     dir_flag,
+    arrow_size,
 ):
     """Evaluate data and provide _plot_row with right parameters."""
 
@@ -129,6 +130,7 @@ def _apply_gene_bridge(
                 arrow_color,
                 arrow_line_width,
                 dir_flag,
+                arrow_size,
             ),
             axis=1,
         )
@@ -212,6 +214,7 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
+                    arrow_size,
                 ),
                 axis=1,
             )
@@ -237,6 +240,7 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
+                    arrow_size,
                 ),
                 axis=1,
             )
@@ -263,6 +267,7 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
+                    arrow_size,
                 ),
                 axis=1,
             )
@@ -287,6 +292,7 @@ def _plot_row(
     arrow_color,
     arrow_line_width,
     dir_flag,
+    arrow_size,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -338,7 +344,7 @@ def _plot_row(
     # Plot DIRECTION ARROW in EXON
     # decide about placing a direction arrow
     arrow_size = coord2percent(fig, chrom_ix + 1, 0.05 * start, 0.05 * stop)
-    incl = percent2coord(fig, chrom_ix + 1, 0.003)  # how long in the plot (OX)
+    incl = percent2coord(fig, chrom_ix + 1, arrow_size / 2)  # how long in the plot (OX)
 
     # create and plot lines
     if not dir_flag:
@@ -372,6 +378,7 @@ def plot_introns(
     exon_width,
     arrow_color,
     arrow_line_width,
+    arrow_size,
 ):
     """Plot intron lines as needed."""
 
@@ -467,7 +474,9 @@ def plot_introns(
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
         intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
-        incl = percent2coord(fig, chrom_ix + 1, 0.003)  # how long in the plot (OX)
+        incl = percent2coord(
+            fig, chrom_ix + 1, arrow_size / 2
+        )  # how long in the plot (OX)
 
         dir_flag = plot_direction(
             fig,

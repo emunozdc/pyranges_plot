@@ -281,8 +281,6 @@ prp.plot(pp, transcript_str = True)
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex12.png">
 </p>
 
-Lastly, some features of the plot appearance can also be customized. The background, plot border or title
-default colors can be checked in the following way:
 
 ### :art: Appearance customizations
 
@@ -323,7 +321,7 @@ prp.print_default()
 
 ```
 
-Once you found the feature you would like to modify, it can be modified.
+Once you found the feature you would like to customize, it can be modified.
 
 ```python
 
