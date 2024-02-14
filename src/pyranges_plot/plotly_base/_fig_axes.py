@@ -1,8 +1,58 @@
 import plotly.subplots as sp
 import plotly.graph_objects as go
+import numpy as np
+from pyranges_plot.core import cumdelting
+
+
+def calculate_ticks(subdf, num_ticks=10):
+    """
+    Calculate tick values for a given data range.
+
+    Parameters:
+    - data_min: The minimum value of the data range.
+    - data_max: The maximum value of the data range.
+    - num_ticks: Desired number of tick marks.
+
+    Returns:
+    - An array of tick values.
+    """
+    # Calculate range and initial tick interval
+    data_min = subdf["oriStart"].min()
+    data_max = subdf["oriEnd"].max()
+    data_range = data_max - data_min
+    initial_interval = data_range / (num_ticks - 1)
+
+    # Calculate a 'nice' interval between ticks
+    # The exponent of the range
+    exponent = np.floor(np.log10(initial_interval))
+    # Fractional part of the range
+    fractional_part = initial_interval / 10**exponent
+
+    # Determine nice fractional part
+    if fractional_part < 1.5:
+        nice_fractional_part = 1
+    elif fractional_part < 3:
+        nice_fractional_part = 2
+    elif fractional_part < 7:
+        nice_fractional_part = 5
+    else:
+        nice_fractional_part = 10
+
+    nice_interval = nice_fractional_part * 10**exponent
+
+    # Calculate tick values
+    tick_values = np.arange(
+        start=data_min - (data_min % nice_interval), stop=data_max, step=nice_interval
+    )
+    # Adjust the last tick value if necessary
+    if tick_values[-1] < data_max:
+        tick_values = np.append(tick_values, tick_values[-1] + nice_interval)
+
+    return tick_values
 
 
 def create_fig(
+    subdf,
     chrmd_df,
     genesmd_df,
     ts_data,
@@ -47,37 +97,54 @@ def create_fig(
 
         # consider introns off
         if tick_pos_d:
-            #     # get previous default ticks
-            #     ##### adapt to plotly
-            #     original_ticks = [
-            #         int(tick.get_text().replace("−", "-")) for tick in ax.get_xticklabels()
-            #     ]
-            #     jump = original_ticks[1] - original_ticks[0]
-            #
-            #     # find previous ticks that should be conserved
-            #     to_add_val = []
-            #     for ii in range(1, len(ori_tick_pos_d[chrom]) - 1, 2):
-            #         not_shr0 = ori_tick_pos_d[chrom][ii]
-            #         not_shr1 = ori_tick_pos_d[chrom][ii + 1]
-            #         to_add_val += [i for i in original_ticks if not_shr0 < i <= not_shr1]
-            #
-            #     # compute new coordinates of conserved previous ticks
-            #     to_add = to_add_val.copy()
-            #     for itick in range(len(to_add)):
-            #         # get proper cumdelta
-            #         for ix, row in ts_data[chrom].iterrows():
-            #             if row["End"] <= to_add[itick]:
-            #                 cdel = row["cumdelta"]
-            #             else:
-            #                 break
-            #         to_add[itick] -= cdel
-            #
+            # get previous default ticks
+            ##### adapt to plotly
+            chrom_subdf = subdf[subdf["Chromosome"] == chrom]
+            original_ticks = list(calculate_ticks(chrom_subdf))
+            print([i for i in original_ticks])
+            jump = original_ticks[1] - original_ticks[0]
+
+            # find previous ticks that should be conserved
+            to_add_val = []
+            # there is data to shrink
+            if ori_tick_pos_d[chrom]:
+                to_add_val += [
+                    tick
+                    for tick in original_ticks
+                    if tick < min(ori_tick_pos_d[chrom])
+                    or tick > max(ori_tick_pos_d[chrom])
+                ]
+                for ii in range(1, len(ori_tick_pos_d[chrom]) - 1, 2):
+                    not_shr0 = ori_tick_pos_d[chrom][ii]
+                    not_shr1 = ori_tick_pos_d[chrom][ii + 1]
+                    to_add_val += [
+                        i for i in original_ticks if not_shr0 < i <= not_shr1
+                    ]
+
+            # nothing to shrink
+            else:
+                to_add_val += original_ticks
+
+            # compute new coordinates of conserved previous ticks
+            to_add = to_add_val.copy()
+            to_add = cumdelting(to_add, ts_data, chrom)
+
             # set new ticks
+            x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
+            # do not add ticks beyond adjusted limits
+            x_ticks_val = [
+                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
+            ]
+            x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
+                : len(x_ticks_val)
+            ]
+
+            # set new ticks
+            print(x_ticks_val)
+            print(x_ticks_name)
             fig.update_xaxes(
-                tickvals=tick_pos_d[chrom],  # sorted(tick_pos_d[chrom] + to_add),
-                ticktext=ori_tick_pos_d[
-                    chrom
-                ],  # sorted(ori_tick_pos_d[chrom] + to_add_val),
+                tickvals=x_ticks_val,
+                ticktext=x_ticks_name,
                 row=i + 1,
                 col=1,
             )

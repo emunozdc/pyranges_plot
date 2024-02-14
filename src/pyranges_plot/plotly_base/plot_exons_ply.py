@@ -46,6 +46,7 @@ def plot_exons_ply(
 
     # Create figure and chromosome plots
     fig = create_fig(
+        subdf,
         chrmd_df,
         genesmd_df,
         ts_data,

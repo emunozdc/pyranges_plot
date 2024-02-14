@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.patches import Rectangle
-
 from pyranges_plot.core import cumdelting
 
 
