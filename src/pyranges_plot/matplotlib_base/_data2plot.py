@@ -164,17 +164,21 @@ def _apply_gene_bridge(
             # get the gene information to print on hover
             # default
             if strand:
-                geneinfo = f"[{strand}] ({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default with strand
+                geneinfo_start = f"[{strand}] ({tr_start}, {cds_start})\nID: {genename}"  # default with strand
+                geneinfo_end = f"[{strand}] ({cds_end}, {tr_end})\nID: {genename}"  # default with strand
             else:
-                geneinfo = f"({row.oriStart}, {row.oriEnd})\nID: {genename}"  # default without strand
+                geneinfo_start = f"({tr_start}, {cds_start})\nID: {genename}"  # default without strand
+                geneinfo_end = (
+                    f"({cds_end}, {tr_end})\nID: {genename}"  # default without strand
+                )
 
             # customized
-            showinfo_dict = row.to_dict()  # first element of gene rows
-            if showinfo:
-                geneinfo += "\n" + showinfo.format(**showinfo_dict)
+            # showinfo_dict = row.to_dict()  # first element of gene rows
+            # if showinfo:
+            #     geneinfo += "\n" + showinfo.format(**showinfo_dict)
 
-            make_annotation(start_utr, fig, ax, geneinfo, tag_background)
-            make_annotation(end_utr, fig, ax, geneinfo, tag_background)
+            make_annotation(start_utr, fig, ax, geneinfo_start, tag_background)
+            make_annotation(end_utr, fig, ax, geneinfo_end, tag_background)
 
             # keep CDS data and plot it
             df = df.groupby("Feature", group_keys=False).get_group("CDS")
