@@ -14,7 +14,6 @@ from .matplotlib_base._core import plt_popup_warning
 ############ COMPUTE INTRONS OFF THRESHOLD
 def compute_thresh(df, chrmd_df):
     """Get threshold from limits"""
-    print(df)
 
     chrom = df["Chromosome"].iloc[0]
     limit_range = chrmd_df.loc[chrom]["max"] - chrmd_df.loc[chrom]["min"]

@@ -3,6 +3,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.patches import Rectangle
 from pyranges_plot.core import cumdelting
+from ._core import make_annotation
 
 
 def create_fig(
@@ -19,6 +20,7 @@ def create_fig(
     legend,
     tick_pos_d,
     ori_tick_pos_d,
+    tag_background,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -131,14 +133,15 @@ def create_fig(
                     b - a,
                     y_max + 1,
                     edgecolor="grey",
-                    facecolor="grey",
-                    alpha=0.2,
-                    # fill=True, # option1
-                    fill=None,
-                    hatch="///",
+                    facecolor="lightyellow",
+                    alpha=0.5,
+                    fill=True,
                     linewidth=0,  # option2
                 )
                 ax.add_patch(ts_range)
+                make_annotation(
+                    ts_range, fig, ax, f"Shrinked region:\n[{a} - {b}]", tag_background
+                )
 
     plt.subplots_adjust(hspace=0.7)
     # Create legend

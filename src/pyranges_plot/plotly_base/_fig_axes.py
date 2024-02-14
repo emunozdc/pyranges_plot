@@ -5,17 +5,8 @@ from pyranges_plot.core import cumdelting
 
 
 def calculate_ticks(subdf, num_ticks=10):
-    """
-    Calculate tick values for a given data range.
+    """Calculate tick values for a given data range."""
 
-    Parameters:
-    - data_min: The minimum value of the data range.
-    - data_max: The maximum value of the data range.
-    - num_ticks: Desired number of tick marks.
-
-    Returns:
-    - An array of tick values.
-    """
     # Calculate range and initial tick interval
     data_min = subdf["oriStart"].min()
     data_max = subdf["oriEnd"].max()
@@ -98,10 +89,9 @@ def create_fig(
         # consider introns off
         if tick_pos_d:
             # get previous default ticks
-            ##### adapt to plotly
             chrom_subdf = subdf[subdf["Chromosome"] == chrom]
             original_ticks = list(calculate_ticks(chrom_subdf))
-            print([i for i in original_ticks])
+
             jump = original_ticks[1] - original_ticks[0]
 
             # find previous ticks that should be conserved
@@ -140,8 +130,6 @@ def create_fig(
             ]
 
             # set new ticks
-            print(x_ticks_val)
-            print(x_ticks_name)
             fig.update_xaxes(
                 tickvals=x_ticks_val,
                 ticktext=x_ticks_name,
@@ -183,13 +171,13 @@ def create_fig(
                     go.Scatter(
                         x=[x0, x1, x1, x0, x0],
                         y=[y0, y0, y1, y1, y0],
-                        fill="tonexty",
-                        fillcolor=plot_background,
-                        fillpattern_shape="/",
-                        fillpattern_solidity=0.3,
-                        line={"color": "whitesmoke"},
-                        hoverinfo=None,
-                        # opacity=0.1,
+                        fill="toself",
+                        fillcolor="lightyellow",
+                        mode="lines",
+                        line={"color": "lightyellow"},
+                        text="Shrinked region:\n[{x0} - {x1}]",
+                        hoverinfo="text",
+                        opacity=0.5,
                         line_width=0,
                     ),
                     row=i + 1,

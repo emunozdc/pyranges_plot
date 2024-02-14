@@ -257,7 +257,7 @@ def print_default(return_keys=False):
         value_sz = max([len(str(val)) for val in feat_df["Value"]])
         if value_sz < 5:  # value has a minimum of 5
             value_sz = 5
-        mod_sz = 11  # according to "Is modified" length
+        mod_sz = 7  # according to "Edited?" length
         desc_sz = 60
 
         # Function to format row
@@ -276,7 +276,7 @@ def print_default(return_keys=False):
 
         # Create table header
         header = f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+\n"
-        header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Is modified':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
+        header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Edited?':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
         header += f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
 
         # Create table rows

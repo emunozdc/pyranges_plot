@@ -70,6 +70,7 @@ def plot_exons_plt(
         legend,
         tick_pos_d,
         ori_tick_pos_d,
+        tag_background,
     )
 
     # Plot genes
