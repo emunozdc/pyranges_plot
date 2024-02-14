@@ -261,7 +261,7 @@ def _apply_gene_bridge(
                     exon_color,
                     chrom_ix,
                     showinfo,
-                    exon_width,
+                    transcript_utr_width,
                     legend,
                     arrow_size_min,
                     arrow_color,
