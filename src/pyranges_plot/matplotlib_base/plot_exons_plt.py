@@ -44,7 +44,7 @@ def plot_exons_plt(
     arrow_color = feat_dict["arrow_color"]
     arrow_size_min = feat_dict["arrow_size_min"]
     arrow_size = feat_dict["arrow_size"]
-    intron_threshold = feat_dict["intron_threshold"]
+    arrow_intron_threshold = feat_dict["arrow_intron_threshold"]
 
     # Create figure and axes
     if file_size:
@@ -88,7 +88,7 @@ def plot_exons_plt(
             transcript_str,
             exon_width,
             transcript_utr_width,
-            intron_threshold,
+            arrow_intron_threshold,
             arrow_line_width,
             arrow_color,
             arrow_size_min,
@@ -121,7 +121,7 @@ def _gby_plot_exons(
     transcript_str,
     exon_width,
     transcript_utr_width,
-    intron_threshold,
+    arrow_intron_threshold,
     arrow_line_width,
     arrow_color,
     arrow_size_min,
@@ -167,7 +167,7 @@ def _gby_plot_exons(
         gene_ix,
         exon_color,
         strand,
-        intron_threshold,
+        arrow_intron_threshold,
         exon_width,
         arrow_color,
         arrow_style,

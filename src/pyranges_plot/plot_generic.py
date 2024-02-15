@@ -238,7 +238,7 @@ def plot(
             "arrow_color": getvalue("arrow_color"),
             "arrow_size_min": float(getvalue("arrow_size_min")),
             "arrow_size": float(getvalue("arrow_size")),
-            "intron_threshold": getvalue("intron_threshold"),
+            "arrow_intron_threshold": getvalue("arrow_intron_threshold"),
             "shrink_threshold": getvalue("shrink_threshold"),
         }
         shrink_threshold = feat_dict["shrink_threshold"]

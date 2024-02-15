@@ -33,7 +33,7 @@ plot_features_dict = {
         "Fraction or percentage of the plot occupied by a direction arrow.",
         " ",
     ),
-    "intron_threshold": (
+    "arrow_intron_threshold": (
         0.04,
         "Minimum size of the intron to plot a direction arrow in it. Provided as a float correspondig to the plot fraction or percentage.",
         " ",

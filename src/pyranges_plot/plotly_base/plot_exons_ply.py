@@ -42,7 +42,7 @@ def plot_exons_ply(
     arrow_color = feat_dict["arrow_color"]
     arrow_size_min = feat_dict["arrow_size_min"]
     arrow_size = feat_dict["arrow_size"]
-    intron_threshold = feat_dict["intron_threshold"]
+    arrow_intron_threshold = feat_dict["arrow_intron_threshold"]
 
     # Create figure and chromosome plots
     fig = create_fig(
@@ -77,7 +77,7 @@ def plot_exons_ply(
             arrow_color,
             arrow_size_min,
             arrow_size,
-            intron_threshold,
+            arrow_intron_threshold,
         )
     )
 
@@ -140,7 +140,7 @@ def _gby_plot_exons(
     arrow_color,
     arrow_size_min,
     arrow_size,
-    intron_threshold,
+    arrow_intron_threshold,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -199,7 +199,7 @@ def _gby_plot_exons(
         chrom_ix,
         strand,
         genename,
-        intron_threshold,
+        arrow_intron_threshold,
         exon_width,
         arrow_color,
         arrow_line_width,

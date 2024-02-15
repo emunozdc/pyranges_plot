@@ -164,7 +164,12 @@ def create_fig(
             rects_df["Start"] -= rects_df["cumdelta_start"]
             rects_df["End"] -= rects_df["cumdelta_end"]
 
-            for a, b in zip(rects_df["Start"], rects_df["End"]):
+            for a, b, c, d in zip(
+                rects_df["Start"],
+                rects_df["End"],
+                rects_df["cumdelta_start"],
+                rects_df["cumdelta_end"],
+            ):
                 x0, x1 = a, b
                 y0, y1 = y_min - 1, y_max + 1
                 fig.add_trace(
@@ -175,7 +180,7 @@ def create_fig(
                         fillcolor="lightyellow",
                         mode="lines",
                         line={"color": "lightyellow"},
-                        text="Shrinked region:\n[{x0} - {x1}]",
+                        text=f"Shrinked region:\n[{x0+c} - {x1+d}]",
                         hoverinfo="text",
                         opacity=0.5,
                         line_width=0,

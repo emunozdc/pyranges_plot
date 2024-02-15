@@ -127,7 +127,12 @@ def create_fig(
             rects_df["Start"] -= rects_df["cumdelta_start"]
             rects_df["End"] -= rects_df["cumdelta_end"]
 
-            for a, b in zip(rects_df["Start"], rects_df["End"]):
+            for a, b, c, d in zip(
+                rects_df["Start"],
+                rects_df["End"],
+                rects_df["cumdelta_start"],
+                rects_df["cumdelta_end"],
+            ):
                 ts_range = Rectangle(
                     (a, y_min - 1),
                     b - a,
@@ -140,7 +145,11 @@ def create_fig(
                 )
                 ax.add_patch(ts_range)
                 make_annotation(
-                    ts_range, fig, ax, f"Shrinked region:\n[{a} - {b}]", tag_background
+                    ts_range,
+                    fig,
+                    ax,
+                    f"Shrinked region:\n[{a+c} - {b+d}]",
+                    tag_background,
                 )
 
     plt.subplots_adjust(hspace=0.7)
