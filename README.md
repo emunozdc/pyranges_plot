@@ -5,9 +5,9 @@ Gene visualization package for dataframe objects generated with [PyRanges](https
 
 
 ## Overview
-The goal is getting a plot displaying a series of genes contained in a PyRanges 
-object. It displays the genes' intron-exon structure in its corresponding 
-chromosome, enabling easy visualization of your PyRanges data.
+The goal is getting a plot displaying a series of genes, transcripts, or any kind
+of ranges contained in a PyRanges object. It displays the genes' intron-exon structure 
+in its corresponding chromosome, enabling easy visualization of your PyRanges data.
 
 To obtain the plot there are some features to be defined by the user, one is the 
 **engine** since it can be based on Matplotlib or Plotly, the other is the name 
@@ -256,7 +256,7 @@ prp.plot(
 
 
 
-
+#### :dizzy: Show transcript structure
 
 Another interesting feature is showing the transcript structure, so the exons appear as 
 wider rectangles than UTR regions. For that the proper information should be stored in the 
@@ -271,7 +271,7 @@ pp = pr.from_dict({
 	"transcript_id":["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4", "t5", "t5", "t5", "t5", "t6", "t6"],
 	"feature1": ["1", "1", "1", "1", "1", "2", "2", "2", "2", "2", "2", "2", "2", "2"],
 	"feature2": ["A", "A", "B", "B", "C", "C", "C", "D", "E", "E", "E", "E", "F", "F"],
-	"Feature": ["exon", "exon", "CDS", "CDS", "CDS", "CDS", "CDS", "exon", "exon", "CDS", "CDS", "exon", None, None]
+	"Feature": ["exon", "exon", "CDS", "CDS", "CDS", "CDS", "CDS", "exon", "exon", "CDS", "CDS", "exon", "CDS", "CDS"]
     
 })
 
@@ -281,47 +281,82 @@ prp.plot(pp, transcript_str = True)
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex12.png">
 </p>
 
+#### :dizzy: Reduce intron size
 
-### :art: Appearance customizations
+In order to facilitate visualization, pyranges_plot offers the option to reduce the introns 
+which exceed a given threshold size. For that the `introns_off` parameter should be used. 
+Additionally, the threshold can be defined by the user through kargs or setting the default
+as explained in the next section, using `shrink_threshold`, when a float is provided as 
+shrink_threshold it will be interpreted as a fraction of the original coordinate range, 
+while when an int is given it will be interpreted as number of base pairs.
+
+```python
+ppp = pr.from_dict({'Chromosome': ['1']*10 + ['2']*10,
+ 'Strand': ['+','+','+','+','-','-','-','-','+','+'] + ["+", "+", "+", "+", "-", "-", "-", "-", "+", "+"],
+ 'Start': [90,61,104,228,9,142,52,149,218,151] + [5, 27, 37, 47, 1, 7, 42, 37, 60, 80],
+ 'End': [92,64,113,229,12,147,57,155,224,153] + [8, 32, 40, 50, 5, 10, 46, 40, 70, 90],
+ 'transcript_id': ['t1','t1','t1','t1','t2','t2','t2','t2','t3','t3'] + ["t4", "t4", "t4", "t4", "t5", "t5", "t5", "t5", "t6", "t6"],
+ 'Feature': ["exon"]*20
+                    }
+                   )
+
+prp.plot(ppp, introns_off=True)
+prp.plot(ppp, introns_off=True, shrink_threshold=0.2)
+```
+<p align="center">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex13.png">
+</p>
+<p align="center">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex14.png">
+</p>
+
+
+### :ribbon: Appearance customizations
 
 There are some features of the plot appearance which can also be customized, like the 
-background, plot border or titles. To see and modify these values the `print_default` and 
-`set_default` functions should be used.
+background, plot border or titles. To check these customizable features and its default 
+values, the `print_default` function should be used. These values con be modified for all 
+the following plots through the `set_default` function; However, for a single plot, these 
+features can be given as kargs to the `plot` function (see `shrink_threshold` in the example 
+above).
+
 
 ```python
 # Check the default values
 prp.print_default()
 ```
 ```
-+------------------+-----------+-------------+--------------------------------------------------------------+
-|     Feature      |   Value   | Is modified |                         Description                          |
-+------------------+-----------+-------------+--------------------------------------------------------------+
-|  tag_background  |   grey    |             | Background color of the tooltip annotation for the gene in   |
-|                  |           |             | Matplotlib.                                                  |
-| plot_background  |   white   |             | Background color for the chromosomes plots.                  |
-|   plot_border    |   black   |             | Color of the line defining the chromosome plots.             |
-|    title_size    |    18     |             | Size of the plots' titles.                                   |
-|   title_color    | goldenrod |             | Color of the plots' titles.                                  |
-|    exon_width    |    0.4    |             | Height of the exon rectangle in the plot.                    |
-| shrink_threshold |   0.05    |             | Minimum lenght of an intron in order for it to be shrinked   |
-|                  |           |             | while using the introns_off feature. When threshold is       |
-|                  |           |             | float, it represents the percentage of the plot space,       |
-|                  |           |             | while an int threshold represents number of position or      |
-|                  |           |             | base pairs.                                                  |
-|   plotly_port    |   8050    |             | Port to run plotly app.                                      |
-| arrow_line_width |     1     |             | Line width of the arrow lines (for stranded PyRanges).       |
-|   arrow_color    |   grey    |             | Direction arrow color (for stranded PyRanges).               |
-|  arrow_size_min  |   0.002   |             | Minimum size of the arrow to plot direction in exons if      |
-|                  |           |             | necessary. Provided as a float correspondig to the plot      |
-|                  |           |             | fraction or percentage.                                      |
-| intron_threshold |   0.04    |             | Minimum size of the intron to plot direction in it.          |
-|                  |           |             | Provided as a float correspondig to the plot fraction or     |
-|                  |           |             | percentage.                                                  |
-+------------------+-----------+-------------+--------------------------------------------------------------+
++------------------------+-------+---------+--------------------------------------------------------------+
+|        Feature         | Value | Edited? |                         Description                          |
++------------------------+-------+---------+--------------------------------------------------------------+
+|     tag_background     | grey  |         | Background color of the tooltip annotation for the gene in   |
+|                        |       |         | Matplotlib.                                                  |
+|    plot_background     | white |         | Background color for the chromosomes plots.                  |
+|      plot_border       | black |         | Color of the line defining the chromosome plots.             |
+|       title_size       |  18   |         | Size of the plots' titles.                                   |
+|      title_color       | black |         | Color of the plots' titles.                                  |
++------------------------+-------+---------+--------------------------------------------------------------+
+|       exon_width       |  0.4  |         | Height of the exon rectangle in the plot.                    |
+|    arrow_line_width    |   1   |         | Line width of the arrow lines (for stranded PyRanges).       |
+|      arrow_color       | grey  |         | Direction arrow color (for stranded PyRanges).               |
+|       arrow_size       | 0.006 |         | Fraction or percentage of the plot occupied by a direction   |
+|                        |       |         | arrow.                                                       |
+| arrow_intron_threshold | 0.04  |         | Minimum size of the intron to plot a direction arrow in it.  |
+|                        |       |         | Provided as a float correspondig to the plot fraction or     |
+|                        |       |         | percentage.                                                  |
++------------------------+-------+---------+--------------------------------------------------------------+
+|    shrink_threshold    | 0.05  |         | Minimum lenght of an intron in order for it to be shrinked   |
+|                        |       |         | while using the introns_off feature. When threshold is       |
+|                        |       |         | float, it represents the percentage of the plot space,       |
+|                        |       |         | while an int threshold represents number of positions or     |
+|                        |       |         | base pairs.                                                  |
+|      plotly_port       | 8050  |         | Port to run plotly app.                                      |
++------------------------+-------+---------+--------------------------------------------------------------+
+
 
 ```
 
-Once you found the feature you would like to customize, it can be modified.
+Once you found the feature you would like to customize, it can be modified:
 
 ```python
 
@@ -334,7 +369,7 @@ prp.set_default('title_color', 'magenta')
 prp.plot(p)
 ```
 <p align="center">
-    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex13.png">
+    <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex15.png">
 </p>
 
 
@@ -345,31 +380,32 @@ Now the modified values will be marked when checking the default values:
 prp.print_default()
 ```
 ```
-+------------------+--------------------+-------------+--------------------------------------------------------------+
-|     Feature      |       Value        | Is modified |                         Description                          |
-+------------------+--------------------+-------------+--------------------------------------------------------------+
-|  tag_background  |        grey        |             | Background color of the tooltip annotation for the gene in   |
-|                  |                    |             | Matplotlib.                                                  |
-| plot_background  | rgb(173, 216, 230) |      *      | Background color for the chromosomes plots.                  |
-|   plot_border    |      #808080       |      *      | Color of the line defining the chromosome plots.             |
-|    title_size    |         18         |             | Size of the plots' titles.                                   |
-|   title_color    |      magenta       |      *      | Color of the plots' titles.                                  |
-|    exon_width    |        0.4         |             | Height of the exon rectangle in the plot.                    |
-| shrink_threshold |        0.05        |             | Minimum lenght of an intron in order for it to be shrinked   |
-|                  |                    |             | while using the introns_off feature. When threshold is       |
-|                  |                    |             | float, it represents the percentage of the plot space,       |
-|                  |                    |             | while an int threshold represents number of position or      |
-|                  |                    |             | base pairs.                                                  |
-|   plotly_port    |        8050        |             | Port to run plotly app.                                      |
-| arrow_line_width |         1          |             | Line width of the arrow lines (for stranded PyRanges).       |
-|   arrow_color    |        grey        |             | Direction arrow color (for stranded PyRanges).               |
-|  arrow_size_min  |       0.002        |             | Minimum size of the arrow to plot direction in exons if      |
-|                  |                    |             | necessary. Provided as a float correspondig to the plot      |
-|                  |                    |             | fraction or percentage.                                      |
-| intron_threshold |        0.04        |             | Minimum size of the intron to plot direction in it.          |
-|                  |                    |             | Provided as a float correspondig to the plot fraction or     |
-|                  |                    |             | percentage.                                                  |
-+------------------+--------------------+-------------+--------------------------------------------------------------+
++------------------------+--------------------+---------+--------------------------------------------------------------+
+|        Feature         |       Value        | Edited? |                         Description                          |
++------------------------+--------------------+---------+--------------------------------------------------------------+
+|     tag_background     |        grey        |         | Background color of the tooltip annotation for the gene in   |
+|                        |                    |         | Matplotlib.                                                  |
+|    plot_background     | rgb(173, 216, 230) |    *    | Background color for the chromosomes plots.                  |
+|      plot_border       |      #808080       |    *    | Color of the line defining the chromosome plots.             |
+|       title_size       |         18         |         | Size of the plots' titles.                                   |
+|      title_color       |      magenta       |    *    | Color of the plots' titles.                                  |
++------------------------+--------------------+---------+--------------------------------------------------------------+
+|       exon_width       |        0.4         |         | Height of the exon rectangle in the plot.                    |
+|    arrow_line_width    |         1          |         | Line width of the arrow lines (for stranded PyRanges).       |
+|      arrow_color       |        grey        |         | Direction arrow color (for stranded PyRanges).               |
+|       arrow_size       |       0.006        |         | Fraction or percentage of the plot occupied by a direction   |
+|                        |                    |         | arrow.                                                       |
+| arrow_intron_threshold |        0.04        |         | Minimum size of the intron to plot a direction arrow in it.  |
+|                        |                    |         | Provided as a float correspondig to the plot fraction or     |
+|                        |                    |         | percentage.                                                  |
++------------------------+--------------------+---------+--------------------------------------------------------------+
+|    shrink_threshold    |        0.05        |         | Minimum lenght of an intron in order for it to be shrinked   |
+|                        |                    |         | while using the introns_off feature. When threshold is       |
+|                        |                    |         | float, it represents the percentage of the plot space,       |
+|                        |                    |         | while an int threshold represents number of positions or     |
+|                        |                    |         | base pairs.                                                  |
+|      plotly_port       |        8050        |         | Port to run plotly app.                                      |
++------------------------+--------------------+---------+--------------------------------------------------------------+
 
 ```
 
@@ -410,7 +446,6 @@ prp.plot(p_subset, colormap='Set3', to_file='t3_t4_plot.png')
 
 
 ## Coming soon
-* Option to turn off introns.
 * Accept different PyRanges objects or DataFrames as input for the same plot.
 * Bases will be displayed along coordinates.
 * Colorblind friendly.
