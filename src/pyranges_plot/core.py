@@ -1,7 +1,6 @@
-import numpy as np
 import pandas as pd
 from .plot_features import plot_features_dict, plot_features_dict_in_use
-import tkinter as tk
+
 
 # CORE FUNCTIONS
 engine = None
@@ -279,14 +278,58 @@ def print_default(return_keys=False):
         header += f"| {'Feature':^{name_sz}} | {'Value':^{value_sz}} | {'Edited?':^{mod_sz}} | {'Description':^{desc_sz}} |\n"
         header += f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
 
+        # Divide features
+        print(feat_df)
+        extragen_feat_df = feat_df[
+            feat_df.index.isin(
+                [
+                    "tag_background",
+                    "plot_background",
+                    "plot_border",
+                    "title_size",
+                    "title_color",
+                ]
+            )
+        ].copy()
+        intragen_feat_df = feat_df[
+            feat_df.index.isin(
+                [
+                    "exon_width",
+                    "arrow_line_width",
+                    "arrow_color",
+                    "arrow_size",
+                    "arrow_intron_threshold",
+                ]
+            )
+        ].copy()
+        other_feat_df = feat_df[
+            feat_df.index.isin(["shrink_threshold", "plotly_port"])
+        ].copy()
+
         # Create table rows
-        rows = "\n".join([format_row(key, value) for key, value in feat_df.iterrows()])
+        rows_eg = "\n".join(
+            [format_row(key, value) for key, value in extragen_feat_df.iterrows()]
+        )
+        rows_ig = "\n".join(
+            [format_row(key, value) for key, value in intragen_feat_df.iterrows()]
+        )
+        rows_o = "\n".join(
+            [format_row(key, value) for key, value in other_feat_df.iterrows()]
+        )
 
         # Print table
         print(header)
-        print(rows)
+        print(rows_eg)
         print(
             f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
+        )
+        print(rows_ig)
+        print(
+            f"+{'-' * (name_sz + 2)}+{'-' * (value_sz + 2)}+{'-' * (mod_sz + 2)}+{'-' * (desc_sz + 2)}+"
+        )
+        print(rows_o)
+        print(
+            f"+{'-' * (name_sz + 2)}+{'-' * (value_sz + 2)}+{'-' * (mod_sz + 2)}+{'-' * (desc_sz + 2)}+"
         )
 
     if return_keys:
