@@ -120,14 +120,16 @@ def create_fig(
             to_add = cumdelting(to_add, ts_data, chrom)
 
             # set new ticks
-            x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
+            # x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
+            x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
                 num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
             ]
-            x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
-                : len(x_ticks_val)
-            ]
+            # x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
+            #     : len(x_ticks_val)
+            # ]
+            x_ticks_name = to_add_val[: len(x_ticks_val)]
 
             # set new ticks
             fig.update_xaxes(
@@ -182,7 +184,7 @@ def create_fig(
                         line={"color": "lightyellow"},
                         text=f"Shrinked region:\n[{x0+c} - {x1+d}]",
                         hoverinfo="text",
-                        opacity=0.5,
+                        opacity=0.7,
                         line_width=0,
                     ),
                     row=i + 1,

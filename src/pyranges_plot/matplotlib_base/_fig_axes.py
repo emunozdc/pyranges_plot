@@ -91,14 +91,16 @@ def create_fig(
             to_add = cumdelting(to_add, ts_data, chrom)
 
             # set new ticks
-            x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
+            # x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
+            x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
                 num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
             ]
-            x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
-                : len(x_ticks_val)
-            ]
+            # x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
+            #     : len(x_ticks_val)
+            # ]
+            x_ticks_name = to_add_val[: len(x_ticks_val)]
 
             # adjust names
             ax.set_xticks(x_ticks_val)
@@ -139,7 +141,7 @@ def create_fig(
                     y_max + 1,
                     edgecolor="grey",
                     facecolor="lightyellow",
-                    alpha=0.5,
+                    alpha=0.7,
                     fill=True,
                     linewidth=0,  # option2
                 )
