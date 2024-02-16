@@ -359,7 +359,7 @@ def plot_introns(
 ):
     """Plot intron lines as needed."""
 
-    dir_flag = 0
+    dir_flag = []
 
     for i in range(len(sorted_exons) - 1):
         # define intron
@@ -448,19 +448,24 @@ def plot_introns(
         )  # how long is the arrow in the plot (OX)
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
-        dir_flag = plot_direction(
-            ax,
-            strand,
-            intron_size,
-            intron_threshold,
-            start,
-            stop,
-            incl,
-            gene_ix,
-            exon_width,
-            arrow_color,
-            arrow_style,
-            arrow_width,
+        dir_flag.append(
+            plot_direction(
+                ax,
+                strand,
+                intron_size,
+                intron_threshold,
+                start,
+                stop,
+                incl,
+                gene_ix,
+                exon_width,
+                arrow_color,
+                arrow_style,
+                arrow_width,
+            )
         )
 
-    return dir_flag
+    if 1 in dir_flag:
+        return 1
+    else:
+        return 0
