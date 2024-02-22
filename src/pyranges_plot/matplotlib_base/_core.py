@@ -41,7 +41,7 @@ def plt_popup_warning(txt, bkg="#1f1f1f", txtcol="white", botcol="#D6AA00"):
     bot.pack(pady=10)
 
     # Start main loop
-    warn.mainloop()
+    warn.wait_window()
 
 
 def make_annotation(item, fig, ax, geneinfo, tag_background):
