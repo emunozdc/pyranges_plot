@@ -59,7 +59,7 @@ def plot_exons_ply(
     )
 
     # Plot genes
-    subdf.groupby(id_col, group_keys=False).apply(
+    subdf.groupby(id_col, group_keys=False, observed=True).apply(
         lambda subdf: _gby_plot_exons(
             subdf,
             fig,

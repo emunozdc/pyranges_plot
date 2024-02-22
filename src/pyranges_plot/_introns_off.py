@@ -7,11 +7,14 @@ def get_introns(p):
 
     if "Feature" in p.columns:
         introns = p.df[p.df["Feature"] == "exon"]
+        # introns = p.df[p.df["Feature"] != "gene"]
     else:
         introns = p.df
 
     # intron start is exon end shifted
-    introns["End"] = introns.groupby("transcript_id")["End"].shift()
+    introns["End"] = introns.groupby("transcript_id", group_keys=False, observed=True)[
+        "End"
+    ].shift()
     introns.dropna(inplace=True)
     # intron end is exon start
     introns.rename(columns={"Start": "End", "End": "Start"}, inplace=True)
@@ -32,11 +35,13 @@ def introns_shrink(df, ts_data):
     p = p.sort(by=["transcript_id", "Start"])
     introns = get_introns(p)
     exons = p[p.Feature == "exon"]
+    # exons = p[p.Feature != "gene"]
     flex_introns = introns.subtract(exons)
 
     # obtain shrinkable regions
     to_shrink = flex_introns.merge(strand=False)  # unique ranges
-    to_shrink = to_shrink[to_shrink.End - to_shrink.Start > thresh]  # filtered
+    if not to_shrink.empty:
+        to_shrink = to_shrink[to_shrink.End - to_shrink.Start > thresh]  # filtered
 
     # nohing to shrink
     if to_shrink.empty:
@@ -48,6 +53,7 @@ def introns_shrink(df, ts_data):
         result["End_adj"] = result["End"]
         result["delta"] = [0] * len(result)
         result["cumdelta"] = [0] * len(result)
+        # result = result[result["Feature"] != "gene"]
         result = result[result["Feature"] == "exon"]
         return result
 
@@ -74,6 +80,7 @@ def introns_shrink(df, ts_data):
     exons["cumdelta"] = exons["cumdelta"].replace(0, method="ffill")
     # match exons with its cumdelta
     result = exons[exons["Feature"] == "exon"]
+    # result = exons[exons["Feature"] != "gene"]
 
     # Adjust coordinates
     result["Start_adj"] = result["Start"] - result["cumdelta"]

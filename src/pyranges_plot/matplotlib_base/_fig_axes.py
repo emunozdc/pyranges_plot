@@ -115,7 +115,9 @@ def create_fig(
         y_ticks_name = []
         if not packed:
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
-            y_ticks_name = genesmd_df.groupby("chrix", group_keys=False).groups[chrom]
+            y_ticks_name = genesmd_df.groupby(
+                "chrix", group_keys=False, observed=True
+            ).groups[chrom]
         ax.set_yticks(y_ticks_val)
         ax.set_yticklabels(y_ticks_name)
 

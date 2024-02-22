@@ -133,12 +133,12 @@ def _apply_gene_bridge(
             and df.Feature.str.contains("exon").any()
         ):
             # get coordinates for utr and cds
-            tr_start, cds_start = df.groupby("Feature", group_keys=False).Start.apply(
-                min
-            )[["exon", "CDS"]]
-            tr_end, cds_end = df.groupby("Feature", group_keys=False).End.apply(max)[
-                ["exon", "CDS"]
-            ]
+            tr_start, cds_start = df.groupby(
+                "Feature", group_keys=False, observed=True
+            ).Start.apply(min)[["exon", "CDS"]]
+            tr_end, cds_end = df.groupby(
+                "Feature", group_keys=False, observed=True
+            ).End.apply(max)[["exon", "CDS"]]
 
             # create utr
             start_utr = Rectangle(
@@ -181,7 +181,7 @@ def _apply_gene_bridge(
             make_annotation(end_utr, fig, ax, geneinfo_end, tag_background)
 
             # keep CDS data and plot it
-            df = df.groupby("Feature", group_keys=False).get_group("CDS")
+            df = df.groupby("Feature", group_keys=False, observed=True).get_group("CDS")
             df.apply(
                 _plot_row,
                 args=(

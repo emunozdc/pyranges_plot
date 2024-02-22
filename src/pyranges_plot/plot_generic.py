@@ -268,11 +268,13 @@ def plot(
                 subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
             elif isinstance(shrink_threshold, float):
                 subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-                subdf = subdf.groupby("Chromosome", group_keys=False).apply(
+                subdf = subdf.groupby(
+                    "Chromosome", group_keys=False, observed=True
+                ).apply(
                     lambda x: compute_thresh(x, chrmd_df) if not x.empty else None
                 )  # empty rows when subset
 
-            subdf = subdf.groupby("Chromosome", group_keys=False).apply(
+            subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
                 lambda x: introns_shrink(x, ts_data) if not x.empty else None
             )  # empty rows when subset
             subdf["Start"] = subdf["Start_adj"]
