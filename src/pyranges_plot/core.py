@@ -238,7 +238,7 @@ def divide_desc(desc, cutoff):
 
 
 def print_default(return_keys=False):
-    """xxx"""
+    """Prints the customizable features default values and description."""
 
     # store data
     plot_features_dict_in_use = get_default()
@@ -337,7 +337,7 @@ def print_default(return_keys=False):
 
 
 def cumdelting(num_l, ts_data, chrom):
-    """Update a list of numbers according to cumdelta."""
+    """Update a list of coordinates according to cumdelta."""
 
     for i in range(len(num_l)):
         cdel = 0

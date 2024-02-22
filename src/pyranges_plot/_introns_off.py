@@ -34,9 +34,10 @@ def introns_shrink(df, ts_data):
     exons = p[p.Feature == "exon"]
     flex_introns = introns.subtract(exons)
 
-    # get coordinate shift (delta) and cumulative coordinate shift (cumdelta)
+    # obtain shrinkable regions
     to_shrink = flex_introns.merge(strand=False)  # unique ranges
     to_shrink = to_shrink[to_shrink.End - to_shrink.Start > thresh]  # filtered
+
     # nohing to shrink
     if to_shrink.empty:
         ts_data[chrom] = pd.DataFrame(
@@ -50,6 +51,7 @@ def introns_shrink(df, ts_data):
         result = result[result["Feature"] == "exon"]
         return result
 
+    # get coordinate shift (delta) and cumulative coordinate shift (cumdelta)
     to_shrink.delta = (
         to_shrink.df["End"] - to_shrink.df["Start"]
     ) - thresh  # calculate coord shift considering margins
@@ -57,6 +59,7 @@ def introns_shrink(df, ts_data):
         to_shrink.df
     ), "PyRanges not sorted."
     to_shrink.cumdelta = to_shrink.df["delta"].cumsum()
+
     # store adjusted coord to plot shrinked intron regions
     to_shrink.Start_adj = to_shrink.Start - to_shrink.cumdelta.shift().fillna(0)
     to_shrink.End_adj = to_shrink.End - to_shrink.cumdelta
@@ -111,4 +114,4 @@ def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
             tick_pos_d[chr] = tick_pos
             ori_tick_pos_d[chr] = ori_tick_pos
 
-    return (tick_pos_d, ori_tick_pos_d)
+    return tick_pos_d, ori_tick_pos_d

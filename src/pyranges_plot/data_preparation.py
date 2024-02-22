@@ -13,7 +13,7 @@ from .matplotlib_base._core import plt_popup_warning
 
 ############ COMPUTE INTRONS OFF THRESHOLD
 def compute_thresh(df, chrmd_df):
-    """Get threshold from limits"""
+    """Get shrink threshold from limits"""
 
     chrom = df["Chromosome"].iloc[0]
     limit_range = chrmd_df.loc[chrom]["max"] - chrmd_df.loc[chrom]["min"]
@@ -26,7 +26,7 @@ def compute_thresh(df, chrmd_df):
 
 ############ SUBSET
 def make_subset(df, id_col, max_ngenes):
-    """xxx"""
+    """Reduce the number of genes to work with."""
 
     # create a column indexing all the genes in the df
     genesix_l = [i for i in enumerate(df[id_col].drop_duplicates())]
@@ -184,7 +184,7 @@ def _genesmd_assigncolor(genesmd_df, colormap):
 
 
 def get_genes_metadata(df, id_col, color_col, packed, colormap):
-    """xxx"""
+    """Create genes metadata df."""
 
     # Start df with chromosome and the column defining color
     if color_col == "Chromosome":
@@ -229,7 +229,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
 
 ##limits
 def _chrmd_limits(chrmd_df, limits):
-    """xxx"""
+    """Compute 'min_max' column for chromosome metadata"""
 
     # 1- create min_max column containing (plot min, plot max)
 
@@ -272,8 +272,36 @@ def _chrmd_limits(chrmd_df, limits):
         ]  # fills with None the chromosomes not specified
 
 
+def _fill_min_max(row, ts_data):
+    """Complete min_max column for chromosome metadata if needed."""
+
+    minmax_t = row["min_max"]
+    # deal with empty rows
+    if minmax_t is None:
+        minmax_t = (np.nan, np.nan)
+
+    # check both items and put default if necessary
+    minmax_l = list(minmax_t)
+
+    # add default to lower limit
+    if minmax_l[0] is None or np.isnan(minmax_l[0]):
+        minmax_l[0] = row["min"]
+    # add default to higher limit
+    if minmax_l[1] is None or np.isnan(minmax_l[1]):
+        minmax_l[1] = row["max"]
+    # consider introns off for higher limit
+    else:
+        if len(row) == 5:
+            new_upper_lim = cumdelting([minmax_l[1]], ts_data, row.name)
+            minmax_l[1] = new_upper_lim[0]
+
+    # put plot coordinates in min_max
+    row["min_max"] = minmax_l
+    return row
+
+
 def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
-    """xxx"""
+    """Create chromosome metadata df."""
 
     # Start df
     chrmd_df = df.groupby("Chromosome", group_keys=False).agg(
@@ -290,33 +318,7 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
         )
     # Add limits
     _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
-
-    def fill_min_max(row):
-        minmax_t = row["min_max"]
-        # deal with empty rows
-        if minmax_t is None:
-            minmax_t = (np.nan, np.nan)
-
-        # check both items and put default if necessary
-        minmax_l = list(minmax_t)
-
-        # add default to lower limit
-        if minmax_l[0] is None or np.isnan(minmax_l[0]):
-            minmax_l[0] = row["min"]
-        # add default to higher limit
-        if minmax_l[1] is None or np.isnan(minmax_l[1]):
-            minmax_l[1] = row["max"]
-        # consider introns off for higher limit
-        else:
-            if len(row) == 5:
-                new_upper_lim = cumdelting([minmax_l[1]], ts_data, row.name)
-                minmax_l[1] = new_upper_lim[0]
-
-        # put plot coordinates in min_max
-        row["min_max"] = minmax_l
-        return row
-
-    chrmd_df = chrmd_df.apply(fill_min_max, axis=1)
+    chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
 
     # Store plot y height
     chrmd_df["y_height"] = genesmd_df.groupby("chrix", group_keys=False).ycoord.max()

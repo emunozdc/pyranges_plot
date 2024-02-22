@@ -60,7 +60,7 @@ def plot(
 
     warnings: bool, default True
 
-        Whether or not the warnings should be shown.
+        Whether the warnings should be shown or not.
 
     max_ngenes: int, default 20
 
@@ -269,12 +269,12 @@ def plot(
             elif isinstance(shrink_threshold, float):
                 subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
                 subdf = subdf.groupby("Chromosome", group_keys=False).apply(
-                    lambda x: compute_thresh(x, chrmd_df)
-                )
+                    lambda x: compute_thresh(x, chrmd_df) if not x.empty else None
+                )  # empty rows when subset
 
             subdf = subdf.groupby("Chromosome", group_keys=False).apply(
-                lambda subdf: introns_shrink(subdf, ts_data)
-            )
+                lambda x: introns_shrink(x, ts_data) if not x.empty else None
+            )  # empty rows when subset
             subdf["Start"] = subdf["Start_adj"]
             subdf["End"] = subdf["End_adj"]
 
