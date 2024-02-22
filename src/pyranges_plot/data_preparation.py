@@ -162,7 +162,7 @@ def _genesmd_assigncolor(genesmd_df, colormap):
             ]
         # create dict of colors
         colormap = {
-            str(color_tags.iloc[i]): colormap.iloc[i % len(colormap)]
+            str(color_tags.iloc[i]): colormap[i % len(colormap)]
             for i in range(n_color_tags)
         }
 
