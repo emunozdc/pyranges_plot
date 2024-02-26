@@ -2,92 +2,124 @@ import pyranges as pr
 import pandas as pd
 
 
-def get_introns(p):
-    """Calculate introns df from a PyRanges object."""
+# def get_introns(self, id_col: str) -> "pr.PyRanges":
+def get_introns(p, id_col) -> "pr.PyRanges":
+    """Calculate introns from a PyRanges object.
 
-    if "Feature" in p.columns:
-        introns = p.df[p.df["Feature"] == "exon"]
-        # introns = p.df[p.df["Feature"] != "gene"]
-    else:
-        introns = p.df
+     Parameters
+    ----------
+    id_col : str
+        Name of column containing the ID infromation.
+
+    Examples
+    --------
+    >>> gr = pr.PyRanges({"Chromosome": [1, 1, 1],
+    ...                   "Start": [0, 20, 40],
+    ...                   "End": [10, 35, 50],
+    ...                   "transcript_id": ['t1', 't1' ,'t1']})
+    >>> gr
+      index  |      Chromosome    Start      End  transcript_id
+      int64  |           int64    int64    int64  object
+    -------  ---  ------------  -------  -------  ---------------
+          0  |               1        0       10  t1
+          1  |               1       20       35  t1
+          2  |               1       40       50  t1
+    PyRanges with 3 rows, 4 columns, and 1 index columns.
+    Contains 1 chromosomes.
+
+    >>> gr.get_introns("transcript_id")
+      index  |      Chromosome      End    Start  transcript_id
+      int64  |           int64    int64    int64  object
+    -------  ---  ------------  -------  -------  ---------------
+          1  |               1       20       10  t1
+          2  |               1       40       35  t1
+    PyRanges with 2 rows, 4 columns, and 1 index columns.
+    Contains 1 chromosomes.
+    """
+
+    introns = p.copy()
 
     # intron start is exon end shifted
-    introns["End"] = introns.groupby("transcript_id", group_keys=False, observed=True)[
+    introns["End"] = introns.groupby(id_col, group_keys=False, observed=True)[
         "End"
     ].shift()
+
+    # remove invalid rows
     introns.dropna(inplace=True)
+    introns = introns[introns["End"] <= introns["Start"]]
+
     # intron end is exon start
     introns.rename(columns={"Start": "End", "End": "Start"}, inplace=True)
-    introns["Feature"] = ["intron"] * len(introns)
+    introns["Start"] = [int(i) for i in introns["Start"]]
 
-    return pr.from_dict(introns.to_dict())
+    return introns
 
 
-def introns_shrink(df, ts_data):
+def introns_shrink(df, ts_data, id_col):
     """Calculate intron resizes and provide info for plotting"""
 
     chrom = df["Chromosome"].iloc[0]
-    p = pr.from_dict(df.to_dict())
+    p = df
     thresh = df["shrink_threshold"].iloc[0]
 
     # Calculate shrinkable intron ranges
     # get flexible introns
-    p = p.sort(by=["transcript_id", "Start"])
-    introns = get_introns(p)
-    exons = p[p.Feature == "exon"]
-    # exons = p[p.Feature != "gene"]
-    flex_introns = introns.subtract(exons)
+    p = p.sort_by_position()
+    exons = p.copy()
+    introns = get_introns(p, id_col)
+    to_shrink = pr.PyRanges()
 
-    # obtain shrinkable regions
-    to_shrink = flex_introns.merge(strand=False)  # unique ranges
-    if not to_shrink.empty:
-        to_shrink = to_shrink[to_shrink.End - to_shrink.Start > thresh]  # filtered
+    if not introns.empty:
+        flex_introns = introns.subtract_intervals(exons, strand_behavior="ignore")
+
+        # obtain shrinkable regions
+        to_shrink = flex_introns.merge_overlaps(use_strand=False)  # unique ranges
+        if not to_shrink.empty:
+            to_shrink = to_shrink[
+                to_shrink["End"] - to_shrink["Start"] > thresh
+            ]  # filtered
 
     # nohing to shrink
     if to_shrink.empty:
         ts_data[chrom] = pd.DataFrame(
             columns=["Chromosome", "Start", "End", "Start_adj", "End_adj", "cumdelta"]
         )
-        result = p.df
+        result = p
         result["Start_adj"] = result["Start"]
         result["End_adj"] = result["End"]
         result["delta"] = [0] * len(result)
         result["cumdelta"] = [0] * len(result)
-        # result = result[result["Feature"] != "gene"]
-        result = result[result["Feature"] == "exon"]
+
         return result
 
     # get coordinate shift (delta) and cumulative coordinate shift (cumdelta)
-    to_shrink.delta = (
-        to_shrink.df["End"] - to_shrink.df["Start"]
+    to_shrink["delta"] = (
+        to_shrink["End"] - to_shrink["Start"]
     ) - thresh  # calculate coord shift considering margins
-    assert to_shrink.df.sort_values("Start").equals(
-        to_shrink.df
-    ), "PyRanges not sorted."
-    to_shrink.cumdelta = to_shrink.df["delta"].cumsum()
+    assert to_shrink.sort_values("Start").equals(to_shrink), "PyRanges not sorted."
+    to_shrink["cumdelta"] = to_shrink["delta"].cumsum()
 
     # store adjusted coord to plot shrinked intron regions
-    to_shrink.Start_adj = to_shrink.Start - to_shrink.cumdelta.shift().fillna(0)
-    to_shrink.End_adj = to_shrink.End - to_shrink.cumdelta
+    to_shrink["Start_adj"] = to_shrink["Start"] - to_shrink.cumdelta.shift().fillna(0)
+    to_shrink["End_adj"] = to_shrink["End"] - to_shrink.cumdelta
 
     # store to shrink data
-    ts_data[chrom] = to_shrink.df
+    ts_data[chrom] = to_shrink
 
     # Calculate exons coordinate shift
-    exons = pd.concat([exons.df, to_shrink.df])
+    exons = pr.concat([exons, to_shrink])
     exons.sort_values("Start", inplace=True)
     exons = exons.fillna({"cumdelta": 0})
     exons["cumdelta"] = exons["cumdelta"].replace(0, method="ffill")
     # match exons with its cumdelta
-    result = exons[exons["Feature"] == "exon"]
-    # result = exons[exons["Feature"] != "gene"]
+    result = exons.dropna(subset=[id_col])
 
     # Adjust coordinates
     result["Start_adj"] = result["Start"] - result["cumdelta"]
     result["End_adj"] = result["End"] - result["cumdelta"]
 
     # Provide result
-    return result[list(p.columns) + ["Start_adj", "End_adj", "cumdelta", "delta"]]
+    return result[list(p.columns) + ["Start_adj", "End_adj", "delta"]]
 
 
 def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):

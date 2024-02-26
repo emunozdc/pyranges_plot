@@ -155,10 +155,6 @@ def plot(
 
     """
 
-    # Get dataframe if the provided object is pyranges
-    if type(df) is pyranges.pyranges_main.PyRanges:
-        df = df.df
-
     # Deal with export
     if to_file:
         ext = to_file[-4:]
@@ -275,7 +271,7 @@ def plot(
                 )  # empty rows when subset
 
             subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
-                lambda x: introns_shrink(x, ts_data) if not x.empty else None
+                lambda x: introns_shrink(x, ts_data, id_col) if not x.empty else None
             )  # empty rows when subset
             subdf["Start"] = subdf["Start_adj"]
             subdf["End"] = subdf["End_adj"]
