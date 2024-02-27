@@ -31,11 +31,11 @@ def plot_exons_plt(
     tick_pos_d=None,
     ori_tick_pos_d=None,
 ):
-    """xxx"""
+    """Create Matplotlib plot."""
 
     # Get default plot features
     tag_background = feat_dict["tag_background"]
-    plot_background = feat_dict["plot_background"]
+    plot_bkg = feat_dict["plot_bkg"]
     plot_border = feat_dict["plot_border"]
     title_dict_plt = feat_dict["title_dict_plt"]
     exon_width = feat_dict["exon_width"]
@@ -45,6 +45,8 @@ def plot_exons_plt(
     arrow_size_min = feat_dict["arrow_size_min"]
     arrow_size = feat_dict["arrow_size"]
     arrow_intron_threshold = feat_dict["arrow_intron_threshold"]
+    shrinked_bkg = feat_dict["shrinked_bkg"]
+    shrinked_alpha = feat_dict["shrinked_alpha"]
 
     # Create figure and axes
     if file_size:
@@ -64,13 +66,15 @@ def plot_exons_plt(
         ts_data,
         title_chr,
         title_dict_plt,
-        plot_background,
+        plot_bkg,
         plot_border,
         packed,
         legend,
         tick_pos_d,
         ori_tick_pos_d,
         tag_background,
+        shrinked_bkg,
+        shrinked_alpha,
     )
 
     # Plot genes

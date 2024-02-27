@@ -1,12 +1,13 @@
 import copy
 
+
 plot_features_dict = {
     "tag_background": (
         "grey",
         "Background color of the tooltip annotation for the gene in Matplotlib.",
         " ",
     ),
-    "plot_background": ("white", "Background color for the chromosomes plots.", " "),
+    "plot_bkg": ("white", "Background color for the chromosomes plots.", " "),
     "plot_border": ("black", "Color of the line defining the chromosome plots.", " "),
     "title_size": (18, "Size of the plots' titles.", " "),
     "title_color": ("black", "Color of the plots' titles.", " "),
@@ -29,7 +30,7 @@ plot_features_dict = {
         " ",
     ),
     "arrow_size": (
-        "0.006",
+        0.006,
         "Fraction or percentage of the plot occupied by a direction arrow.",
         " ",
     ),
@@ -38,7 +39,16 @@ plot_features_dict = {
         "Minimum size of the intron to plot a direction arrow in it. Provided as a float correspondig to the plot fraction or percentage.",
         " ",
     ),
+    "shrinked_bkg": (
+        "lightyellow",
+        "Color of the shrinked region background.",
+        " ",
+    ),
+    "shrinked_alpha": (
+        0.7,
+        "Opacity of the shrinked region background color.",
+        " ",
+    ),
 }
-
 
 plot_features_dict_in_use = copy.deepcopy(plot_features_dict)

@@ -28,11 +28,11 @@ def plot_exons_ply(
     tick_pos_d=None,
     ori_tick_pos_d=None,
 ):
-    """xxx"""
+    """Create Plotly plot."""
 
     # Get default plot features
     # tag_background = feat_dict['tag_background']
-    plot_background = feat_dict["plot_background"]
+    plot_bkg = feat_dict["plot_bkg"]
     plot_border = feat_dict["plot_border"]
     title_dict_ply = feat_dict["title_dict_ply"]
     exon_width = feat_dict["exon_width"]
@@ -43,6 +43,8 @@ def plot_exons_ply(
     arrow_size_min = feat_dict["arrow_size_min"]
     arrow_size = feat_dict["arrow_size"]
     arrow_intron_threshold = feat_dict["arrow_intron_threshold"]
+    shrinked_bkg = feat_dict["shrinked_bkg"]
+    shrinked_alpha = feat_dict["shrinked_alpha"]
 
     # Create figure and chromosome plots
     fig = create_fig(
@@ -53,9 +55,11 @@ def plot_exons_ply(
         title_chr,
         title_dict_ply,
         packed,
-        plot_background,
+        plot_bkg,
         tick_pos_d,
         ori_tick_pos_d,
+        shrinked_bkg,
+        shrinked_alpha,
     )
 
     # Plot genes
@@ -72,7 +76,7 @@ def plot_exons_ply(
             transcript_str,
             exon_width,
             transcript_utr_width,
-            plot_background,
+            plot_bkg,
             arrow_line_width,
             arrow_color,
             arrow_size_min,
@@ -82,9 +86,7 @@ def plot_exons_ply(
     )
 
     # Adjust plot display
-    fig.update_layout(
-        plot_bgcolor=plot_background, font_color=plot_border, showlegend=legend
-    )
+    fig.update_layout(plot_bgcolor=plot_bkg, font_color=plot_border, showlegend=legend)
     fig.update_xaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
     fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
 

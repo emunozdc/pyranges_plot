@@ -53,6 +53,8 @@ def create_fig(
     plot_background,
     tick_pos_d,
     ori_tick_pos_d,
+    shrinked_bkg,
+    shrinked_alpha,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -120,15 +122,11 @@ def create_fig(
             to_add = cumdelting(to_add, ts_data, chrom)
 
             # set new ticks
-            # x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
             x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
                 num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
             ]
-            # x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
-            #     : len(x_ticks_val)
-            # ]
             x_ticks_name = to_add_val[: len(x_ticks_val)]
 
             # set new ticks
@@ -181,12 +179,12 @@ def create_fig(
                         x=[x0, x1, x1, x0, x0],
                         y=[y0, y0, y1, y1, y0],
                         fill="toself",
-                        fillcolor="lightyellow",
+                        fillcolor=shrinked_bkg,
                         mode="lines",
                         line={"color": "lightyellow"},
                         text=f"Shrinked region:\n[{x0+c} - {x1+d}]",
                         hoverinfo="text",
-                        opacity=0.7,
+                        opacity=shrinked_alpha,
                         line_width=0,
                     ),
                     row=i + 1,

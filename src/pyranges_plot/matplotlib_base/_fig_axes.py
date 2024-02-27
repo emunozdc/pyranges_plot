@@ -21,6 +21,8 @@ def create_fig(
     tick_pos_d,
     ori_tick_pos_d,
     tag_background,
+    shrinked_bkg,
+    shrinked_alpha,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -91,15 +93,11 @@ def create_fig(
             to_add = cumdelting(to_add, ts_data, chrom)
 
             # set new ticks
-            # x_ticks_val = sorted(tick_pos_d[chrom] + to_add)
             x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
                 num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
             ]
-            # x_ticks_name = sorted(ori_tick_pos_d[chrom] + to_add_val)[
-            #     : len(x_ticks_val)
-            # ]
             x_ticks_name = to_add_val[: len(x_ticks_val)]
 
             # adjust names
@@ -142,10 +140,10 @@ def create_fig(
                     b - a,
                     y_max + 1,
                     edgecolor="grey",
-                    facecolor="lightyellow",
-                    alpha=0.7,
+                    facecolor=shrinked_bkg,
+                    alpha=shrinked_alpha,
                     fill=True,
-                    linewidth=0,  # option2
+                    linewidth=0,
                 )
                 ax.add_patch(ts_range)
                 make_annotation(

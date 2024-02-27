@@ -155,6 +155,8 @@ def plot(
 
     """
 
+    df = df.copy()
+
     # Deal with export
     if to_file:
         ext = to_file[-4:]
@@ -215,7 +217,7 @@ def plot(
         # Get default plot features
         feat_dict = {
             "tag_background": getvalue("tag_background"),
-            "plot_background": getvalue("plot_background"),
+            "plot_bkg": getvalue("plot_bkg"),
             "plot_border": getvalue("plot_border"),
             "title_dict_plt": {
                 "family": "sans-serif",
@@ -236,6 +238,8 @@ def plot(
             "arrow_size": float(getvalue("arrow_size")),
             "arrow_intron_threshold": getvalue("arrow_intron_threshold"),
             "shrink_threshold": getvalue("shrink_threshold"),
+            "shrinked_bkg": getvalue("shrinked_bkg"),
+            "shrinked_alpha": float(getvalue("shrinked_alpha")),
         }
         shrink_threshold = feat_dict["shrink_threshold"]
 
