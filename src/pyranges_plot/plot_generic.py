@@ -23,6 +23,7 @@ colormap = plotly.colors.qualitative.Alphabet
 
 def plot(
     df,
+    vcf=None,
     engine=None,
     id_col=None,
     warnings=None,
@@ -45,42 +46,33 @@ def plot(
 
     Parameters
     ----------
-    df: {pyranges.pyranges_main.PyRanges, pandas.DataFrame}
-
+    df: pyranges.pyranges_main.PyRanges or pandas.DataFrame
         Pyranges or derived dataframe with genes' data.
 
     engine: str, default None
-
         Library in which the plot sould be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
         Plotly ['ply'/'plotly'].
 
-    id_col: str, default 'gene_id'
-
+    id_col: str, default None
         Name of the column containing gene ID.
 
     warnings: bool, default True
-
         Whether the warnings should be shown or not.
 
     max_ngenes: int, default 20
-
         Maximum number of genes plotted in the dataframe order.
 
     introns_off: bool, default False
-
         Whether to compress the intron ranges to facilitate visualization or not.
 
     transcript_str: bool, default False
-
         Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
         must be stored in the 'Feature' column of the PyRanges object or the dataframe.
 
     color_col: str, default None
-
         Name of the column used to color the genes.
 
-    colormap: {matplotlib.colors.ListedColormap, list, str, dict}, default plotly.colors.sequential.thermal
-
+    colormap: {matplotlib.colors.ListedColormap, list, str, dict}, default plotly.colors.qualitative.Alphabet
         Sequence of colors for the genes, it can be provided as a Matplotlib colormap,
         a Plotly color sequence (built as lists), a string naming the previously mentioned
         color objects from Matplotlib and Plotly, or a dictionary with the following
@@ -88,7 +80,6 @@ def plot(
         color_col value is not specified in the dictionary it will be colored in black.
 
     limits: {None, dict, tuple, pyranges.pyranges_main.PyRanges}, default None
-
         Customization of coordinates for the chromosome plots.
         - None: minimun and maximum exon coordinate plotted plus a 5% of the range on each side.
         - dict: {chr_name1: (min_coord, max coord), chr_name2: (min_coord, max_coord), ...}. Not
@@ -101,7 +92,6 @@ def plot(
         will be left as default.
 
     showinfo: str, default None
-
         Dataframe information to show in a tooltip when placing the mouse over a gene, the given
         informarion will be added to the default: strand, start-end coordinates and id. This must be
         provided as a string containing the column names of the values to be shown within curly brackets.
@@ -110,30 +100,24 @@ def plot(
         strings. If you want to introduce a newline you can use "\n".
 
     legend: bool, default False
-
         Whether the legend should appear in the plot.
 
     title_chr: str, default "Chromosome {chrom}"
-
         String providing the desired titile for the chromosome plots. It should be given in a way where
         the chromosome value in the data is indicated as {chrom}.
 
     packed: bool, default True
-
         Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
         they do not overlap) and False for unpacked (one row per gene).
 
     to_file: str, default None
-
         Name of the file to export specifying the desired extension. The supported extensions are '.png' and '.pdf'.
 
-    file_size: {list, tuple}, default None
-
+    file_size: list or tuple, default None
         Size of the plot to export defined by a sequence object like: (height, width). The default values
         make the height according to the number of genes and the width as 20 in Matplotlib and 1600 in Plotly.
 
-    **kargs:
-
+    **kargs
         Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
         nomenclature, description and default values.
 
@@ -142,17 +126,19 @@ def plot(
     Examples
     --------
 
-    >>> plot(df, engine='plt', max_ngenes=25, colormap='Set3')
+    >>> import pyranges as pr, pyranges_plot as prp
 
-    >>> plot(df, engine='matplotlib', color_col='Strand', colormap={'+': 'green', '-': 'red'})
+    >>> p = pr.PyRanges({"Chromosome": [1]*5, "Strand": ["+"]*3 + ["-"]*2, "Start": [10,20,30,25,40], "End": [15,25,35,30,50], "transcript_id": ["t1"]*3 + ["t2"]*2}, "feature1": ["A", "B", "C", "A", "B"])
 
-    >>> plot(df, engine='ply', limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
+    >>> plot(p, engine='plt', id_col="transcript_id",  max_ngenes=25, colormap='Set3')
 
-    >>> plot(df, engine='plotly', colormap=plt.get_cmap('Dark2'), showinfo = "Feature1: {feature1}")
+    >>> plot(p, engine='matplotlib', id_col="transcript_id", color_col='Strand', colormap={'+': 'green', '-': 'red'})
 
-    >>> plot(df, engine='plt', color_col='Strand', packed=False, to_file='my_plot.pdf')
+    >>> plot(p, engine='ply', id_col="transcript_id", limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
 
+    >>> plot(p, engine='plotly', id_col="transcript_id", introns_off=True, showinfo = "Feature1: {feature1}")
 
+    >>> plot(df, engine='plt', id_col="transcript_id", color_col='Strand', packed=False, to_file='my_plot.pdf')
     """
 
     df = df.copy()
@@ -297,6 +283,7 @@ def plot(
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
                 subdf=subdf,
+                vcf=vcf,
                 tot_ngenes=tot_ngenes,
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,

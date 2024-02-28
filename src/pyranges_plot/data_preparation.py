@@ -313,10 +313,10 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
         columns={id_col: "n_genes", "Start": "min", "End": "max"}, inplace=True
     )
 
-    if ts_data:
-        chrmd_df["maxdelta"] = df.groupby(
-            "Chromosome", group_keys=False, observed=True
-        ).agg({"cumdelta": "max"})
+    # if ts_data:
+    #     chrmd_df["maxdelta"] = df.groupby(
+    #         "Chromosome", group_keys=False, observed=True
+    #     ).agg({"cumdelta": "max"})
     # Add limits
     _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
     chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)

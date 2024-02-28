@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from ._core import plt_popup_warning
-from ._fig_axes import create_fig
+from ._fig_axes import create_fig, create_fig_with_vcf
 from ._data2plot import (
     _apply_gene_bridge,
     plot_introns,
@@ -13,6 +13,7 @@ arrow_style = "round"
 
 def plot_exons_plt(
     subdf,
+    vcf,
     tot_ngenes,
     feat_dict,
     genesmd_df,
@@ -54,28 +55,56 @@ def plot_exons_plt(
         y = file_size[1]
     else:
         x = 20
-        y = (
-            sum(chrmd_df.y_height) + 2 * len(chrmd_df)
-        ) / 2  # height according to genes and add 2 per each chromosome
+        if not vcf:
+            y = (
+                sum(chrmd_df.y_height) + len(chrmd_df) * 2
+            ) / 2  # height according to genes and add 2 per each chromosome
+        else:
+            y = (
+                sum(chrmd_df.y_height) + len(chrmd_df) * 3
+            ) / 2  # increase 1 per chromosome to show variants plot
 
-    fig, axes = create_fig(
-        x,
-        y,
-        chrmd_df,
-        genesmd_df,
-        ts_data,
-        title_chr,
-        title_dict_plt,
-        plot_bkg,
-        plot_border,
-        packed,
-        legend,
-        tick_pos_d,
-        ori_tick_pos_d,
-        tag_background,
-        shrinked_bkg,
-        shrinked_alpha,
-    )
+    if not vcf:
+        fig, axes = create_fig(
+            x,
+            y,
+            chrmd_df,
+            genesmd_df,
+            vcf,
+            ts_data,
+            title_chr,
+            title_dict_plt,
+            plot_bkg,
+            plot_border,
+            packed,
+            legend,
+            tick_pos_d,
+            ori_tick_pos_d,
+            tag_background,
+            shrinked_bkg,
+            shrinked_alpha,
+        )
+
+    else:
+        fig, axes = create_fig_with_vcf(
+            x,
+            y,
+            chrmd_df,
+            genesmd_df,
+            vcf,
+            ts_data,
+            title_chr,
+            title_dict_plt,
+            plot_bkg,
+            plot_border,
+            packed,
+            legend,
+            tick_pos_d,
+            ori_tick_pos_d,
+            tag_background,
+            shrinked_bkg,
+            shrinked_alpha,
+        )
 
     # Plot genes
     subdf.groupby(id_col, group_keys=False, observed=True).apply(
@@ -147,7 +176,6 @@ def _gby_plot_exons(
 
     # Make gene annotation
     # get the gene information to print on hover
-    # default
     if strand:
         geneinfo = f"[{strand}] ({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default with strand
     else:
