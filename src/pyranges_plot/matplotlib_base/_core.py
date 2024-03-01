@@ -77,3 +77,12 @@ def make_annotation(item, fig, ax, geneinfo, tag_background):
             fig.canvas.draw()
 
     fig.canvas.mpl_connect("motion_notify_event", on_hover)
+
+
+def repos_exon_plot(vcfax, exonax):
+    """Adjust exon plot position when vcf info is provided."""
+
+    vcf = vcfax.get_position()
+    exon = exonax.get_position()
+    incr = vcf.y0 - exon.y1
+    return [exon.x0, exon.y0 + incr, exon.x1 - exon.x0, exon.y1 - exon.y0]

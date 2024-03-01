@@ -3,7 +3,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.patches import Rectangle
 from pyranges_plot.core import cumdelting
-from ._core import make_annotation
+from ._core import make_annotation, repos_exon_plot
 
 
 def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
@@ -37,7 +37,7 @@ def _ax_shrink_rects(
 ):
     """xxx"""
 
-    rects_df = ts_data[chrom]
+    rects_df = ts_data[chrom].copy()
     rects_df["cumdelta_end"] = rects_df["cumdelta"]
     rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(periods=1, fill_value=0)
     rects_df["Start"] -= rects_df["cumdelta_start"]
@@ -224,7 +224,7 @@ def create_fig_with_vcf(
         for pair in zip([1] * len(chrmd_df), list(chrmd_df.y_height))
         for num in pair
     ]
-    gs = gridspec.GridSpec(len(chrmd_df) * 2, 1, height_ratios=hr)
+    gs = gridspec.GridSpec(len(chrmd_df) * 2, 1, height_ratios=hr, hspace=0.7)
 
     # one plot per chromosome
     axes = []
@@ -235,6 +235,7 @@ def create_fig_with_vcf(
         vcf_ax = axes[i]
         exon_ax = axes[i + 1]
         # Adjust plot display
+        exon_ax.set_position(repos_exon_plot(vcf_ax, exon_ax))
         _ax_display(
             vcf_ax, title_chr, chrom, title_dict_plt, plot_background, plot_border
         )

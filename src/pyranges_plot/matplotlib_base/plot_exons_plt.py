@@ -105,6 +105,9 @@ def plot_exons_plt(
             shrinked_bkg,
             shrinked_alpha,
         )
+    # Select axes for exons and for now leave vcf empty
+    if vcf:
+        axes = axes[1::2]
 
     # Plot genes
     subdf.groupby(id_col, group_keys=False, observed=True).apply(
