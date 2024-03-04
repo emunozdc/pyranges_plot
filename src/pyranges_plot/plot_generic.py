@@ -306,6 +306,7 @@ def plot(
         elif engine == "ply" or engine == "plotly":
             plot_exons_ply(
                 subdf=subdf,
+                vcf=vcf,
                 tot_ngenes=tot_ngenes,
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,

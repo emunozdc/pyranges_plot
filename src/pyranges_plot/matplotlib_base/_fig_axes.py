@@ -7,7 +7,7 @@ from ._core import make_annotation, repos_exon_plot
 
 
 def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
-    """xxx"""
+    """Set plot features."""
 
     if title:
         ax.set_title(title.format(**locals()), fontdict=t_dict)
@@ -20,7 +20,7 @@ def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
 
 
 def _ax_limits(ax, x_min, x_max, x_rang):
-    """xxx"""
+    """Adapt plots coordinates."""
 
     ax.set_xlim(
         x_min - 0.05 * x_rang, x_max + 0.05 * x_rang
@@ -35,7 +35,7 @@ def _ax_limits(ax, x_min, x_max, x_rang):
 def _ax_shrink_rects(
     ax, fig, ts_data, chrom, y_min, y_max, shrinked_bkg, shrinked_alpha, tag_background
 ):
-    """xxx"""
+    """Add shrinked regions rectangles to the plot."""
 
     rects_df = ts_data[chrom].copy()
     rects_df["cumdelta_end"] = rects_df["cumdelta"]
@@ -150,7 +150,7 @@ def create_fig(
             x_ticks_val = [
                 num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
             ]
-            x_ticks_name = to_add_val[: len(x_ticks_val)]
+            x_ticks_name = sorted(to_add_val)[: len(x_ticks_val)]
 
             # adjust names
             ax.set_xticks(x_ticks_val)
@@ -290,7 +290,7 @@ def create_fig_with_vcf(
             x_ticks_val = [
                 num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
             ]
-            x_ticks_name = to_add_val[: len(x_ticks_val)]
+            x_ticks_name = sorted(to_add_val)[: len(x_ticks_val)]
 
             # adjust names
             vcf_ax.set_xticks(x_ticks_val)

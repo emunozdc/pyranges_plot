@@ -4,7 +4,7 @@ import plotly.io as pio
 import pandas as pd
 import numpy as np
 from ._core import initialize_dash_app
-from ._fig_axes import create_fig
+from ._fig_axes import create_fig, create_fig_with_vfc
 from ._data2plot import plot_introns, _apply_gene_bridge
 
 
@@ -13,6 +13,7 @@ def plot_exons_ply(
     tot_ngenes,
     feat_dict,
     genesmd_df,
+    vcf,
     chrmd_df,
     ts_data,
     max_ngenes=25,
@@ -47,20 +48,38 @@ def plot_exons_ply(
     shrinked_alpha = feat_dict["shrinked_alpha"]
 
     # Create figure and chromosome plots
-    fig = create_fig(
-        subdf,
-        chrmd_df,
-        genesmd_df,
-        ts_data,
-        title_chr,
-        title_dict_ply,
-        packed,
-        plot_bkg,
-        tick_pos_d,
-        ori_tick_pos_d,
-        shrinked_bkg,
-        shrinked_alpha,
-    )
+    if not vcf:
+        fig = create_fig(
+            subdf,
+            chrmd_df,
+            genesmd_df,
+            ts_data,
+            title_chr,
+            title_dict_ply,
+            packed,
+            plot_bkg,
+            tick_pos_d,
+            ori_tick_pos_d,
+            shrinked_bkg,
+            shrinked_alpha,
+        )
+
+    else:
+        fig = create_fig_with_vfc(
+            subdf,
+            vcf,
+            chrmd_df,
+            genesmd_df,
+            ts_data,
+            title_chr,
+            title_dict_ply,
+            packed,
+            plot_bkg,
+            tick_pos_d,
+            ori_tick_pos_d,
+            shrinked_bkg,
+            shrinked_alpha,
+        )
 
     # Plot genes
     subdf.groupby(id_col, group_keys=False, observed=True).apply(
@@ -82,6 +101,7 @@ def plot_exons_ply(
             arrow_size_min,
             arrow_size,
             arrow_intron_threshold,
+            vcf,
         )
     )
 
@@ -143,6 +163,7 @@ def _gby_plot_exons(
     arrow_size_min,
     arrow_size,
     arrow_intron_threshold,
+    vcf,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -153,6 +174,8 @@ def _gby_plot_exons(
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].chrix
     chrom_ix = chrmd_df.index.get_loc(chrom)
+    if vcf:
+        chrom_ix = 2 * chrom_ix + 1
     if "Strand" in df.columns:
         strand = df["Strand"].unique()[0]
     else:
@@ -186,7 +209,7 @@ def _gby_plot_exons(
     )
 
     # Plot INTRON lines
-    sorted_exons = df[["Start", "End", "cumdelta"]].sort_values(by="Start")
+    sorted_exons = df[["Start", "End"]].sort_values(by="Start")
     if ts_data:
         ts_chrom = ts_data[chrom]
     else:
