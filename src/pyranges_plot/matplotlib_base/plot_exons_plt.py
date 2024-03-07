@@ -3,6 +3,7 @@ import pandas as pd
 
 from ._core import plt_popup_warning
 from ._fig_axes import create_fig, create_fig_with_vcf
+from .plot_vcf_plt import _gby_plot_vcf
 from ._data2plot import (
     _apply_gene_bridge,
     plot_introns,
@@ -55,7 +56,7 @@ def plot_exons_plt(
         y = file_size[1]
     else:
         x = 20
-        if not vcf:
+        if vcf is None:
             y = (
                 sum(chrmd_df.y_height) + len(chrmd_df) * 2
             ) / 2  # height according to genes and add 2 per each chromosome
@@ -64,7 +65,7 @@ def plot_exons_plt(
                 sum(chrmd_df.y_height) + len(chrmd_df) * 3
             ) / 2  # increase 1 per chromosome to show variants plot
 
-    if not vcf:
+    if vcf is None:
         fig, axes = create_fig(
             x,
             y,
@@ -106,8 +107,18 @@ def plot_exons_plt(
             shrinked_alpha,
         )
     # Select axes for exons and for now leave vcf empty
-    if vcf:
+    if vcf is not None:
+        vcf_axes = axes[0::2]
         axes = axes[1::2]
+
+        # Plot vcf data
+        vcf.groupby("Chromosome", group_keys=False, observed=True).apply(
+            lambda vcf: _gby_plot_vcf(
+                vcf,
+                vcf_axes,
+                chrmd_df,
+            )
+        )
 
     # Plot genes
     subdf.groupby(id_col, group_keys=False, observed=True).apply(

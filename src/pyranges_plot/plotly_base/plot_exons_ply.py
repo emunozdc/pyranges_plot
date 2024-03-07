@@ -48,7 +48,7 @@ def plot_exons_ply(
     shrinked_alpha = feat_dict["shrinked_alpha"]
 
     # Create figure and chromosome plots
-    if not vcf:
+    if vcf is None:
         fig = create_fig(
             subdf,
             chrmd_df,
@@ -174,7 +174,7 @@ def _gby_plot_exons(
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].chrix
     chrom_ix = chrmd_df.index.get_loc(chrom)
-    if vcf:
+    if vcf is not None:
         chrom_ix = 2 * chrom_ix + 1
     if "Strand" in df.columns:
         strand = df["Strand"].unique()[0]

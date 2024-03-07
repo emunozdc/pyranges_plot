@@ -301,7 +301,7 @@ def create_fig_with_vcf(
         # set y axis limits
         y_min = 0
         y_max = chrmd_df.iloc[int((i + 1) / 2)].y_height
-        vcf_ax.set_ylim(y_min, y_max)
+        # vcf_ax.set_ylim(y_min, y_max)
         exon_ax.set_ylim(y_min, y_max)
         # gene name as y labels
         y_ticks_val = []
@@ -311,9 +311,9 @@ def create_fig_with_vcf(
             y_ticks_name = genesmd_df.groupby(
                 "chrix", group_keys=False, observed=True
             ).groups[chrom]
-        vcf_ax.set_yticks(y_ticks_val)
+        # vcf_ax.set_yticks(y_ticks_val)
         exon_ax.set_yticks(y_ticks_val)
-        vcf_ax.set_yticklabels(y_ticks_name)
+        # vcf_ax.set_yticklabels(y_ticks_name)
         exon_ax.set_yticklabels(y_ticks_name)
 
         # Add shrink rectangles
