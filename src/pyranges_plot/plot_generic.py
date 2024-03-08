@@ -159,12 +159,17 @@ def plot(
         id_col = get_idcol()
 
     try:
-        if id_col is None or id_col not in df.columns:
+        if id_col is not None and id_col not in df.columns:
             raise Exception(
-                "Please define the name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
+                "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
             )
     except SystemExit as e:
         print("An error occured:", e)
+
+    # No id column, plot each interval individually
+    if id_col is None:
+        df["id_col"] = [str(i) for i in df.index]
+        id_col = "id_col"
 
     # Deal with transcript structure
     if transcript_str:
