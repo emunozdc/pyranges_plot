@@ -279,15 +279,16 @@ def print_default(return_keys=False):
         header += f"+{'-' * (name_sz+2)}+{'-' * (value_sz+2)}+{'-' * (mod_sz+2)}+{'-' * (desc_sz+2)}+"
 
         # Divide features
-        print(feat_df)
         extragen_feat_df = feat_df[
             feat_df.index.isin(
                 [
-                    "tag_background",
+                    "tag_bkg",
                     "plot_background",
                     "plot_border",
                     "title_size",
                     "title_color",
+                    "shrinked_bkg",
+                    "shrinked_alpha",
                 ]
             )
         ].copy()
