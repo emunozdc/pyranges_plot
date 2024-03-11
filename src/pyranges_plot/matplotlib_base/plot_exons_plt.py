@@ -36,7 +36,7 @@ def plot_exons_plt(
     """Create Matplotlib plot."""
 
     # Get default plot features
-    tag_bkg= feat_dict["tag_bkg"]
+    tag_bkg = feat_dict["tag_bkg"]
     plot_bkg = feat_dict["plot_bkg"]
     plot_border = feat_dict["plot_border"]
     title_dict_plt = feat_dict["title_dict_plt"]
