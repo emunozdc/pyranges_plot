@@ -36,7 +36,7 @@ def plot_exons_plt(
     """Create Matplotlib plot."""
 
     # Get default plot features
-    tag_background = feat_dict["tag_background"]
+    tag_bkg= feat_dict["tag_bkg"]
     plot_bkg = feat_dict["plot_bkg"]
     plot_border = feat_dict["plot_border"]
     title_dict_plt = feat_dict["title_dict_plt"]
@@ -81,7 +81,7 @@ def plot_exons_plt(
             legend,
             tick_pos_d,
             ori_tick_pos_d,
-            tag_background,
+            tag_bkg,
             shrinked_bkg,
             shrinked_alpha,
         )
@@ -102,7 +102,7 @@ def plot_exons_plt(
             legend,
             tick_pos_d,
             ori_tick_pos_d,
-            tag_background,
+            tag_bkg,
             shrinked_bkg,
             shrinked_alpha,
         )
@@ -131,7 +131,7 @@ def plot_exons_plt(
             ts_data,
             id_col,
             showinfo,
-            tag_background,
+            tag_bkg,
             transcript_str,
             exon_width,
             transcript_utr_width,
@@ -164,7 +164,7 @@ def _gby_plot_exons(
     ts_data,
     id_col,
     showinfo,
-    tag_background,
+    tag_bkg,
     transcript_str,
     exon_width,
     transcript_utr_width,
@@ -209,7 +209,7 @@ def _gby_plot_exons(
         fig,
         ax,
         geneinfo,
-        tag_background,
+        tag_bkg,
         gene_ix,
         exon_color,
         strand,
@@ -230,7 +230,7 @@ def _gby_plot_exons(
         strand,
         gene_ix,
         exon_color,
-        tag_background,
+        tag_bkg,
         genename,
         showinfo,
         exon_width,

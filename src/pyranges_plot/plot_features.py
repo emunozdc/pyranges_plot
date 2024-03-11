@@ -2,7 +2,7 @@ import copy
 
 
 plot_features_dict = {
-    "tag_background": (
+    "tag_bkg": (
         "grey",
         "Background color of the tooltip annotation for the gene in Matplotlib.",
         " ",

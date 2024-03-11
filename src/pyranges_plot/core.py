@@ -283,7 +283,7 @@ def print_default(return_keys=False):
             feat_df.index.isin(
                 [
                     "tag_bkg",
-                    "plot_background",
+                    "plot_bkg",
                     "plot_border",
                     "title_size",
                     "title_color",
