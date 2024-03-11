@@ -207,7 +207,7 @@ def plot(
 
         # Get default plot features
         feat_dict = {
-            "tag_background": getvalue("tag_background"),
+            "tag_bkg": getvalue("tag_bkg"),
             "plot_bkg": getvalue("plot_bkg"),
             "plot_border": getvalue("plot_border"),
             "title_dict_plt": {
