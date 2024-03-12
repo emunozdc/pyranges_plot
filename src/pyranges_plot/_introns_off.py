@@ -38,15 +38,15 @@ def get_introns(p, id_col) -> "pr.PyRanges":
     """
 
     introns = p.copy()
+    introns = introns.sort_by_position()
 
     # intron start is exon end shifted
     introns["End"] = introns.groupby(id_col, group_keys=False, observed=True)[
         "End"
     ].shift()
 
-    # remove invalid rows
+    # remove first exon rows
     introns.dropna(inplace=True)
-    introns = introns[introns["End"] <= introns["Start"]]
 
     # intron end is exon start
     introns.rename(columns={"Start": "End", "End": "Start"}, inplace=True)
@@ -64,7 +64,7 @@ def introns_shrink(df, ts_data, id_col):
 
     # Calculate shrinkable intron ranges
     # get flexible introns
-    p = p.sort_by_position()
+    #p = p.sort_by_position()
     exons = p.copy()
     introns = get_introns(p, id_col)
     to_shrink = pr.PyRanges()
