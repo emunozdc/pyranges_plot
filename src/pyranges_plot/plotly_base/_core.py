@@ -35,7 +35,7 @@ def percent2coord(fig, trace, x_percent):
 
 
 # Plotly - Function to initialize Dash app layout and callbacks
-def initialize_dash_app(fig, max_ngenes):
+def initialize_dash_app(fig, max_shown):
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
     # create alert and graph components
@@ -79,7 +79,7 @@ def initialize_dash_app(fig, max_ngenes):
         if grfig["data"][0]["customdata"][0] == "no warnings":
             return False
         n_genes = int(grfig["data"][0]["customdata"][0])
-        if n_genes > max_ngenes:
+        if n_genes > max_shown:
             return True
 
     @app.callback(

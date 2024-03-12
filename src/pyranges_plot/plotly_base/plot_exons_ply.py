@@ -17,7 +17,7 @@ def plot_exons_ply(
     chrmd_df,
     ts_data,
     id_col,
-    max_ngenes=25,
+    max_shown=25,
     transcript_str=False,
     showinfo=None,
     legend=False,
@@ -133,7 +133,7 @@ def plot_exons_ply(
         fig.data[0].customdata = np.array(["no warnings"])
 
     if to_file is None:
-        app_instance = initialize_dash_app(fig, max_ngenes)
+        app_instance = initialize_dash_app(fig, max_shown)
         app_instance.run(port=plotly_port)
 
     else:

@@ -25,7 +25,7 @@ def compute_thresh(df, chrmd_df):
 
 
 ############ SUBSET
-def make_subset(df, id_col, max_ngenes):
+def make_subset(df, id_col, max_shown):
     """Reduce the number of genes to work with."""
 
     # create a column indexing all the genes in the df
@@ -37,10 +37,10 @@ def make_subset(df, id_col, max_ngenes):
     tot_ngenes = max(genesix_l)[0]
 
     # select maximum number of genes
-    if max(df.gene_index) + 1 <= max_ngenes:
+    if max(df.gene_index) + 1 <= max_shown:
         subdf = df
     else:
-        subdf = df[df.gene_index < max_ngenes]
+        subdf = df[df.gene_index < max_shown]
 
     # remove the gene_index column from the original df
     df.drop("gene_index", axis=1, inplace=True)

@@ -55,7 +55,7 @@ def get_introns(p, id_col) -> "pr.PyRanges":
     return introns
 
 
-def introns_shrink(df, ts_data, id_col):
+def introns_resize(df, ts_data, id_col):
     """Calculate intron resizes and provide info for plotting"""
 
     chrom = df["Chromosome"].iloc[0]
@@ -64,7 +64,6 @@ def introns_shrink(df, ts_data, id_col):
 
     # Calculate shrinkable intron ranges
     # get flexible introns
-    # p = p.sort_by_position()
     exons = p.copy()
     introns = get_introns(p, id_col)
     to_shrink = pr.PyRanges()

@@ -21,7 +21,7 @@ def plot_exons_plt(
     chrmd_df,
     ts_data,
     id_col,
-    max_ngenes=25,
+    max_shown=25,
     transcript_str=False,
     showinfo=None,
     legend=False,
@@ -146,7 +146,7 @@ def plot_exons_plt(
     # Provide output
     if to_file is None:
         # evaluate warning
-        if tot_ngenes > max_ngenes and warnings:
+        if tot_ngenes > max_shown and warnings:
             plt_popup_warning(
                 "The provided data contains more genes than the ones plotted."
             )

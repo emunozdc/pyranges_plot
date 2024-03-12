@@ -13,7 +13,7 @@ from .data_preparation import (
     get_chromosome_metadata,
     compute_thresh,
 )
-from ._introns_off import introns_shrink, recalc_axis
+from ._introns_off import introns_resize, recalc_axis
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
 
@@ -27,7 +27,7 @@ def plot(
     engine=None,
     id_col=None,
     warnings=None,
-    max_ngenes=25,
+    max_shown=25,
     introns_off=False,
     transcript_str=False,
     color_col=None,
@@ -59,7 +59,7 @@ def plot(
     warnings: bool, default True
         Whether the warnings should be shown or not.
 
-    max_ngenes: int, default 20
+    max_shown: int, default 20
         Maximum number of genes plotted in the dataframe order.
 
     introns_off: bool, default False
@@ -130,7 +130,7 @@ def plot(
 
     >>> p = pr.PyRanges({"Chromosome": [1]*5, "Strand": ["+"]*3 + ["-"]*2, "Start": [10,20,30,25,40], "End": [15,25,35,30,50], "transcript_id": ["t1"]*3 + ["t2"]*2}, "feature1": ["A", "B", "C", "A", "B"])
 
-    >>> plot(p, engine='plt', id_col="transcript_id",  max_ngenes=25, colormap='Set3')
+    >>> plot(p, engine='plt', id_col="transcript_id",  max_shown=25, colormap='Set3')
 
     >>> plot(p, engine='matplotlib', id_col="transcript_id", color_col='Strand', colormap={'+': 'green', '-': 'red'})
 
@@ -235,7 +235,7 @@ def plot(
         shrink_threshold = feat_dict["shrink_threshold"]
 
         # Make DataFrame subset if needed
-        subdf, tot_ngenes = make_subset(df, id_col, max_ngenes)
+        subdf, tot_ngenes = make_subset(df, id_col, max_shown)
 
         # Create genes metadata DataFrame
         if color_col is None:
@@ -266,7 +266,7 @@ def plot(
                 )  # empty rows when subset
 
             subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
-                lambda x: introns_shrink(x, ts_data, id_col) if not x.empty else None
+                lambda x: introns_resize(x, ts_data, id_col) if not x.empty else None
             )  # empty rows when subset
             subdf["Start"] = subdf["Start_adj"]
             subdf["End"] = subdf["End_adj"]
@@ -294,7 +294,7 @@ def plot(
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
                 ts_data=ts_data,
-                max_ngenes=max_ngenes,
+                max_shown=max_shown,
                 id_col=id_col,
                 transcript_str=transcript_str,
                 showinfo=showinfo,
@@ -317,7 +317,7 @@ def plot(
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
                 ts_data=ts_data,
-                max_ngenes=max_ngenes,
+                max_shown=max_shown,
                 id_col=id_col,
                 transcript_str=transcript_str,
                 showinfo=showinfo,
