@@ -6,6 +6,35 @@ from pyranges_plot.core import cumdelting
 from ._core import make_annotation, repos_exon_plot
 
 
+def calc_fig_y(chrmd_df_l, vcf):
+    """Calculate figure height according to number of plots"""
+
+    # Count chromosomes
+    cumy_height = 0
+    chrom_count_d = {}
+    for chrmd_df in chrmd_df_l:
+        cumy_height += sum(chrmd_df.y_height)
+        for chrom in chrmd_df:
+            if chrom not in chrom_count_d.keys():
+                chrom_count_d[chrom] = 1
+            else:
+                chrom_count_d[chrom] += 1
+
+    chrom_count = len(chrom_count_d)
+
+    if vcf is None:
+        y = (
+            cumy_height + chrom_count * 2
+        ) / 2  # height according to genes and add 2 per each chromosome
+
+    else:
+        y = (
+            cumy_height + chrom_count * 3
+        ) / 2  # increase 1 per chromosome to show variants plot
+
+    return y, chrom_count_d
+
+
 def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
     """Set plot features."""
 
@@ -72,18 +101,17 @@ def _ax_shrink_rects(
 def create_fig(
     x,
     y,
-    chrmd_df,
-    genesmd_df,
-    vcf,
-    ts_data,
+    chrmd_df_l,
+    genesmd_df_l,
+    ts_data_l,
     title_chr,
     title_dict_plt,
     plot_background,
     plot_border,
     packed,
     legend,
-    tick_pos_d,
-    ori_tick_pos_d,
+    tick_pos_d_l,
+    ori_tick_pos_d_l,
     tag_background,
     shrinked_bkg,
     shrinked_alpha,
