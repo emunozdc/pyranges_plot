@@ -149,6 +149,7 @@ def create_fig(
             ).groups[chrom]
         fig.update_yaxes(
             range=[y_min, y_max],
+            fixedrange=True,
             tickvals=y_ticks_val,
             ticktext=y_ticks_name,
             showgrid=False,
@@ -346,6 +347,7 @@ def create_fig_with_vfc(
             ).groups[chrom]
         fig.update_yaxes(
             range=[y_min, y_max],
+            fixedrange=True,
             tickvals=y_ticks_val,
             ticktext=y_ticks_name,
             showgrid=False,

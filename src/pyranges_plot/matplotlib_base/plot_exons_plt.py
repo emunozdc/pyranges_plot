@@ -143,6 +143,14 @@ def plot_exons_plt(
         )
     )
 
+    # Prevent zoom in y axis
+    # for ax in axes:
+    #     initial_ylim = ax.get_ylim()
+    #     # event handler function to fix y-axis range
+    #     def on_xlims_change(axes):
+    #         axes.set_ylim(initial_ylim)
+    #     ax.callbacks.connect('xlim_changed', on_xlims_change)
+
     # Provide output
     if to_file is None:
         # evaluate warning
