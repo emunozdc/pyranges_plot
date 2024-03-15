@@ -9,13 +9,13 @@ from ._data2plot import plot_introns, _apply_gene_bridge
 
 
 def plot_exons_ply(
-    subdf_l,
-    tot_ngenes_l,
+    subdf,
+    tot_ngenes,
     feat_dict,
-    genesmd_df_l,
+    genesmd_df,
     vcf,
-    chrmd_df_l,
-    ts_data_l,
+    chrmd_df,
+    ts_data,
     id_col,
     max_shown=25,
     transcript_str=False,
@@ -26,8 +26,8 @@ def plot_exons_ply(
     to_file=None,
     file_size=None,
     warnings=None,
-    tick_pos_d_l=None,
-    ori_tick_pos_d_l=None,
+    tick_pos_d=None,
+    ori_tick_pos_d=None,
 ):
     """Create Plotly plot."""
 

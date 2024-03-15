@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from ._core import plt_popup_warning
-from ._fig_axes import calc_fig_y, create_fig, create_fig_with_vcf
+from ._fig_axes import create_fig, create_fig_with_vcf
 from .plot_vcf_plt import _gby_plot_vcf
 from ._data2plot import (
     _apply_gene_bridge,
@@ -13,13 +13,13 @@ arrow_style = "round"
 
 
 def plot_exons_plt(
-    subdf_l,
+    subdf,
     vcf,
-    tot_ngenes_l,
+    tot_ngenes,
     feat_dict,
-    genesmd_df_l,
-    chrmd_df_l,
-    ts_data_l,
+    genesmd_df,
+    chrmd_df,
+    ts_data,
     id_col,
     max_shown=25,
     transcript_str=False,
@@ -30,8 +30,8 @@ def plot_exons_plt(
     to_file=None,
     file_size=None,
     warnings=None,
-    tick_pos_d_l=None,
-    ori_tick_pos_d_l=None,
+    tick_pos_d=None,
+    ori_tick_pos_d=None,
 ):
     """Create Matplotlib plot."""
 
@@ -53,27 +53,34 @@ def plot_exons_plt(
     # Create figure and axes
     if file_size:
         x = file_size[0]
-        _, chrom_count_d = calc_fig_y(chrmd_df_l, vcf)
         y = file_size[1]
     else:
         x = 20
-        y, chrom_count_d = calc_fig_y(chrmd_df_l, vcf)
+        if vcf is None:
+            y = (
+                sum(chrmd_df.y_height) + len(chrmd_df) * 2
+            ) / 2  # height according to genes and add 2 per each chromosome
+        else:
+            y = (
+                sum(chrmd_df.y_height) + len(chrmd_df) * 3
+            ) / 2  # increase 1 per chromosome to show variants plot
 
     if vcf is None:
         fig, axes = create_fig(
             x,
             y,
-            chrmd_df_l,
-            genesmd_df_l,
-            ts_data_l,
+            chrmd_df,
+            genesmd_df,
+            vcf,
+            ts_data,
             title_chr,
             title_dict_plt,
             plot_bkg,
             plot_border,
             packed,
             legend,
-            tick_pos_d_l,
-            ori_tick_pos_d_l,
+            tick_pos_d,
+            ori_tick_pos_d,
             tag_bkg,
             shrinked_bkg,
             shrinked_alpha,

@@ -1,4 +1,4 @@
-import pyranges as pr
+import pyranges
 import plotly.colors
 from .core import (
     get_engine,
@@ -46,7 +46,7 @@ def plot(
 
     Parameters
     ----------
-    df: {pyranges.PyRanges, pandas.DataFrame, list of pyranges.PyRanges}
+    df: pyranges.pyranges_main.PyRanges or pandas.DataFrame
         Pyranges or derived dataframe with genes' data.
 
     engine: str, default None
@@ -141,11 +141,7 @@ def plot(
     >>> plot(df, engine='plt', id_col="transcript_id", color_col='Strand', packed=False, to_file='my_plot.pdf')
     """
 
-    if isinstance(df, pr.PyRanges):
-        df = [df.copy()]
-
-    elif isinstance(df, list):
-        df = [gr.copy() for gr in df]
+    df = df.copy()
 
     # Deal with export
     if to_file:
@@ -163,11 +159,10 @@ def plot(
         id_col = get_idcol()
 
     try:
-        for df_instance in df:
-            if id_col is not None and id_col not in df_instance.columns:
-                raise Exception(
-                    "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
-                )
+        if id_col is not None and id_col not in df.columns:
+            raise Exception(
+                "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
+            )
     except SystemExit as e:
         print("An error occured:", e)
 
@@ -240,89 +235,65 @@ def plot(
         shrink_threshold = feat_dict["shrink_threshold"]
 
         # Make DataFrame subset if needed
-        subs_l = [make_subset(df_instance, id_col, max_shown) for df_instance in df]
-        subdf_l = [i for i, j in subs_l]
-        tot_ngenes_l = [j for i, j in subs_l]
-
-        # subdf, tot_ngenes = make_subset(df, id_col, max_shown)
+        subdf, tot_ngenes = make_subset(df, id_col, max_shown)
 
         # Create genes metadata DataFrame
         if color_col is None:
             color_col = id_col
-        genesmd_df_l = [
-            get_genes_metadata(subdf, id_col, color_col, packed, colormap)
-            for subdf in subdf_l
-        ]
+        genesmd_df = get_genes_metadata(subdf, id_col, color_col, packed, colormap)
 
         # Create chromosome metadata DataFrame
-        chrmd_df_l = [
-            get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
-            for subdf, genesmd_df in zip(subdf_l, genesmd_df_l)
-        ]
+        chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
 
         # Deal with introns off
         # adapt coordinates to shrinked
-        ts_data_l = []
-        tick_pos_d_l = []
-        ori_tick_pos_d_l = []
+        ts_data = {}
+        subdf["oriStart"] = subdf["Start"]
+        subdf["oriEnd"] = subdf["End"]
+        tick_pos_d = {}
+        ori_tick_pos_d = {}
 
-        for subdf, chrmd_df, genesmd_df in zip(subdf_l, chrmd_df_l, genesmd_df_l):
-            ts_data = {}
-            subdf["oriStart"] = subdf["Start"]
-            subdf["oriEnd"] = subdf["End"]
-            tick_pos_d = {}
-            ori_tick_pos_d = {}
-
-            if introns_off:
-                # compute threshold
-                if isinstance(shrink_threshold, int):
-                    subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-                elif isinstance(shrink_threshold, float):
-                    subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-                    subdf = subdf.groupby(
-                        "Chromosome", group_keys=False, observed=True
-                    ).apply(
-                        lambda x: compute_thresh(x, chrmd_df) if not x.empty else None
-                    )  # empty rows when subset
-
+        if introns_off:
+            # compute threshold
+            if isinstance(shrink_threshold, int):
+                subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+            elif isinstance(shrink_threshold, float):
+                subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
                 subdf = subdf.groupby(
                     "Chromosome", group_keys=False, observed=True
                 ).apply(
-                    lambda x: introns_resize(x, ts_data, id_col)
-                    if not x.empty
-                    else None
+                    lambda x: compute_thresh(x, chrmd_df) if not x.empty else None
                 )  # empty rows when subset
-                subdf["Start"] = subdf["Start_adj"]
-                subdf["End"] = subdf["End_adj"]
 
-                # recompute limits
-                chrmd_df = get_chromosome_metadata(
-                    subdf, id_col, limits, genesmd_df, ts_data=ts_data
+            subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
+                lambda x: introns_resize(x, ts_data, id_col) if not x.empty else None
+            )  # empty rows when subset
+            subdf["Start"] = subdf["Start_adj"]
+            subdf["End"] = subdf["End_adj"]
+
+            # recompute limits
+            chrmd_df = get_chromosome_metadata(
+                subdf, id_col, limits, genesmd_df, ts_data=ts_data
+            )
+
+            # compute new axis values and positions if needed
+            if ts_data:
+                tick_pos_d, ori_tick_pos_d = recalc_axis(
+                    ts_data, tick_pos_d, ori_tick_pos_d
                 )
 
-                # compute new axis values and positions if needed
-                if ts_data:
-                    tick_pos_d, ori_tick_pos_d = recalc_axis(
-                        ts_data, tick_pos_d, ori_tick_pos_d
-                    )
+        else:
+            subdf["cumdelta"] = [0] * len(subdf)
 
-            else:
-                subdf["cumdelta"] = [0] * len(subdf)
-
-            ts_data_l.append(ts_data)
-            tick_pos_d_l.append(tick_pos_d)
-            ori_tick_pos_d_l.append(ori_tick_pos_d)
-
-        # Create the plots
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
-                subdf_l=subdf_l,
+                subdf=subdf,
                 vcf=vcf,
-                tot_ngenes_l=tot_ngenes_l,
+                tot_ngenes=tot_ngenes,
                 feat_dict=feat_dict,
-                genesmd_df_l=genesmd_df_l,
-                chrmd_df_l=chrmd_df_l,
-                ts_data_l=ts_data_l,
+                genesmd_df=genesmd_df,
+                chrmd_df=chrmd_df,
+                ts_data=ts_data,
                 max_shown=max_shown,
                 id_col=id_col,
                 transcript_str=transcript_str,
@@ -333,19 +304,19 @@ def plot(
                 to_file=to_file,
                 file_size=file_size,
                 warnings=warnings,
-                tick_pos_d_l=tick_pos_d_l,
-                ori_tick_pos_d_l=ori_tick_pos_d_l,
+                tick_pos_d=tick_pos_d,
+                ori_tick_pos_d=ori_tick_pos_d,
             )
 
         elif engine == "ply" or engine == "plotly":
             plot_exons_ply(
-                subdf_l=subdf_l,
+                subdf=subdf,
                 vcf=vcf,
-                tot_ngenes_l=tot_ngenes_l,
+                tot_ngenes=tot_ngenes,
                 feat_dict=feat_dict,
-                genesmd_df_l=genesmd_df_l,
-                chrmd_df_l=chrmd_df_l,
-                ts_data_l=ts_data_l,
+                genesmd_df=genesmd_df,
+                chrmd_df=chrmd_df,
+                ts_data=ts_data,
                 max_shown=max_shown,
                 id_col=id_col,
                 transcript_str=transcript_str,
@@ -356,8 +327,8 @@ def plot(
                 to_file=to_file,
                 file_size=file_size,
                 warnings=warnings,
-                tick_pos_d_l=tick_pos_d_l,
-                ori_tick_pos_d_l=ori_tick_pos_d_l,
+                tick_pos_d=tick_pos_d,
+                ori_tick_pos_d=ori_tick_pos_d,
             )
 
         else:
