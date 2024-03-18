@@ -1,3 +1,4 @@
+import pandas as pd
 import pyranges
 import plotly.colors
 from .core import (
@@ -46,8 +47,8 @@ def plot(
 
     Parameters
     ----------
-    df: pyranges.pyranges_main.PyRanges or pandas.DataFrame
-        Pyranges or derived dataframe with genes' data.
+    df: {pyranges.PyRanges, pandas.DataFrame or list of pyranges.PyRanges}
+        Pyranges, derived dataframe or list of them with annotation data.
 
     engine: str, default None
         Library in which the plot sould be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
@@ -141,7 +142,22 @@ def plot(
     >>> plot(df, engine='plt', id_col="transcript_id", color_col='Strand', packed=False, to_file='my_plot.pdf')
     """
 
-    df = df.copy()
+    if not isinstance(df, list):
+        df = [df]
+    # Store data in case of list of pr as input
+    # if isinstance(df, list):
+    #     df_d = {}
+    #     for pr_ix, df_item in enumerate(df):
+    #         df_d[pr_ix] = df_item.copy()
+    #     # concat all dataframes and create new column with input list index
+    #     df = pd.concat(df_d, names=["pr_ix"]).reset_index(level=0)
+    #
+    # # Data in case of a single pr as input
+    # else:
+    #     df = df.copy()
+    #     df["pr_ix"] = [-1]*len(df)
+    #
+    # df.groupby(["pr_ix", "Chromosome"], observed=True, group_keys=False).apply(print)
 
     # Deal with export
     if to_file:
@@ -159,10 +175,11 @@ def plot(
         id_col = get_idcol()
 
     try:
-        if id_col is not None and id_col not in df.columns:
-            raise Exception(
-                "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
-            )
+        for df_item in df:
+            if id_col is not None and id_col not in df_item.columns:
+                raise Exception(
+                    "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
+                )
     except SystemExit as e:
         print("An error occured:", e)
 
@@ -195,7 +212,7 @@ def plot(
         wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
         if wrong_keys:
             raise Exception(
-                "The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
+                f"The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
             )
 
         def getvalue(key):
@@ -235,7 +252,13 @@ def plot(
         shrink_threshold = feat_dict["shrink_threshold"]
 
         # Make DataFrame subset if needed
-        subdf, tot_ngenes = make_subset(df, id_col, max_shown)
+        df_d = {}
+        tot_ngenes_l = []
+        for pr_ix, df_item in enumerate(df):
+            df_d[pr_ix], tot_ngenes = make_subset(df_item.copy(), id_col, max_shown)
+            tot_ngenes_l.append(tot_ngenes)
+        # concat subset dataframes and create new column with input list index
+        subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(level="pr_ix")
 
         # Create genes metadata DataFrame
         if color_col is None:
@@ -260,12 +283,14 @@ def plot(
             elif isinstance(shrink_threshold, float):
                 subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
                 subdf = subdf.groupby(
-                    "Chromosome", group_keys=False, observed=True
+                    ["Chromosome", "pr_ix"], group_keys=False, observed=True
                 ).apply(
                     lambda x: compute_thresh(x, chrmd_df) if not x.empty else None
-                )  # empty rows when subset
+                )  # .reset_index(level="pr_ix")
 
-            subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
+            subdf = subdf.groupby(
+                ["Chromosome", "pr_ix"], group_keys=False, observed=True
+            ).apply(
                 lambda x: introns_resize(x, ts_data, id_col) if not x.empty else None
             )  # empty rows when subset
             subdf["Start"] = subdf["Start_adj"]
@@ -285,11 +310,15 @@ def plot(
         else:
             subdf["cumdelta"] = [0] * len(subdf)
 
+        # Sort data to plot chromosomes and pr objects in order
+        subdf.sort_values(["Chromosome", "pr_ix"], inplace=True)
+        chrmd_df.sort_values(["Chromosome", "pr_ix"], inplace=True)
+
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
                 subdf=subdf,
                 vcf=vcf,
-                tot_ngenes=tot_ngenes,
+                tot_ngenes_l=tot_ngenes_l,
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
@@ -312,7 +341,7 @@ def plot(
             plot_exons_ply(
                 subdf=subdf,
                 vcf=vcf,
-                tot_ngenes=tot_ngenes,
+                tot_ngenes_l=tot_ngenes_l,
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,

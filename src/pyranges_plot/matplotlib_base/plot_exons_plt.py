@@ -15,7 +15,7 @@ arrow_style = "round"
 def plot_exons_plt(
     subdf,
     vcf,
-    tot_ngenes,
+    tot_ngenes_l,
     feat_dict,
     genesmd_df,
     chrmd_df,
@@ -58,11 +58,13 @@ def plot_exons_plt(
         x = 20
         if vcf is None:
             y = (
-                sum(chrmd_df.y_height) + len(chrmd_df) * 2
+                sum(chrmd_df.y_height) + len(chrmd_df.index.drop_duplicates()) * 2
             ) / 2  # height according to genes and add 2 per each chromosome
         else:
             y = (
-                sum(chrmd_df.y_height) + len(chrmd_df) * 3
+                sum(chrmd_df.y_height)
+                + len(chrmd_df.index.columns.get_loc("Chromosome").drop_duplicates())
+                * 3
             ) / 2  # increase 1 per chromosome to show variants plot
 
     if vcf is None:
