@@ -85,8 +85,7 @@ def repos_plot_to_prev(ax1, ax2):
     ax1_pos = ax1.get_position()
     ax2_pos = ax2.get_position()
     incr = ax1_pos.y0 - ax2_pos.y1
-    print(incr)
-    print(ax1_pos, ax2_pos)
+
     return [
         ax2_pos.x0,
         ax2_pos.y0 + incr,

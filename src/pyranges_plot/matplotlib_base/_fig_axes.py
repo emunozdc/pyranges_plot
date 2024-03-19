@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.patches import Rectangle
@@ -107,6 +108,7 @@ def create_fig(
 
     # one plot per chromosome and pr object
     axes = []
+    axes_ix_d = {}
     prev_chrom = None
     for i in range(len(chrmd_df)):
         chrom = chrmd_df.index[i]
@@ -114,8 +116,9 @@ def create_fig(
         chrmd_df_pr = chrmd_df[chrmd_df["pr_ix"] == pr_ix]
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
+        axes_ix_d[(chrom, pr_ix)] = i
         # Adjust plot display
-        if pr_ix == 0:
+        if pr_ix == min(pd.Series(chrmd_df.loc[chrom]["pr_ix"])):
             title = title_chr
         else:
             title = ""
@@ -159,7 +162,7 @@ def create_fig(
 
             # compute new coordinates of conserved previous ticks
             to_add = to_add_val.copy()
-            to_add = cumdelting(to_add, ts_data, chrom)
+            to_add = cumdelting(to_add, ts_data, chrom, pr_ix)
 
             # set new ticks
             x_ticks_val = sorted(to_add)
@@ -207,7 +210,7 @@ def create_fig(
 
         if prev_chrom:
             if prev_chrom == chrom:
-                repos_plot_to_prev(axes[i - 1], ax)
+                ax.set_position(repos_plot_to_prev(axes[i - 1], ax))
                 axes[i - 1].get_xaxis().set_visible(False)
 
         prev_chrom = chrom
@@ -220,7 +223,7 @@ def create_fig(
 
     plt.show()
 
-    return fig, axes
+    return fig, axes, axes_ix_d
 
 
 def create_fig_with_vcf(
@@ -309,7 +312,7 @@ def create_fig_with_vcf(
 
             # compute new coordinates of conserved previous ticks
             to_add = to_add_val.copy()
-            to_add = cumdelting(to_add, ts_data, chrom)
+            to_add = cumdelting(to_add, ts_data, chrom, pr_ix)
 
             # set new ticks
             x_ticks_val = sorted(to_add)

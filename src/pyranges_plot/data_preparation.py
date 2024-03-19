@@ -307,7 +307,7 @@ def _fill_min_max(row, ts_data):
     # consider introns off for higher limit
     else:
         if len(row) == 5:
-            new_upper_lim = cumdelting([minmax_l[1]], ts_data, row.name)
+            new_upper_lim = cumdelting([minmax_l[1]], ts_data, row.name[0], row.name[1])
             minmax_l[1] = new_upper_lim[0]
 
     # put plot coordinates in min_max

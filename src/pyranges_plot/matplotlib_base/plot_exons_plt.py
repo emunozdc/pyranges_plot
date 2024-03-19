@@ -68,7 +68,7 @@ def plot_exons_plt(
             ) / 2  # increase 1 per chromosome to show variants plot
 
     if vcf is None:
-        fig, axes = create_fig(
+        fig, axes, axes_ix_d = create_fig(
             x,
             y,
             chrmd_df,
@@ -123,10 +123,11 @@ def plot_exons_plt(
         )
 
     # Plot genes
-    subdf.groupby(id_col, group_keys=False, observed=True).apply(
+    subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
         lambda subdf: _gby_plot_exons(
             subdf,
             axes,
+            axes_ix_d,
             fig,
             chrmd_df,
             genesmd_df,
@@ -168,6 +169,7 @@ def plot_exons_plt(
 def _gby_plot_exons(
     df,
     axes,
+    axes_ix_d,
     fig,
     chrmd_df,
     genesmd_df,
@@ -191,8 +193,10 @@ def _gby_plot_exons(
     gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
     exon_color = genesmd_df.loc[genename].color
     chrom = genesmd_df.loc[genename].chrix
-    chrom_ix = chrmd_df.index.get_loc(chrom)
-    ax = axes[chrom_ix]
+    print(df)
+    # chrom_ix = chrmd_df.index.get_loc(chrom)
+    print(axes_ix_d[(chrom, df["pr_ix"])[0]])  ### here!!
+    ax = axes[axes_ix_d[(chrom, df["pr_ix"])[0]]]
     if "Strand" in df.columns:
         strand = df["Strand"].unique()[0]
     else:
