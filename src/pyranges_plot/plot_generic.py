@@ -144,20 +144,6 @@ def plot(
 
     if not isinstance(df, list):
         df = [df]
-    # Store data in case of list of pr as input
-    # if isinstance(df, list):
-    #     df_d = {}
-    #     for pr_ix, df_item in enumerate(df):
-    #         df_d[pr_ix] = df_item.copy()
-    #     # concat all dataframes and create new column with input list index
-    #     df = pd.concat(df_d, names=["pr_ix"]).reset_index(level=0)
-    #
-    # # Data in case of a single pr as input
-    # else:
-    #     df = df.copy()
-    #     df["pr_ix"] = [-1]*len(df)
-    #
-    # df.groupby(["pr_ix", "Chromosome"], observed=True, group_keys=False).apply(print)
 
     # Deal with export
     if to_file:
@@ -267,6 +253,8 @@ def plot(
 
         # Create chromosome metadata DataFrame
         chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
+
+        print(chrmd_df)
 
         # Deal with introns off
         # adapt coordinates to shrinked

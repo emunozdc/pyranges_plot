@@ -321,13 +321,21 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
     # Start df
     chrmd_df = df.groupby(["Chromosome", "pr_ix"], group_keys=False, observed=True).agg(
         {"Start": "min", "End": "max", id_col: "nunique"}
-    )  # .reset_index(level=1)
-    # chrmd_df.dropna(inplace=True)  # remove chr not present in subset (NaN)
+    )  # .reset_index(level="pr_ix")
     chrmd_df.rename(
         columns={id_col: "n_genes", "Start": "min", "End": "max"}, inplace=True
     )
+    # Adjust limits in case +1 pr
+    if len(df["pr_ix"].drop_duplicates()) > 1:
+        chrmd_df["min"] = chrmd_df.groupby(
+            "Chromosome", group_keys=False, observed=True
+        )["min"].transform(min)
+        chrmd_df["max"] = chrmd_df.groupby(
+            "Chromosome", group_keys=False, observed=True
+        )["max"].transform(max)
 
     # Add limits
+    print(chrmd_df)
     _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
     chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
 
@@ -338,6 +346,6 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
     chrmd_df["y_height"] += 1  # count from 1
 
     # pr_ix as column not index
-    chrmd_df.reset_index(level=1, inplace=True)
+    chrmd_df.reset_index(level="pr_ix", inplace=True)
 
     return chrmd_df
