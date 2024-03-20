@@ -221,8 +221,6 @@ def create_fig(
         labels = genesmd_df.index.tolist()
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
-    plt.show()
-
     return fig, axes, axes_ix_d
 
 
