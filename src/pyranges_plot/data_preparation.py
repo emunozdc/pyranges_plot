@@ -335,7 +335,6 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
         )["max"].transform(max)
 
     # Add limits
-    print(chrmd_df)
     _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
     chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
 

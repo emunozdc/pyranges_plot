@@ -1,6 +1,7 @@
 import plotly.subplots as sp
 import plotly.graph_objects as go
 import numpy as np
+import pandas as pd
 from pyranges_plot.core import cumdelting
 
 
@@ -58,24 +59,30 @@ def create_fig(
 ):
     """Generate the figure and axes fitting the data."""
 
+    # Unify titles and start figure
     titles = [title_chr.format(**locals()) for chrom in chrmd_df.index]
+    titles = list(pd.Series(titles).drop_duplicates())
     fig = sp.make_subplots(
-        rows=len(chrmd_df),
+        rows=len(titles),
         cols=1,
-        row_heights=chrmd_df.y_height.to_list(),
+        row_heights=chrmd_df.groupby("Chromosome")["y_height"].apply(sum).to_list(),
         subplot_titles=titles,
     )
 
     # one subplot per chromosome
-    for i in range(len(chrmd_df)):
-        chrom = chrmd_df.index[i]
+    chrmd_df_grouped = chrmd_df.groupby(
+        ["Chromosome"], group_keys=False, observed=True
+    ).agg({"n_genes": "sum", "min_max": "first", "y_height": "sum"})
+    print(chrmd_df_grouped)
+    for i in range(len(titles)):
+        chrom = chrmd_df.index.drop_duplicates()[i]
         fig.add_trace(go.Scatter(x=[], y=[]), row=i + 1, col=1)
 
         # set title format
         fig.layout.annotations[i].update(font=title_dict_ply)
 
         # set x axis limits
-        x_min, x_max = chrmd_df.iloc[i]["min_max"]
+        x_min, x_max = chrmd_df_grouped.loc[chrom]["min_max"]
         x_rang = x_max - x_min
         fig.update_xaxes(
             range=[x_min - 0.05 * x_rang, x_max + 0.05 * x_rang],
@@ -139,7 +146,7 @@ def create_fig(
 
         # set y axis limits
         y_min = 0
-        y_max = chrmd_df.iloc[i].y_height
+        y_max = chrmd_df_grouped.loc[chrom].y_height
         y_ticks_val = []
         y_ticks_name = []
         if not packed:

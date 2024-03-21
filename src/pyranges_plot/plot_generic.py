@@ -254,8 +254,6 @@ def plot(
         # Create chromosome metadata DataFrame
         chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
 
-        print(chrmd_df)
-
         # Deal with introns off
         # adapt coordinates to shrinked
         ts_data = {}

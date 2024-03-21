@@ -10,7 +10,7 @@ from ._data2plot import plot_introns, _apply_gene_bridge
 
 def plot_exons_ply(
     subdf,
-    tot_ngenes,
+    tot_ngenes_l,
     feat_dict,
     genesmd_df,
     vcf,
@@ -30,6 +30,10 @@ def plot_exons_ply(
     ori_tick_pos_d=None,
 ):
     """Create Plotly plot."""
+
+    print(subdf)
+    print(chrmd_df)
+    print(genesmd_df)
 
     # Get default plot features
     # tag_background = feat_dict['tag_background']
@@ -82,7 +86,7 @@ def plot_exons_ply(
         )
 
     # Plot genes
-    subdf.groupby(id_col, group_keys=False, observed=True).apply(
+    subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
         lambda subdf: _gby_plot_exons(
             subdf,
             fig,
@@ -103,7 +107,7 @@ def plot_exons_ply(
             arrow_intron_threshold,
             vcf,
         )
-    )
+    ).reset_index(level="pr_ix")
 
     # Adjust plot display
     fig.update_layout(plot_bgcolor=plot_bkg, font_color=plot_border, showlegend=legend)
@@ -168,11 +172,23 @@ def _gby_plot_exons(
     """Plot elements corresponding to the df rows of one gene."""
 
     # Gene parameters
+    print(df)  ### here !!
+    chrom = df["Chromosome"].iloc[0]
+    pr_ix = df["pr_ix"].iloc[0]
     genename = df[id_col].iloc[0]
     df["legend_tag"] = [genename] + [""] * (len(df) - 1)
     gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
-    exon_color = genesmd_df.loc[genename].color
-    chrom = genesmd_df.loc[genename].chrix
+    # in case same gene in +1 pr
+    if not isinstance(genesmd_df, pd.Series):
+        genesmd_df = genesmd_df[
+            genesmd_df["pr_ix"] == pr_ix
+        ]  # in case same gene in +1 pr
+        gene_ix = genesmd_df["ycoord"].loc[genename] + 0.5
+        exon_color = genesmd_df["color"].iloc[0]
+    # in case different genes in different pr
+    else:
+        gene_ix = genesmd_df["ycoord"] + 0.5
+        exon_color = genesmd_df["color"]
     chrom_ix = chrmd_df.index.get_loc(chrom)
     if vcf is not None:
         chrom_ix = 2 * chrom_ix + 1
