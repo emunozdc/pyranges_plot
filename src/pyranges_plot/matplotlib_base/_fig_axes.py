@@ -208,10 +208,11 @@ def create_fig(
                 tag_background,
             )
 
+        # Same chromosome in +1 pr
         if prev_chrom:
             if prev_chrom == chrom:
                 ax.set_position(repos_plot_to_prev(axes[i - 1], ax))
-                axes[i - 1].get_xaxis().set_visible(False)
+                axes[i - 1].set_xticklabels([])  # .get_xaxis().set_visible(False)
 
         prev_chrom = chrom
 
