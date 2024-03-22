@@ -31,10 +31,6 @@ def plot_exons_ply(
 ):
     """Create Plotly plot."""
 
-    print(subdf)
-    print(chrmd_df)
-    print(genesmd_df)
-
     # Get default plot features
     # tag_background = feat_dict['tag_background']
     plot_bkg = feat_dict["plot_bkg"]
@@ -107,7 +103,7 @@ def plot_exons_ply(
             arrow_intron_threshold,
             vcf,
         )
-    ).reset_index(level="pr_ix")
+    )  # .reset_index(level="pr_ix")
 
     # Adjust plot display
     fig.update_layout(plot_bgcolor=plot_bkg, font_color=plot_border, showlegend=legend)
@@ -117,22 +113,28 @@ def plot_exons_ply(
     # Provide output
     # insert silent information for warnings
     if warnings:
-        fig.data[0].customdata = np.array([tot_ngenes, 0, 0])
+        fig.data[0].customdata = np.array([0, 0, 0])  # [tot_ngenes_l, 0, 0])
         if (
             "_blackwarning!" in genesmd_df.columns
             and "_iterwarning!" in genesmd_df.columns
         ):
-            fig.data[0].customdata = np.array([tot_ngenes, 91124, 91321])
+            fig.data[0].customdata = np.array(
+                [0, 91124, 91321]
+            )  # [tot_ngenes_l, 91124, 91321])
         elif (
             "_blackwarning!" in genesmd_df.columns
             and not "_iterwarning!" in genesmd_df.columns
         ):
-            fig.data[0].customdata = np.array([tot_ngenes, 91124, 0])
+            fig.data[0].customdata = np.array(
+                [0, 91124, 0]
+            )  # [tot_ngenes_l, 91124, 0])
         elif (
             not "_blackwarning!" in genesmd_df.columns
             and "_iterwarning!" in genesmd_df.columns
         ):
-            fig.data[0].customdata = np.array([tot_ngenes, 0, 91321])
+            fig.data[0].customdata = np.array(
+                [0, 0, 91321]
+            )  # [tot_ngenes_l, 0, 91321])
     else:
         fig.data[0].customdata = np.array(["no warnings"])
 
@@ -172,12 +174,11 @@ def _gby_plot_exons(
     """Plot elements corresponding to the df rows of one gene."""
 
     # Gene parameters
-    print(df)  ### here !!
     chrom = df["Chromosome"].iloc[0]
     pr_ix = df["pr_ix"].iloc[0]
     genename = df[id_col].iloc[0]
     df["legend_tag"] = [genename] + [""] * (len(df) - 1)
-    gene_ix = genesmd_df.loc[genename]["ycoord"] + 0.5
+
     # in case same gene in +1 pr
     if not isinstance(genesmd_df, pd.Series):
         genesmd_df = genesmd_df[
@@ -189,7 +190,9 @@ def _gby_plot_exons(
     else:
         gene_ix = genesmd_df["ycoord"] + 0.5
         exon_color = genesmd_df["color"]
-    chrom_ix = chrmd_df.index.get_loc(chrom)
+
+    chrom_ix = chrmd_df[chrmd_df["pr_ix"] == pr_ix].loc[chrom]["chrom_ix"]
+
     if vcf is not None:
         chrom_ix = 2 * chrom_ix + 1
     if "Strand" in df.columns:

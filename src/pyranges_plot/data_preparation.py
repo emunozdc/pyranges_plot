@@ -344,6 +344,11 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
     )["ycoord"].max()
     chrmd_df["y_height"] += 1  # count from 1
 
+    # Set chrom_ix to get the right association to the plot index
+    chrmd_df["chrom_ix"] = chrmd_df.groupby(
+        "Chromosome", group_keys=False, observed=True
+    ).ngroup()
+
     # pr_ix as column not index
     chrmd_df.reset_index(level="pr_ix", inplace=True)
 

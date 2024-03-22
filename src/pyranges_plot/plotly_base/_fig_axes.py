@@ -73,7 +73,7 @@ def create_fig(
     chrmd_df_grouped = chrmd_df.groupby(
         ["Chromosome"], group_keys=False, observed=True
     ).agg({"n_genes": "sum", "min_max": "first", "y_height": "sum"})
-    print(chrmd_df_grouped)
+
     for i in range(len(titles)):
         chrom = chrmd_df.index.drop_duplicates()[i]
         fig.add_trace(go.Scatter(x=[], y=[]), row=i + 1, col=1)
