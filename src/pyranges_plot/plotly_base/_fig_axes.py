@@ -65,14 +65,14 @@ def create_fig(
     fig = sp.make_subplots(
         rows=len(titles),
         cols=1,
-        row_heights=chrmd_df.groupby("Chromosome")["y_height"].apply(sum).to_list(),
+        row_heights=chrmd_df.groupby("Chromosome")["y_height"].first().to_list(),
         subplot_titles=titles,
     )
 
     # one subplot per chromosome
     chrmd_df_grouped = chrmd_df.groupby(
         ["Chromosome"], group_keys=False, observed=True
-    ).agg({"n_genes": "sum", "min_max": "first", "y_height": "sum"})
+    ).agg({"n_genes": "sum", "min_max": "first", "y_height": "first"})
 
     for i in range(len(titles)):
         chrom = chrmd_df.index.drop_duplicates()[i]
