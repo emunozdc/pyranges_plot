@@ -78,10 +78,21 @@ def _genesmd_packed(genesmd_df):
 
 def _update_y(genesmd_df):
     """xxx"""
+    print(genesmd_df)
     genesmd_df["update_y_prix"] = genesmd_df.groupby("pr_ix").ngroup(ascending=False)
-    genesmd_df["update_y_prev"] = (
-        genesmd_df.groupby("pr_ix")["ycoord"].cummax().shift()
-    )  ## !!! here
+    print(genesmd_df.groupby("pr_ix")["ycoord"].apply(max).shift(-1, fill_value=-1))
+    print(genesmd_df.groupby("pr_ix")["ycoord"].apply(max))
+    y_prev_df = (
+        genesmd_df.groupby("pr_ix")["ycoord"].apply(max).shift(-1, fill_value=-1)
+    )
+    y_prev_df.name = "update_y_prev"
+    genesmd_df = genesmd_df.join(y_prev_df, on="pr_ix")
+    # genesmd_df["update_y_prev"] = (
+    #     genesmd_df.groupby("pr_ix")["ycoord"].transform('max').shift(-1, fill_value=-1)
+    # )  ## !!! here
+    genesmd_df["update_y_prev"] += 1
+    genesmd_df["ycoord"] += genesmd_df["update_y_prix"] + genesmd_df["update_y_prev"]
+    print(genesmd_df)
     return genesmd_df
 
 
