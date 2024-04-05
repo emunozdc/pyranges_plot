@@ -76,20 +76,26 @@ def _genesmd_packed(genesmd_df):
     return genesmd_df
 
 
+def _adj_y_prix(row):
+    if row == 0:
+        return 0
+    else:
+        return 1
+
+
 def _update_y(genesmd_df):
     """xxx"""
-    print(genesmd_df)
+
+    # Store individual pr y coords
+    # genesmd_df["ind_ycoord"] = genesmd_df["ycoord"]
+
     genesmd_df["update_y_prix"] = genesmd_df.groupby("pr_ix").ngroup(ascending=False)
-    print(genesmd_df.groupby("pr_ix")["ycoord"].apply(max).shift(-1, fill_value=-1))
-    print(genesmd_df.groupby("pr_ix")["ycoord"].apply(max))
+    genesmd_df["update_y_prix"] = genesmd_df["update_y_prix"].apply(_adj_y_prix)
     y_prev_df = (
         genesmd_df.groupby("pr_ix")["ycoord"].apply(max).shift(-1, fill_value=-1)
     )
     y_prev_df.name = "update_y_prev"
     genesmd_df = genesmd_df.join(y_prev_df, on="pr_ix")
-    # genesmd_df["update_y_prev"] = (
-    #     genesmd_df.groupby("pr_ix")["ycoord"].transform('max').shift(-1, fill_value=-1)
-    # )  ## !!! here
     genesmd_df["update_y_prev"] += 1
     genesmd_df["ycoord"] += genesmd_df["update_y_prix"] + genesmd_df["update_y_prev"]
     print(genesmd_df)
@@ -364,6 +370,10 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
     chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
 
     # Store plot y height
+    chrmd_df["pr_line"] = genesmd_df.groupby(
+        ["chrix", "pr_ix"], group_keys=False, observed=True
+    )["ycoord"].max()
+
     chrmd_df = chrmd_df.merge(
         genesmd_df.groupby("Chromosome", group_keys=False, observed=True)[
             "ycoord"
@@ -371,6 +381,21 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
         on="Chromosome",
         how="left",
     )
+    print(chrmd_df)
+
+    pr_line_df = chrmd_df.groupby("Chromosome")["pr_line"].shift(-1, fill_value=-1)
+    pr_line_df.name = "pr_line"
+    print(pr_line_df)
+    # chrmd_df.reset_index("pr_ix", inplace=True)
+    chrmd_df["pr_ix"] = chrmd_df["pr_ix"].astype(int)
+    chrmd_df = chrmd_df.join(pr_line_df, on="pr_ix")
+    print(chrmd_df)
+    print("\n\n")
+
+    # print(genesmd_df)
+    # print(chrmd_df)
+
+    # chrmd_df["pr_line"] = chrmd_df.groupby("Chromosome", group_keys=False, observed=True)["pr_line"].shift(-1, fill_value=-1)
     chrmd_df.rename(columns={"ycoord": "y_height"}, inplace=True)
     chrmd_df["y_height"] += 1  # count from 1
 
