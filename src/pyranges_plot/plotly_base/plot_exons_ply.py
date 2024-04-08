@@ -58,6 +58,7 @@ def plot_exons_ply(
             title_dict_ply,
             packed,
             plot_bkg,
+            plot_border,
             tick_pos_d,
             ori_tick_pos_d,
             shrinked_bkg,

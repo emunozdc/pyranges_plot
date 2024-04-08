@@ -98,7 +98,7 @@ def _update_y(genesmd_df):
     genesmd_df = genesmd_df.join(y_prev_df, on="pr_ix")
     genesmd_df["update_y_prev"] += 1
     genesmd_df["ycoord"] += genesmd_df["update_y_prix"] + genesmd_df["update_y_prev"]
-    print(genesmd_df)
+
     return genesmd_df
 
 
@@ -370,9 +370,13 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
     chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
 
     # Store plot y height
-    chrmd_df["pr_line"] = genesmd_df.groupby(
-        ["chrix", "pr_ix"], group_keys=False, observed=True
-    )["ycoord"].max()
+    chrmd_df["pr_line_prev"] = (
+        genesmd_df.groupby(["chrix", "pr_ix"], group_keys=False, observed=True)[
+            "ycoord"
+        ]
+        .max()
+        .to_list()
+    )
 
     chrmd_df = chrmd_df.merge(
         genesmd_df.groupby("Chromosome", group_keys=False, observed=True)[
@@ -381,21 +385,18 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
         on="Chromosome",
         how="left",
     )
-    print(chrmd_df)
 
-    pr_line_df = chrmd_df.groupby("Chromosome")["pr_line"].shift(-1, fill_value=-1)
+    # Obtain the positions of lines separating pr objects
+    chrmd_df.set_index("pr_ix", inplace=True, append=True)
+
+    pr_line_df = chrmd_df.groupby("Chromosome")["pr_line_prev"].shift(-1, fill_value=-1)
     pr_line_df.name = "pr_line"
-    print(pr_line_df)
-    # chrmd_df.reset_index("pr_ix", inplace=True)
+    pr_line_df += 1
+
+    chrmd_df.reset_index("pr_ix", inplace=True)
     chrmd_df["pr_ix"] = chrmd_df["pr_ix"].astype(int)
-    chrmd_df = chrmd_df.join(pr_line_df, on="pr_ix")
-    print(chrmd_df)
-    print("\n\n")
+    chrmd_df = chrmd_df.join(pr_line_df, on=["Chromosome", "pr_ix"])
 
-    # print(genesmd_df)
-    # print(chrmd_df)
-
-    # chrmd_df["pr_line"] = chrmd_df.groupby("Chromosome", group_keys=False, observed=True)["pr_line"].shift(-1, fill_value=-1)
     chrmd_df.rename(columns={"ycoord": "y_height"}, inplace=True)
     chrmd_df["y_height"] += 1  # count from 1
 
