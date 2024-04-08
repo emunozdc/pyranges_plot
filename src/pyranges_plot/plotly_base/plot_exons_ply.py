@@ -181,17 +181,17 @@ def _gby_plot_exons(
     df["legend_tag"] = [genename] + [""] * (len(df) - 1)
 
     # in case same gene in +1 pr
-    if not isinstance(genesmd_df, pd.Series):
-        genesmd_df = genesmd_df[
-            genesmd_df["pr_ix"] == pr_ix
-        ]  # in case same gene in +1 pr
-        gene_ix = genesmd_df["ycoord"].loc[genename] + 0.5
-        exon_color = genesmd_df["color"].iloc[0]
+    genemd = genesmd_df.loc[genename]
+    if not isinstance(genemd, pd.Series):
+        genemd = genemd[genemd["pr_ix"] == pr_ix]  # in case same gene in +1 pr
+        gene_ix = genemd["ycoord"].loc[genename] + 0.5
+        exon_color = genemd["color"].iloc[0]
     # in case different genes in different pr
     else:
-        gene_ix = genesmd_df["ycoord"] + 0.5
-        exon_color = genesmd_df["color"]
+        gene_ix = genemd["ycoord"] + 0.5
+        exon_color = genemd["color"]
 
+    print(exon_color)
     chrom_ix = chrmd_df[chrmd_df["pr_ix"] == pr_ix].loc[chrom]["chrom_ix"]
 
     if vcf is not None:
