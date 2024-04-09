@@ -198,6 +198,8 @@ def _genesmd_assigncolor(genesmd_df, colormap):
     if isinstance(colormap, dict):
         genesmd_df["color_tag"] = genesmd_df["color_tag"].astype(str)
         genesmd_df["color"] = genesmd_df["color_tag"].map(colormap)
+
+        # add black genes warning if needed
         if genesmd_df["color"].isna().any():
             engine = get_engine()
             warnings = get_warnings()
@@ -217,11 +219,13 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
 
     # Start df with chromosome and the column defining color
     if color_col == "Chromosome":
+        color_col = "chromosome"
         genesmd_df = (
             df.groupby([id_col, "pr_ix"], group_keys=False, observed=True)
             .agg({"Chromosome": "first", "Start": "min", "End": "max"})
             .reset_index(level=1)
         )
+        genesmd_df["chromosome"] = genesmd_df["Chromosome"]
     else:
         genesmd_df = (
             df.groupby([id_col, "pr_ix"], group_keys=False, observed=True)

@@ -299,6 +299,12 @@ def plot(
         # Sort data to plot chromosomes and pr objects in order
         subdf.sort_values(["Chromosome", "pr_ix"], inplace=True)
         chrmd_df.sort_values(["Chromosome", "pr_ix"], inplace=True)
+        subdf = subdf.groupby(["pr_ix", id_col], group_keys=False, observed=True).apply(
+            lambda x: x.sort_values("Start")
+        )
+        subdf["exon_ix"] = subdf.groupby(
+            ["pr_ix", id_col], group_keys=False, observed=True
+        ).cumcount()
 
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(

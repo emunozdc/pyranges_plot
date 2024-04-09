@@ -191,7 +191,6 @@ def _gby_plot_exons(
         gene_ix = genemd["ycoord"] + 0.5
         exon_color = genemd["color"]
 
-    print(exon_color)
     chrom_ix = chrmd_df[chrmd_df["pr_ix"] == pr_ix].loc[chrom]["chrom_ix"]
 
     if vcf is not None:

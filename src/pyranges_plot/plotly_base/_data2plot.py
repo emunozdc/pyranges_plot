@@ -333,6 +333,7 @@ def _plot_row(
             mode="lines",
             line=dict(color=exon_color),
             text=geneinfo,
+            # hovertext=geneinfo,
             hoverinfo="text",
             name=row["legend_tag"],
             showlegend=legend,
@@ -340,6 +341,21 @@ def _plot_row(
         row=chrom_ix + 1,
         col=1,
     )
+
+    # Add annotation if it is the first exon
+    if row["exon_ix"] == 0:
+        fig.add_annotation(
+            dict(  # font=dict(color='yellow', size=15),
+                x=x0,
+                y=y0,
+                showarrow=False,
+                text=genename,
+                textangle=0,
+                xanchor="right",
+            ),
+            row=chrom_ix + 1,
+            col=1,
+        )
 
     # Plot DIRECTION ARROW in EXON
     # decide about placing a direction arrow
