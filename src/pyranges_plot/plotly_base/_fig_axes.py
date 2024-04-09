@@ -133,7 +133,7 @@ def create_fig(
             x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
-                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
+                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["max"].max()
             ]
             x_ticks_name = sorted(to_add_val)[: len(x_ticks_val)]
 

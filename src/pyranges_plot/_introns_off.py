@@ -59,7 +59,6 @@ def introns_resize(df, ts_data, id_col):
     """Calculate intron resizes and provide info for plotting"""
 
     chrom = df["Chromosome"].iloc[0]
-    pr_ix = df["pr_ix"].iloc[0]
     p = df
     thresh = df["shrink_threshold"].iloc[0]
 
@@ -67,6 +66,7 @@ def introns_resize(df, ts_data, id_col):
     # get flexible introns
     exons = p.copy()
     introns = get_introns(p, id_col)
+    print(introns)
     to_shrink = pr.PyRanges()
 
     if not introns.empty:
@@ -81,7 +81,7 @@ def introns_resize(df, ts_data, id_col):
 
     # nohing to shrink
     if to_shrink.empty:
-        ts_data[(chrom, pr_ix)] = pd.DataFrame(
+        ts_data[chrom] = pd.DataFrame(
             columns=["Chromosome", "Start", "End", "Start_adj", "End_adj", "cumdelta"]
         )
         result = p
@@ -104,7 +104,7 @@ def introns_resize(df, ts_data, id_col):
     to_shrink["End_adj"] = to_shrink["End"] - to_shrink.cumdelta
 
     # store to shrink data
-    ts_data[(chrom, pr_ix)] = to_shrink
+    ts_data[chrom] = to_shrink
 
     # Calculate exons coordinate shift
     exons = pr.concat([exons, to_shrink])
@@ -125,20 +125,20 @@ def introns_resize(df, ts_data, id_col):
 def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
     """Calculate shrinked axis values according to original coordinates."""
 
-    for ts_ix in ts_data.keys():
+    for chrom in ts_data.keys():
         # add to-shrinked reagions limits to axis
         ori_tick_pos = []
         tick_pos = []
 
-        if ts_data[ts_ix].empty:  # nothing to shrink
-            tick_pos_d[ts_ix] = []
-            ori_tick_pos_d[ts_ix] = []
+        if ts_data[chrom].empty:  # nothing to shrink
+            tick_pos_d[chrom] = []
+            ori_tick_pos_d[chrom] = []
 
         else:
             pos = [
-                [a, b] for a, b in zip(ts_data[ts_ix]["Start"], ts_data[ts_ix]["End"])
+                [a, b] for a, b in zip(ts_data[chrom]["Start"], ts_data[chrom]["End"])
             ]
-            cdel = list(ts_data[ts_ix]["cumdelta"])
+            cdel = list(ts_data[chrom]["cumdelta"])
 
             # update tick positions for shrinked regions and keep original values as names
             for i in range(len(pos)):
@@ -152,7 +152,7 @@ def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
                 ori_tick_pos.append(pos[i][0])
                 ori_tick_pos.append(pos[i][1])
 
-            tick_pos_d[ts_ix] = tick_pos
-            ori_tick_pos_d[ts_ix] = ori_tick_pos
+            tick_pos_d[chrom] = tick_pos
+            ori_tick_pos_d[chrom] = ori_tick_pos
 
     return tick_pos_d, ori_tick_pos_d

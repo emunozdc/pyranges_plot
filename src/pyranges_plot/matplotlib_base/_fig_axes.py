@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
-import pandas as pd
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.patches import Rectangle
 from pyranges_plot.core import cumdelting
-from ._core import make_annotation, repos_plot_to_prev
+from ._core import make_annotation
 
 
 def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
@@ -34,20 +33,11 @@ def _ax_limits(ax, x_min, x_max, x_rang):
 
 
 def _ax_shrink_rects(
-    ax,
-    fig,
-    ts_data,
-    chrom,
-    pr_ix,
-    y_min,
-    y_max,
-    shrinked_bkg,
-    shrinked_alpha,
-    tag_background,
+    ax, fig, ts_data, chrom, y_min, y_max, shrinked_bkg, shrinked_alpha, tag_background
 ):
     """Add shrinked regions rectangles to the plot."""
 
-    rects_df = ts_data[(chrom, pr_ix)].copy()
+    rects_df = ts_data[chrom].copy()
     rects_df["cumdelta_end"] = rects_df["cumdelta"]
     rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(periods=1, fill_value=0)
     rects_df["Start"] -= rects_df["cumdelta_start"]
@@ -106,23 +96,14 @@ def create_fig(
         len(chrmd_df), 1, height_ratios=chrmd_df.y_height
     )  # size of chromosome subplot according to number of gene rows
 
-    # one plot per chromosome and pr object
+    # one plot per chromosome
     axes = []
-    axes_ix_d = {}
-    prev_chrom = None
     for i in range(len(chrmd_df)):
         chrom = chrmd_df.index[i]
-        pr_ix = chrmd_df.iloc[i]["pr_ix"]
-        chrmd_df_pr = chrmd_df[chrmd_df["pr_ix"] == pr_ix]
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
-        axes_ix_d[(chrom, pr_ix)] = i
         # Adjust plot display
-        if pr_ix == min(pd.Series(chrmd_df.loc[chrom]["pr_ix"])):
-            title = title_chr
-        else:
-            title = ""
-        _ax_display(ax, title, chrom, title_dict_plt, plot_background, plot_border)
+        _ax_display(ax, title_chr, chrom, title_dict_plt, plot_background, plot_border)
 
         # set x axis limits
         x_min, x_max = chrmd_df.iloc[i]["min_max"]
@@ -141,17 +122,16 @@ def create_fig(
             # find previous ticks that should be conserved
             to_add_val = []
             # there is data to shrink
-            ts_ix = (chrom, pr_ix)
-            if ori_tick_pos_d[ts_ix]:
+            if ori_tick_pos_d[chrom]:
                 to_add_val += [
                     tick
                     for tick in original_ticks
-                    if tick < min(ori_tick_pos_d[ts_ix])
-                    or tick > max(ori_tick_pos_d[ts_ix])
+                    if tick < min(ori_tick_pos_d[chrom])
+                    or tick > max(ori_tick_pos_d[chrom])
                 ]
-                for ii in range(1, len(ori_tick_pos_d[ts_ix]) - 1, 2):
-                    not_shr0 = ori_tick_pos_d[ts_ix][ii]
-                    not_shr1 = ori_tick_pos_d[ts_ix][ii + 1]
+                for ii in range(1, len(ori_tick_pos_d[chrom]) - 1, 2):
+                    not_shr0 = ori_tick_pos_d[chrom][ii]
+                    not_shr1 = ori_tick_pos_d[chrom][ii + 1]
                     to_add_val += [
                         i for i in original_ticks if not_shr0 < i <= not_shr1
                     ]
@@ -162,15 +142,13 @@ def create_fig(
 
             # compute new coordinates of conserved previous ticks
             to_add = to_add_val.copy()
-            to_add = cumdelting(to_add, ts_data, chrom, pr_ix)
+            to_add = cumdelting(to_add, ts_data, chrom)
 
             # set new ticks
             x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
-                num
-                for num in x_ticks_val
-                if num <= chrmd_df_pr.loc[chrom]["min_max"][1]
+                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
             ]
             x_ticks_name = sorted(to_add_val)[: len(x_ticks_val)]
 
@@ -200,7 +178,6 @@ def create_fig(
                 fig,
                 ts_data,
                 chrom,
-                pr_ix,
                 y_min,
                 y_max,
                 shrinked_bkg,
@@ -208,21 +185,14 @@ def create_fig(
                 tag_background,
             )
 
-        # Same chromosome in +1 pr
-        if prev_chrom:
-            if prev_chrom == chrom:
-                ax.set_position(repos_plot_to_prev(axes[i - 1], ax))
-                axes[i - 1].set_xticklabels([])
-
-        prev_chrom = chrom
-
+    plt.subplots_adjust(hspace=0.7)
     # Create legend
     if legend:
         handles = genesmd_df["legend_item"].tolist()
         labels = genesmd_df.index.tolist()
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
-    return fig, axes, axes_ix_d
+    return fig, axes
 
 
 def create_fig_with_vcf(
@@ -265,10 +235,11 @@ def create_fig_with_vcf(
         vcf_ax = axes[i]
         exon_ax = axes[i + 1]
         # Adjust plot display
-        exon_ax.set_position(repos_plot_to_prev(vcf_ax, exon_ax))
+        exon_ax.set_position(repos_exon_plot(vcf_ax, exon_ax))
         _ax_display(
             vcf_ax, title_chr, chrom, title_dict_plt, plot_background, plot_border
         )
+        _ax_display(exon_ax, "", chrom, title_dict_plt, plot_background, plot_border)
         _ax_display(exon_ax, "", chrom, title_dict_plt, plot_background, plot_border)
 
         # set x axis limits
@@ -311,7 +282,7 @@ def create_fig_with_vcf(
 
             # compute new coordinates of conserved previous ticks
             to_add = to_add_val.copy()
-            to_add = cumdelting(to_add, ts_data, chrom, pr_ix)
+            to_add = cumdelting(to_add, ts_data, chrom)
 
             # set new ticks
             x_ticks_val = sorted(to_add)
@@ -340,7 +311,9 @@ def create_fig_with_vcf(
             y_ticks_name = genesmd_df.groupby(
                 "chrix", group_keys=False, observed=True
             ).groups[chrom]
+        # vcf_ax.set_yticks(y_ticks_val)
         exon_ax.set_yticks(y_ticks_val)
+        # vcf_ax.set_yticklabels(y_ticks_name)
         exon_ax.set_yticklabels(y_ticks_name)
 
         # Add shrink rectangles
