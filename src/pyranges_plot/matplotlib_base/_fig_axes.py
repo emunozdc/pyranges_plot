@@ -95,8 +95,6 @@ def create_fig(
     titles = list(pd.Series(titles).drop_duplicates())
     fig = plt.figure(figsize=(x, y))
 
-    print(chrmd_df)
-
     gs = gridspec.GridSpec(
         len(titles),
         1,

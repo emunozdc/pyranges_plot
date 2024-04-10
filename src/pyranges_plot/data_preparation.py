@@ -243,7 +243,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
     genesmd_df["chrix"] = genesmd_df["Chromosome"].copy()
     genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
     genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
-        "chrix", group_keys=False, observed=True
+        ["chrix", "pr_ix"], group_keys=False, observed=True
     ).cumcount()
 
     # Assign y-coordinate to genes
@@ -257,6 +257,9 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
 
     else:
         # one gene in each height
+        a = genesmd_df.groupby(["chrix", "pr_ix"], group_keys=False, observed=True)
+
+        print(genesmd_df)
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]  ## !!! change
 
     # Assign color to each gene

@@ -144,6 +144,7 @@ def plot(
 
     if not isinstance(df, list):
         df = [df]
+    # for df_i in df:
 
     # Deal with export
     if to_file:
@@ -168,11 +169,6 @@ def plot(
                 )
     except SystemExit as e:
         print("An error occured:", e)
-
-    # No id column, plot each interval individually
-    if id_col is None:
-        df["id_col"] = [str(i) for i in df.index]
-        id_col = "id_col"
 
     # Deal with transcript structure
     if transcript_str:
@@ -244,7 +240,12 @@ def plot(
             df_d[pr_ix], tot_ngenes = make_subset(df_item.copy(), id_col, max_shown)
             tot_ngenes_l.append(tot_ngenes)
         # concat subset dataframes and create new column with input list index
-        subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(level="pr_ix")
+        subdf = pr.concat(df_d, names=["pr_ix"]).reset_index(level="pr_ix")
+
+        # No id column, plot each interval individually
+        if id_col is None:
+            subdf["id_col"] = [str(i) for i in range(len(subdf))]
+            id_col = "id_col"
 
         # Create genes metadata DataFrame
         if color_col is None:
@@ -253,6 +254,9 @@ def plot(
 
         # Create chromosome metadata DataFrame
         chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
+
+        print(chrmd_df)
+        print(genesmd_df)
 
         # Deal with introns off
         # adapt coordinates to shrinked
