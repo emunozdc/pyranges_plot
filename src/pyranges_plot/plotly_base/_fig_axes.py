@@ -147,7 +147,7 @@ def create_fig(
 
         # set y axis limits
         y_min = 0
-        y_max = chrmd_df_grouped.loc[chrom].y_height
+        y_max = chrmd_df_grouped.loc[chrom]["y_height"]
         y_ticks_val = []
         y_ticks_name = []
         if not packed:

@@ -3,6 +3,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.patches import Rectangle
 from pyranges_plot.core import cumdelting
+import pandas as pd
 from ._core import make_annotation
 
 
@@ -74,7 +75,6 @@ def create_fig(
     y,
     chrmd_df,
     genesmd_df,
-    vcf,
     ts_data,
     title_chr,
     title_dict_plt,
@@ -90,23 +90,33 @@ def create_fig(
 ):
     """Generate the figure and axes fitting the data."""
 
+    # Unify titles and start figure
+    titles = [title_chr.format(**locals()) for chrom in chrmd_df.index]
+    titles = list(pd.Series(titles).drop_duplicates())
     fig = plt.figure(figsize=(x, y))
 
+    print(chrmd_df)
+
     gs = gridspec.GridSpec(
-        len(chrmd_df), 1, height_ratios=chrmd_df.y_height
+        len(titles),
+        1,
+        height_ratios=chrmd_df.groupby("Chromosome")["y_height"].first().to_list(),
     )  # size of chromosome subplot according to number of gene rows
 
     # one plot per chromosome
     axes = []
-    for i in range(len(chrmd_df)):
-        chrom = chrmd_df.index[i]
+    for i in range(len(titles)):
+        chrom = chrmd_df.index.drop_duplicates()[i]
+        chrmd = chrmd_df.loc[chrom]
+        if isinstance(chrmd, pd.DataFrame):
+            chrmd = chrmd.iloc[0]
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
         _ax_display(ax, title_chr, chrom, title_dict_plt, plot_background, plot_border)
 
         # set x axis limits
-        x_min, x_max = chrmd_df.iloc[i]["min_max"]
+        x_min, x_max = chrmd["min_max"]
         x_rang = x_max - x_min
         _ax_limits(ax, x_min, x_max, x_rang)
 
@@ -158,7 +168,7 @@ def create_fig(
 
         # set y axis limits
         y_min = 0
-        y_max = chrmd_df.iloc[i].y_height
+        y_max = chrmd["y_height"]
         ax.set_ylim(y_min, y_max)
         # gene name as y labels
         y_ticks_val = []
@@ -185,162 +195,23 @@ def create_fig(
                 tag_background,
             )
 
+        # Draw lines separating pr objects
+        if chrmd_df["pr_line"].drop_duplicates().max() != 0:
+            pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
+            if isinstance(pr_line_y_l, int):
+                pr_line_y_l = [pr_line_y_l]
+            # separate items with horizontal lines
+            for pr_line_y in pr_line_y_l:
+                if pr_line_y != 0:
+                    ax.plot(
+                        [x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
+                        [pr_line_y + 0.5, pr_line_y + 0.5],
+                        color=plot_border,
+                        linewidth=1,
+                        zorder=1,
+                    )
+
     plt.subplots_adjust(hspace=0.7)
-    # Create legend
-    if legend:
-        handles = genesmd_df["legend_item"].tolist()
-        labels = genesmd_df.index.tolist()
-        fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
-
-    return fig, axes
-
-
-def create_fig_with_vcf(
-    x,
-    y,
-    chrmd_df,
-    genesmd_df,
-    vcf,
-    ts_data,
-    title_chr,
-    title_dict_plt,
-    plot_background,
-    plot_border,
-    packed,
-    legend,
-    tick_pos_d,
-    ori_tick_pos_d,
-    tag_background,
-    shrinked_bkg,
-    shrinked_alpha,
-):
-    """Generate the figure and axes fitting the data."""
-
-    fig = plt.figure(figsize=(x, y))
-
-    # add extra plot in each chromosome for variants
-    hr = [
-        num
-        for pair in zip([1] * len(chrmd_df), list(chrmd_df.y_height))
-        for num in pair
-    ]
-    gs = gridspec.GridSpec(len(chrmd_df) * 2, 1, height_ratios=hr, hspace=0.7)
-
-    # one plot per chromosome
-    axes = []
-    for i in range(0, len(chrmd_df) * 2, 2):
-        chrom = chrmd_df.index[int((i + 1) / 2)]
-        axes.append(plt.subplot(gs[i]))
-        axes.append(plt.subplot(gs[i + 1]))
-        vcf_ax = axes[i]
-        exon_ax = axes[i + 1]
-        # Adjust plot display
-        exon_ax.set_position(repos_exon_plot(vcf_ax, exon_ax))
-        _ax_display(
-            vcf_ax, title_chr, chrom, title_dict_plt, plot_background, plot_border
-        )
-        _ax_display(exon_ax, "", chrom, title_dict_plt, plot_background, plot_border)
-        _ax_display(exon_ax, "", chrom, title_dict_plt, plot_background, plot_border)
-
-        # set x axis limits
-        x_min, x_max = chrmd_df.iloc[int((i + 1) / 2)]["min_max"]
-        x_rang = x_max - x_min
-
-        _ax_limits(vcf_ax, x_min, x_max, x_rang)
-        _ax_limits(exon_ax, x_min, x_max, x_rang)
-
-        # consider introns off
-        if tick_pos_d:
-            # get previous default ticks
-            original_ticks = [
-                int(tick.get_text().replace("−", "-"))
-                for tick in vcf_ax.get_xticklabels()
-            ][1:]
-
-            jump = original_ticks[1] - original_ticks[0]
-
-            # find previous ticks that should be conserved
-            to_add_val = []
-            # there is data to shrink
-            if ori_tick_pos_d[chrom]:
-                to_add_val += [
-                    tick
-                    for tick in original_ticks
-                    if tick < min(ori_tick_pos_d[chrom])
-                    or tick > max(ori_tick_pos_d[chrom])
-                ]
-                for ii in range(1, len(ori_tick_pos_d[chrom]) - 1, 2):
-                    not_shr0 = ori_tick_pos_d[chrom][ii]
-                    not_shr1 = ori_tick_pos_d[chrom][ii + 1]
-                    to_add_val += [
-                        i for i in original_ticks if not_shr0 < i <= not_shr1
-                    ]
-
-            # nothing to shrink
-            else:
-                to_add_val += original_ticks
-
-            # compute new coordinates of conserved previous ticks
-            to_add = to_add_val.copy()
-            to_add = cumdelting(to_add, ts_data, chrom)
-
-            # set new ticks
-            x_ticks_val = sorted(to_add)
-            # do not add ticks beyond adjusted limits
-            x_ticks_val = [
-                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
-            ]
-            x_ticks_name = sorted(to_add_val)[: len(x_ticks_val)]
-
-            # adjust names
-            vcf_ax.set_xticks(x_ticks_val)
-            exon_ax.set_xticks(x_ticks_val)
-            vcf_ax.set_xticklabels(x_ticks_name)
-            exon_ax.set_xticklabels(x_ticks_name)
-
-        # set y axis limits
-        y_min = 0
-        y_max = chrmd_df.iloc[int((i + 1) / 2)].y_height
-        # vcf_ax.set_ylim(y_min, y_max)
-        exon_ax.set_ylim(y_min, y_max)
-        # gene name as y labels
-        y_ticks_val = []
-        y_ticks_name = []
-        if not packed:
-            y_ticks_val = [i + 0.5 for i in range(int(y_max))]
-            y_ticks_name = genesmd_df.groupby(
-                "chrix", group_keys=False, observed=True
-            ).groups[chrom]
-        # vcf_ax.set_yticks(y_ticks_val)
-        exon_ax.set_yticks(y_ticks_val)
-        # vcf_ax.set_yticklabels(y_ticks_name)
-        exon_ax.set_yticklabels(y_ticks_name)
-
-        # Add shrink rectangles
-        if ts_data:
-            _ax_shrink_rects(
-                vcf_ax,
-                fig,
-                ts_data,
-                chrom,
-                y_min,
-                y_max,
-                shrinked_bkg,
-                shrinked_alpha,
-                tag_background,
-            )
-            _ax_shrink_rects(
-                exon_ax,
-                fig,
-                ts_data,
-                chrom,
-                y_min,
-                y_max,
-                shrinked_bkg,
-                shrinked_alpha,
-                tag_background,
-            )
-
     # Create legend
     if legend:
         handles = genesmd_df["legend_item"].tolist()

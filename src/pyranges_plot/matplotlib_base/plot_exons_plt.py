@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from ._core import plt_popup_warning
-from ._fig_axes import create_fig, create_fig_with_vcf
+from ._fig_axes import create_fig
 from .plot_vcf_plt import _gby_plot_vcf
 from ._data2plot import (
     _apply_gene_bridge,
@@ -67,67 +67,30 @@ def plot_exons_plt(
                 * 3
             ) / 2  # increase 1 per chromosome to show variants plot
 
-    if vcf is None:
-        fig, axes, axes_ix_d = create_fig(
-            x,
-            y,
-            chrmd_df,
-            genesmd_df,
-            vcf,
-            ts_data,
-            title_chr,
-            title_dict_plt,
-            plot_bkg,
-            plot_border,
-            packed,
-            legend,
-            tick_pos_d,
-            ori_tick_pos_d,
-            tag_bkg,
-            shrinked_bkg,
-            shrinked_alpha,
-        )
-
-    else:
-        fig, axes = create_fig_with_vcf(
-            x,
-            y,
-            chrmd_df,
-            genesmd_df,
-            vcf,
-            ts_data,
-            title_chr,
-            title_dict_plt,
-            plot_bkg,
-            plot_border,
-            packed,
-            legend,
-            tick_pos_d,
-            ori_tick_pos_d,
-            tag_bkg,
-            shrinked_bkg,
-            shrinked_alpha,
-        )
-    # Select axes for exons and for now leave vcf empty
-    if vcf is not None:
-        vcf_axes = axes[0::2]
-        axes = axes[1::2]
-
-        # Plot vcf data
-        vcf.groupby("Chromosome", group_keys=False, observed=True).apply(
-            lambda vcf: _gby_plot_vcf(
-                vcf,
-                vcf_axes,
-                chrmd_df,
-            )
-        )
+    fig, axes = create_fig(
+        x,
+        y,
+        chrmd_df,
+        genesmd_df,
+        ts_data,
+        title_chr,
+        title_dict_plt,
+        plot_bkg,
+        plot_border,
+        packed,
+        legend,
+        tick_pos_d,
+        ori_tick_pos_d,
+        tag_bkg,
+        shrinked_bkg,
+        shrinked_alpha,
+    )
 
     # Plot genes
     subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
         lambda subdf: _gby_plot_exons(
             subdf,
             axes,
-            axes_ix_d,
             fig,
             chrmd_df,
             genesmd_df,
@@ -172,7 +135,6 @@ def plot_exons_plt(
 def _gby_plot_exons(
     df,
     axes,
-    axes_ix_d,
     fig,
     chrmd_df,
     genesmd_df,
@@ -193,6 +155,9 @@ def _gby_plot_exons(
 
     # Gene parameters
     chrom = df["Chromosome"].iloc[0]
+    chr_ix = chrmd_df.loc[chrom]["chrom_ix"]
+    if isinstance(chr_ix, pd.Series):
+        chr_ix = chr_ix.iloc[0]
     pr_ix = df["pr_ix"].iloc[0]
     genename = df[id_col].iloc[0]
     genesmd_df = genesmd_df.loc[genename]  # store data for the gene
@@ -203,12 +168,12 @@ def _gby_plot_exons(
         ]  # in case same gene in +1 pr
         gene_ix = genesmd_df["ycoord"].loc[genename] + 0.5
         exon_color = genesmd_df["color"].iloc[0]
-    # in case different genes in different pr
+    # in case gene in single pr
     else:
         gene_ix = genesmd_df["ycoord"] + 0.5
         exon_color = genesmd_df["color"]
 
-    ax = axes[axes_ix_d[(chrom, df["pr_ix"].iloc[0])]]
+    ax = axes[chr_ix]
     if "Strand" in df.columns:
         strand = df["Strand"].unique()[0]
     else:
