@@ -347,7 +347,7 @@ def _plot_row(
         fig.add_annotation(
             dict(  # font=dict(color='yellow', size=15),
                 x=x0,
-                y=y0,
+                y=(y0 + y1) / 2,
                 showarrow=False,
                 text=genename,
                 textangle=0,
