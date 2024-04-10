@@ -317,6 +317,15 @@ def _plot_row(
     # create annotation for exon
     make_annotation(exon_rect, fig, ax, geneinfo, tag_background)
 
+    # Add ID annotation if it is the first exon
+    if row["exon_ix"] == 0:
+        ax.annotate(
+            genename,
+            xy=(start, gene_ix),
+            horizontalalignment="right",
+            verticalalignment="center",
+        )
+
     # Plot DIRECTION ARROW in EXON
     # decide about placing a direction arrow
     arrow_size = coord2percent(ax, 0.05 * start, 0.05 * stop)

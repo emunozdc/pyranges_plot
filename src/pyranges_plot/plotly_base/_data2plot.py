@@ -342,7 +342,7 @@ def _plot_row(
         col=1,
     )
 
-    # Add annotation if it is the first exon
+    # Add ID annotation if it is the first exon
     if row["exon_ix"] == 0:
         fig.add_annotation(
             dict(  # font=dict(color='yellow', size=15),
