@@ -46,6 +46,7 @@ def calculate_ticks(subdf, num_ticks=10):
 def create_fig(
     subdf,
     chrmd_df,
+    chrmd_df_grouped,
     genesmd_df,
     ts_data,
     title_chr,
@@ -61,22 +62,22 @@ def create_fig(
     """Generate the figure and axes fitting the data."""
 
     # Unify titles and start figure
-    titles = [title_chr.format(**locals()) for chrom in chrmd_df.index]
+    titles = [title_chr.format(**locals()) for chrom in chrmd_df_grouped.index]
     titles = list(pd.Series(titles).drop_duplicates())
     fig = sp.make_subplots(
         rows=len(titles),
         cols=1,
-        row_heights=chrmd_df.groupby("Chromosome")["y_height"].first().to_list(),
+        row_heights=chrmd_df_grouped["y_height"].to_list(),
         subplot_titles=titles,
     )
 
     # one subplot per chromosome
-    chrmd_df_grouped = chrmd_df.groupby(
-        ["Chromosome"], group_keys=False, observed=True
-    ).agg({"n_genes": "sum", "min_max": "first", "y_height": "first"})
+    # chrmd_df_grouped = chrmd_df.groupby(
+    #     ["Chromosome"], group_keys=False, observed=True
+    # ).agg({"n_genes": "sum", "min_max": "first", "y_height": "first"})
 
     for i in range(len(titles)):
-        chrom = chrmd_df.index.drop_duplicates()[i]
+        chrom = chrmd_df_grouped.index[i]
         fig.add_trace(go.Scatter(x=[], y=[]), row=i + 1, col=1)
 
         # set title format
@@ -133,7 +134,7 @@ def create_fig(
             x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
-                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["max"].max()
+                num for num in x_ticks_val if num <= chrmd_df_grouped.loc[chrom]["max"]
             ]
             x_ticks_name = sorted(to_add_val)[: len(x_ticks_val)]
 

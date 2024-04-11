@@ -240,7 +240,9 @@ def plot(
             df_d[pr_ix], tot_ngenes = make_subset(df_item.copy(), id_col, max_shown)
             tot_ngenes_l.append(tot_ngenes)
         # concat subset dataframes and create new column with input list index
-        subdf = pr.concat(df_d, names=["pr_ix"]).reset_index(level="pr_ix")
+        subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
+            level="pr_ix"
+        )  ### change to pr but doesn't work!!
 
         # No id column, plot each interval individually
         if id_col is None:
@@ -253,9 +255,12 @@ def plot(
         genesmd_df = get_genes_metadata(subdf, id_col, color_col, packed, colormap)
 
         # Create chromosome metadata DataFrame
-        chrmd_df = get_chromosome_metadata(subdf, id_col, limits, genesmd_df)
+        chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
+            subdf, id_col, limits, genesmd_df
+        )
 
         print(chrmd_df)
+        print(chrmd_df_grouped)
         print(genesmd_df)
 
         # Deal with introns off
@@ -318,6 +323,7 @@ def plot(
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
+                chrmd_df_grouped=chrmd_df_grouped,
                 ts_data=ts_data,
                 max_shown=max_shown,
                 id_col=id_col,
@@ -341,6 +347,7 @@ def plot(
                 feat_dict=feat_dict,
                 genesmd_df=genesmd_df,
                 chrmd_df=chrmd_df,
+                chrmd_df_grouped=chrmd_df_grouped,
                 ts_data=ts_data,
                 max_shown=max_shown,
                 id_col=id_col,

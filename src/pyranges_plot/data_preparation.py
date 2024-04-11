@@ -219,13 +219,11 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
 
     # Start df with chromosome and the column defining color
     if color_col == "Chromosome":
-        color_col = "chromosome"
-        genesmd_df = (
-            df.groupby([id_col, "pr_ix"], group_keys=False, observed=True)
-            .agg({"Chromosome": "first", "Start": "min", "End": "max"})
-            .reset_index(level=1)
+        genesmd_df = df.groupby([id_col, "pr_ix"], group_keys=False, observed=True).agg(
+            {"Chromosome": "first", "Start": "min", "End": "max"}
         )
         genesmd_df["chromosome"] = genesmd_df["Chromosome"]
+        color_col = "chromosome"
     else:
         genesmd_df = (
             df.groupby([id_col, "pr_ix"], group_keys=False, observed=True)
@@ -240,7 +238,9 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
             .reset_index(level=1)
         )
 
-    genesmd_df["chrix"] = genesmd_df["Chromosome"].copy()
+    genesmd_df["chrix"] = genesmd_df.groupby(
+        "Chromosome", group_keys=False, observed=True
+    ).ngroup()
     genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
     genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
         ["chrix", "pr_ix"], group_keys=False, observed=True
@@ -257,9 +257,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
 
     else:
         # one gene in each height
-        a = genesmd_df.groupby(["chrix", "pr_ix"], group_keys=False, observed=True)
 
-        print(genesmd_df)
         genesmd_df["ycoord"] = genesmd_df.loc[:, "gene_ix_xchrom"]  ## !!! change
 
     # Assign color to each gene
@@ -356,10 +354,12 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
 
     # Start df
     chrmd_df = (
-        df.groupby(["Chromosome", "pr_ix"], group_keys=False, observed=True)
-        .agg({"Start": "min", "End": "max", id_col: "nunique"})
-        .reset_index(level="pr_ix")
+        df.groupby(["Chromosome", "pr_ix"], observed=True).agg(
+            {"Start": "min", "End": "max", id_col: "nunique"}
+        )
+        # .reset_index(level="pr_ix")
     )
+    print(chrmd_df)
     chrmd_df.rename(
         columns={id_col: "n_genes", "Start": "min", "End": "max"}, inplace=True
     )
@@ -376,40 +376,35 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
     _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
     chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
 
-    # Store plot y height
-    chrmd_df["pr_line_prev"] = (
-        genesmd_df.groupby(["chrix", "pr_ix"], group_keys=False, observed=True)[
-            "ycoord"
-        ]
-        .max()
-        .to_list()
-    )
+    chrmd_df_grouped = chrmd_df.groupby(
+        "Chromosome", group_keys=False, observed=True
+    ).agg({"min": "first", "max": "first", "min_max": "first"})
 
-    chrmd_df = chrmd_df.merge(
-        genesmd_df.groupby("Chromosome", group_keys=False, observed=True)[
+    # Store plot y height
+    chrmd_df_grouped = chrmd_df_grouped.join(
+        genesmd_df.groupby(["Chromosome"], group_keys=False, observed=True)[
             "ycoord"
-        ].max(),
-        on="Chromosome",
-        how="left",
+        ].max()
     )
+    chrmd_df_grouped.rename(columns={"ycoord": "y_height"}, inplace=True)
+    chrmd_df_grouped["y_height"] += 1  # count from 1
 
     # Obtain the positions of lines separating pr objects
-    chrmd_df.set_index("pr_ix", inplace=True, append=True)
+    chrmd_df = chrmd_df.join(
+        genesmd_df.groupby(["Chromosome", "pr_ix"], group_keys=False, observed=True)[
+            "ycoord"
+        ].max()
+    )
+    chrmd_df.rename(columns={"ycoord": "pr_line"}, inplace=True)
 
-    pr_line_df = chrmd_df.groupby("Chromosome")["pr_line_prev"].shift(-1, fill_value=-1)
-    pr_line_df.name = "pr_line"
-    pr_line_df += 1
-
-    chrmd_df.reset_index("pr_ix", inplace=True)
-    chrmd_df["pr_ix"] = chrmd_df["pr_ix"].astype(int)
-    chrmd_df = chrmd_df.join(pr_line_df, on=["Chromosome", "pr_ix"])
-
-    chrmd_df.rename(columns={"ycoord": "y_height"}, inplace=True)
-    chrmd_df["y_height"] += 1  # count from 1
+    chrmd_df["pr_line"] = chrmd_df.groupby("Chromosome")["pr_line"].shift(
+        -1, fill_value=-1
+    )
+    chrmd_df["pr_line"] += 1
 
     # Set chrom_ix to get the right association to the plot index
-    chrmd_df["chrom_ix"] = chrmd_df.groupby(
+    chrmd_df_grouped["chrom_ix"] = chrmd_df_grouped.groupby(
         "Chromosome", group_keys=False, observed=True
     ).ngroup()
 
-    return chrmd_df
+    return chrmd_df, chrmd_df_grouped

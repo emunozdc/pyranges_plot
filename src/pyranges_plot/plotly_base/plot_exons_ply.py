@@ -15,6 +15,7 @@ def plot_exons_ply(
     genesmd_df,
     vcf,
     chrmd_df,
+    chrmd_df_grouped,
     ts_data,
     id_col,
     max_shown=25,
@@ -52,6 +53,7 @@ def plot_exons_ply(
         fig = create_fig(
             subdf,
             chrmd_df,
+            chrmd_df_grouped,
             genesmd_df,
             ts_data,
             title_chr,
@@ -88,6 +90,7 @@ def plot_exons_ply(
             subdf,
             fig,
             chrmd_df,
+            chrmd_df_grouped,
             genesmd_df,
             ts_data,
             id_col,
@@ -156,6 +159,7 @@ def _gby_plot_exons(
     df,
     fig,
     chrmd_df,
+    chrmd_df_grouped,
     genesmd_df,
     ts_data,
     id_col,
@@ -191,7 +195,7 @@ def _gby_plot_exons(
         gene_ix = genemd["ycoord"] + 0.5
         exon_color = genemd["color"]
 
-    chrom_ix = chrmd_df[chrmd_df["pr_ix"] == pr_ix].loc[chrom]["chrom_ix"]
+    chrom_ix = chrmd_df_grouped.loc[chrom]["chrom_ix"]
 
     if vcf is not None:
         chrom_ix = 2 * chrom_ix + 1

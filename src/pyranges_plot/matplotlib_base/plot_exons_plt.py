@@ -19,6 +19,7 @@ def plot_exons_plt(
     feat_dict,
     genesmd_df,
     chrmd_df,
+    chrmd_df_grouped,
     ts_data,
     id_col,
     max_shown=25,
@@ -58,11 +59,11 @@ def plot_exons_plt(
         x = 20
         if vcf is None:
             y = (
-                sum(chrmd_df.y_height) + len(chrmd_df.index.drop_duplicates()) * 2
+                sum(chrmd_df_grouped["y_height"]) + len(chrmd_df_grouped.index) * 2
             ) / 2  # height according to genes and add 2 per each chromosome
         else:
             y = (
-                sum(chrmd_df.y_height)
+                sum(chrmd_df_grouped["y_height"])
                 + len(chrmd_df.index.columns.get_loc("Chromosome").drop_duplicates())
                 * 3
             ) / 2  # increase 1 per chromosome to show variants plot
@@ -71,6 +72,7 @@ def plot_exons_plt(
         x,
         y,
         chrmd_df,
+        chrmd_df_grouped,
         genesmd_df,
         ts_data,
         title_chr,
@@ -93,6 +95,7 @@ def plot_exons_plt(
             axes,
             fig,
             chrmd_df,
+            chrmd_df_grouped,
             genesmd_df,
             ts_data,
             id_col,
@@ -137,6 +140,7 @@ def _gby_plot_exons(
     axes,
     fig,
     chrmd_df,
+    chrmd_df_grouped,
     genesmd_df,
     ts_data,
     id_col,
@@ -155,7 +159,7 @@ def _gby_plot_exons(
 
     # Gene parameters
     chrom = df["Chromosome"].iloc[0]
-    chr_ix = chrmd_df.loc[chrom]["chrom_ix"]
+    chr_ix = chrmd_df_grouped.loc[chrom]["chrom_ix"]
     if isinstance(chr_ix, pd.Series):
         chr_ix = chr_ix.iloc[0]
     pr_ix = df["pr_ix"].iloc[0]

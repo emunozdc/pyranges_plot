@@ -74,6 +74,7 @@ def create_fig(
     x,
     y,
     chrmd_df,
+    chrmd_df_grouped,
     genesmd_df,
     ts_data,
     title_chr,
@@ -91,30 +92,30 @@ def create_fig(
     """Generate the figure and axes fitting the data."""
 
     # Unify titles and start figure
-    titles = [title_chr.format(**locals()) for chrom in chrmd_df.index]
-    titles = list(pd.Series(titles).drop_duplicates())
+    titles = [title_chr.format(**locals()) for chrom in chrmd_df_grouped.index]
+    # titles = list(pd.Series(titles).drop_duplicates())
     fig = plt.figure(figsize=(x, y))
 
     gs = gridspec.GridSpec(
         len(titles),
         1,
-        height_ratios=chrmd_df.groupby("Chromosome")["y_height"].first().to_list(),
+        height_ratios=chrmd_df_grouped["y_height"].to_list(),
     )  # size of chromosome subplot according to number of gene rows
 
     # one plot per chromosome
     axes = []
     for i in range(len(titles)):
-        chrom = chrmd_df.index.drop_duplicates()[i]
-        chrmd = chrmd_df.loc[chrom]
-        if isinstance(chrmd, pd.DataFrame):
-            chrmd = chrmd.iloc[0]
+        chrom = chrmd_df_grouped.index[i]
+        # chrmd = chrmd_df.loc[chrom]
+        # if isinstance(chrmd, pd.DataFrame):
+        #     chrmd = chrmd.iloc[0]
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
         _ax_display(ax, title_chr, chrom, title_dict_plt, plot_background, plot_border)
 
         # set x axis limits
-        x_min, x_max = chrmd["min_max"]
+        x_min, x_max = chrmd_df_grouped.loc[chrom]["min_max"]
         x_rang = x_max - x_min
         _ax_limits(ax, x_min, x_max, x_rang)
 
@@ -156,7 +157,9 @@ def create_fig(
             x_ticks_val = sorted(to_add)
             # do not add ticks beyond adjusted limits
             x_ticks_val = [
-                num for num in x_ticks_val if num <= chrmd_df.loc[chrom]["min_max"][1]
+                num
+                for num in x_ticks_val
+                if num <= chrmd_df_grouped.loc[chrom]["min_max"][1]
             ]
             x_ticks_name = sorted(to_add_val)[: len(x_ticks_val)]
 
@@ -166,7 +169,7 @@ def create_fig(
 
         # set y axis limits
         y_min = 0
-        y_max = chrmd["y_height"]
+        y_max = chrmd_df_grouped.loc[chrom]["y_height"]
         ax.set_ylim(y_min, y_max)
         # gene name as y labels
         y_ticks_val = []
