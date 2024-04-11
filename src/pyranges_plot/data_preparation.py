@@ -76,27 +76,32 @@ def _genesmd_packed(genesmd_df):
     return genesmd_df
 
 
-def _adj_y_prix(row):
-    if row == 0:
-        return 0
-    else:
-        return 1
+# def _adj_y_prix(row, min_pr_ix):
+#     if row == min_pr_ix:
+#         return 0
+#     else:
+#         return 1
 
 
 def _update_y(genesmd_df):
     """xxx"""
 
-    # Store individual pr y coords
-    # genesmd_df["ind_ycoord"] = genesmd_df["ycoord"]
+    min_pr_ix = genesmd_df["pr_ix"].min()
 
+    # Consider pr dividing lines spot
     genesmd_df["update_y_prix"] = genesmd_df.groupby("pr_ix").ngroup(ascending=False)
-    genesmd_df["update_y_prix"] = genesmd_df["update_y_prix"].apply(_adj_y_prix)
+
+    # Consider the height of the previous pr to update y coords
     y_prev_df = (
-        genesmd_df.groupby("pr_ix")["ycoord"].apply(max).shift(-1, fill_value=-1)
+        genesmd_df.groupby("pr_ix")["ycoord"]
+        .max()
+        .shift(-1, fill_value=-1)
+        .apply(lambda x: x + 1)
+        .loc[::-1]
+        .cumsum()[::-1]
     )
     y_prev_df.name = "update_y_prev"
     genesmd_df = genesmd_df.join(y_prev_df, on="pr_ix")
-    genesmd_df["update_y_prev"] += 1
     genesmd_df["ycoord"] += genesmd_df["update_y_prix"] + genesmd_df["update_y_prev"]
 
     return genesmd_df
@@ -359,7 +364,7 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, ts_data=None):
         )
         # .reset_index(level="pr_ix")
     )
-    print(chrmd_df)
+
     chrmd_df.rename(
         columns={id_col: "n_genes", "Start": "min", "End": "max"}, inplace=True
     )
