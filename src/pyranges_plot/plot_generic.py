@@ -1,5 +1,5 @@
 import pandas as pd
-import pyranges
+import pyranges as pr
 import plotly.colors
 from .core import (
     get_engine,
@@ -256,8 +256,12 @@ def plot(
 
         # Create chromosome metadata DataFrame
         chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-            subdf, id_col, limits, genesmd_df
+            subdf, id_col, limits, genesmd_df, packed
         )
+
+        print(genesmd_df)
+        print(chrmd_df)
+        print(chrmd_df_grouped)
 
         # Deal with introns off
         # adapt coordinates to shrinked
@@ -289,7 +293,7 @@ def plot(
 
             # recompute limits
             chrmd_df = get_chromosome_metadata(
-                subdf, id_col, limits, genesmd_df, ts_data=ts_data
+                subdf, id_col, limits, genesmd_df, packed, ts_data=ts_data
             )
 
             # compute new axis values and positions if needed

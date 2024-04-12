@@ -4,7 +4,7 @@ from pyranges_plot.data_preparation import make_subset
 
 
 def test_correct_subset():
-    df = pr.PyRanges(
+    df_1 = pr.PyRanges(
         {
             "Chromosme": [1, 1, 2, 2, 2],
             "Start": [10, 20, 10, 20, 30],
@@ -13,8 +13,8 @@ def test_correct_subset():
         }
     )
 
-    result_subset, _ = make_subset(df, "transcript_id", 3)
-    expected_subset, _ = pr.PyRanges(
+    result_subset_1, _ = make_subset(df_1, "transcript_id", 3)
+    expected_subset_1, _ = pr.PyRanges(
         {
             "Chromosme": [1, 1, 2],
             "Start": [10, 20, 10],
@@ -23,4 +23,4 @@ def test_correct_subset():
         }
     )
 
-    assert len(result_subset) == len(expected_subset)
+    assert len(result_subset_1) == len(expected_subset_1)
