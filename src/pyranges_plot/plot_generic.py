@@ -259,6 +259,10 @@ def plot(
             subdf, id_col, limits, genesmd_df, packed
         )
 
+        # print(genesmd_df)
+        # print(chrmd_df)
+        # print(chrmd_df_grouped)
+
         # Deal with introns off
         # adapt coordinates to shrinked
         ts_data = {}
@@ -274,21 +278,21 @@ def plot(
             elif isinstance(shrink_threshold, float):
                 subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
                 subdf = subdf.groupby(
-                    ["Chromosome", "pr_ix"], group_keys=False, observed=True
+                    "Chromosome", group_keys=False, observed=True
                 ).apply(
-                    lambda x: compute_thresh(x, chrmd_df) if not x.empty else None
-                )  # .reset_index(level="pr_ix")
+                    lambda x: compute_thresh(x, chrmd_df_grouped)
+                    if not x.empty
+                    else None
+                )
 
-            subdf = subdf.groupby(
-                ["Chromosome", "pr_ix"], group_keys=False, observed=True
-            ).apply(
-                lambda x: introns_resize(x, ts_data, id_col) if not x.empty else None
+            subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
+                lambda x: introns_resize(x, ts_data, id_col)  # if not x.empty else None
             )  # empty rows when subset
             subdf["Start"] = subdf["Start_adj"]
             subdf["End"] = subdf["End_adj"]
 
             # recompute limits
-            chrmd_df = get_chromosome_metadata(
+            chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
                 subdf, id_col, limits, genesmd_df, packed, ts_data=ts_data
             )
 

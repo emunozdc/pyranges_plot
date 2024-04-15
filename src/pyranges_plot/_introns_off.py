@@ -37,16 +37,25 @@ def get_introns(p, id_col) -> "pr.PyRanges":
     Contains 1 chromosomes.
     """
 
-    introns = p.copy()
-    introns = introns.sort_by_position()
+    introns = (
+        p.copy()
+        .groupby([id_col, "pr_ix"], group_keys=False, observed=True)
+        .apply(pr.PyRanges.sort_by_position)
+    )
 
     # intron start is exon end shifted
-    introns["End"] = introns.groupby(id_col, group_keys=False, observed=True)[
-        "End"
-    ].shift()
+    if "pr_ix" in introns.columns:
+        introns["End"] = introns.groupby(
+            [id_col, "pr_ix"], group_keys=False, observed=True
+        )["End"].shift()
+    else:
+        introns["End"] = introns.groupby(id_col, group_keys=False, observed=True)[
+            "End"
+        ].shift()
 
     # remove first exon rows
-    introns.dropna(inplace=True)
+    introns.dropna(subset="End", inplace=True)
+    introns.reset_index(inplace=True)
 
     # intron end is exon start
     introns.rename(columns={"Start": "End", "End": "Start"}, inplace=True)
@@ -66,11 +75,10 @@ def introns_resize(df, ts_data, id_col):
     # get flexible introns
     exons = p.copy()
     introns = get_introns(p, id_col)
-    print(introns)
     to_shrink = pr.PyRanges()
 
     if not introns.empty:
-        flex_introns = introns.subtract_intervals(exons, strand_behavior="ignore")
+        flex_introns = introns.subtract_ranges(exons, strand_behavior="ignore")
 
         # obtain shrinkable regions
         to_shrink = flex_introns.merge_overlaps(use_strand=False)  # unique ranges

@@ -12,12 +12,11 @@ from .matplotlib_base._core import plt_popup_warning
 
 
 ############ COMPUTE INTRONS OFF THRESHOLD
-def compute_thresh(df, chrmd_df):
+def compute_thresh(df, chrmd_df_grouped):
     """Get shrink threshold from limits"""
 
     chrom = df["Chromosome"].iloc[0]
-    pr_ix = df["pr_ix"].iloc[0]
-    chrmd = chrmd_df[chrmd_df["pr_ix"] == pr_ix].loc[chrom]
+    chrmd = chrmd_df_grouped.loc[chrom]
     limit_range = chrmd["max"] - chrmd["min"]
     df["shrink_threshold"] = [int(df["shrink_threshold"].iloc[0] * limit_range)] * len(
         df
