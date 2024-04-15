@@ -171,26 +171,6 @@ def create_fig(
             col=1,
         )
 
-        # Draw lines separating pr objects
-        if chrmd_df["pr_line"].drop_duplicates().max() != 0:
-            pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
-            if isinstance(pr_line_y_l, int):
-                pr_line_y_l = [pr_line_y_l]
-            # separate items with horizontal lines
-            for pr_line_y in pr_line_y_l:
-                if pr_line_y != 0:
-                    fig.add_trace(
-                        go.Scatter(
-                            x=[x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
-                            y=[pr_line_y + 0.5, pr_line_y + 0.5],
-                            mode="lines",
-                            line=dict(color=plot_border, width=1, dash="solid"),
-                            hoverinfo="skip",
-                        ),
-                        row=i + 1,
-                        col=1,
-                    )
-
         # Add shrink rectangles
         if ts_data:
             rects_df = ts_data[chrom]
@@ -225,6 +205,26 @@ def create_fig(
                     row=i + 1,
                     col=1,
                 )
+
+        # Draw lines separating pr objects
+        if chrmd_df["pr_line"].drop_duplicates().max() != 0:
+            pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
+            if isinstance(pr_line_y_l, int):
+                pr_line_y_l = [pr_line_y_l]
+            # separate items with horizontal lines
+            for pr_line_y in pr_line_y_l:
+                if pr_line_y != 0:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
+                            y=[pr_line_y + 0.5, pr_line_y + 0.5],
+                            mode="lines",
+                            line=dict(color=plot_border, width=1, dash="solid"),
+                            hoverinfo="skip",
+                        ),
+                        row=i + 1,
+                        col=1,
+                    )
 
     return fig
 

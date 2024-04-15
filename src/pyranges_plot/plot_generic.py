@@ -306,13 +306,10 @@ def plot(
             subdf["cumdelta"] = [0] * len(subdf)
 
         # Sort data to plot chromosomes and pr objects in order
-        subdf.sort_values(["Chromosome", "pr_ix"], inplace=True)
+        subdf.sort_values(["Chromosome", "pr_ix", id_col, "Start"], inplace=True)
         chrmd_df.sort_values(["Chromosome", "pr_ix"], inplace=True)
-        subdf = subdf.groupby(["pr_ix", id_col], group_keys=False, observed=True).apply(
-            lambda x: x.sort_values("Start")
-        )
         subdf["exon_ix"] = subdf.groupby(
-            ["pr_ix", id_col], group_keys=False, observed=True
+            ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
         ).cumcount()
 
         if engine == "plt" or engine == "matplotlib":

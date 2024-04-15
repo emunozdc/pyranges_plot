@@ -386,10 +386,10 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, packed, ts_data=None
     if len(df["pr_ix"].drop_duplicates()) > 1:
         chrmd_df["min"] = chrmd_df.groupby(
             "Chromosome", group_keys=False, observed=True
-        )["min"].transform(min)
+        )["min"].transform("min")
         chrmd_df["max"] = chrmd_df.groupby(
             "Chromosome", group_keys=False, observed=True
-        )["max"].transform(max)
+        )["max"].transform("max")
 
     # Add limits
     _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
