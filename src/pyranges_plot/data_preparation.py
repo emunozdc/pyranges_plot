@@ -265,13 +265,15 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
 
     else:
         # one gene in each height
-        genesmd_df["ycoord"] = genesmd_df.groupby(
-            "Chromosome", group_keys=False, observed=True
-        ).cumcount()
         genesmd_df.set_index("pr_ix", inplace=True, append=True)
+        genesmd_df["ycoord"] = (
+            genesmd_df.sort_values(by="pr_ix", ascending=False)
+            .groupby("Chromosome", group_keys=False, observed=True)
+            .cumcount()
+        )
         genesmd_df = genesmd_df.assign(
             upd_yc=genesmd_df.groupby("Chromosome", group_keys=False).apply(
-                lambda x: x.groupby("pr_ix").ngroup()
+                lambda x: x.groupby("pr_ix").ngroup(ascending=False)
             )
         )
         genesmd_df["ycoord"] += genesmd_df["upd_yc"]
@@ -416,6 +418,7 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, packed, ts_data=None
         chrmd_df_grouped = chrmd_df_grouped.join(y_height_df, on="Chromosome")
         chrmd_df_grouped.rename(columns={"n_genes": "y_height"}, inplace=True)
         chrmd_df_grouped["y_height"] += chrmd_df_grouped["n_pr_ix"]
+        chrmd_df_grouped["y_height"] -= 1
 
     # Obtain the positions of lines separating pr objects
     chrmd_df = chrmd_df.join(

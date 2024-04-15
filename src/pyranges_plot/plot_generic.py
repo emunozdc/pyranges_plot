@@ -259,10 +259,6 @@ def plot(
             subdf, id_col, limits, genesmd_df, packed
         )
 
-        print(genesmd_df)
-        print(chrmd_df)
-        print(chrmd_df_grouped)
-
         # Deal with introns off
         # adapt coordinates to shrinked
         ts_data = {}

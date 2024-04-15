@@ -153,9 +153,14 @@ def create_fig(
         y_ticks_name = []
         if not packed:
             y_ticks_val = [i + 0.5 for i in range(int(y_max))]
-            y_ticks_name = genesmd_df.groupby(
-                "chrix", group_keys=False, observed=True
-            ).groups[chrom]
+            y_ticks_name_d = (
+                genesmd_df[genesmd_df["Chromosome"] == chrom]
+                .groupby("pr_ix", group_keys=False, observed=True)
+                .groups
+            )
+            y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
+            y_ticks_name = [list(id) + [""] for id in y_ticks_name_d.values()]
+            y_ticks_name = [item for sublist in y_ticks_name for item in sublist][:-1]
         fig.update_yaxes(
             range=[y_min, y_max],
             fixedrange=True,
