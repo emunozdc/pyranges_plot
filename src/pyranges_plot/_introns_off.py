@@ -117,8 +117,8 @@ def introns_resize(df, ts_data, id_col):
     # Calculate exons coordinate shift
     exons = pr.concat([exons, to_shrink])
     exons.sort_values("Start", inplace=True)
+    exons["cumdelta"] = exons["cumdelta"].ffill()
     exons = exons.fillna({"cumdelta": 0})
-    exons["cumdelta"] = exons["cumdelta"].replace(0, method="ffill")
     # match exons with its cumdelta
     result = exons.dropna(subset=[id_col])
 
