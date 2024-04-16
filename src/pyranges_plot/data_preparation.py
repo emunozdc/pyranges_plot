@@ -7,7 +7,8 @@ from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
 import matplotlib.cm as cm
-from .core import get_engine, get_warnings, cumdelting
+from .core import get_engine, get_warnings
+from ._introns_off import cumdelting
 from .matplotlib_base._core import plt_popup_warning
 
 
@@ -242,7 +243,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
             .reset_index(level=1)
         )
 
-    # Sort bu pr_ix
+    # Sort by pr_ix
     genesmd_df.sort_values(by="pr_ix", inplace=True)
 
     genesmd_df["chrix"] = genesmd_df.groupby(

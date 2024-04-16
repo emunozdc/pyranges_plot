@@ -164,3 +164,19 @@ def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
             ori_tick_pos_d[chrom] = ori_tick_pos
 
     return tick_pos_d, ori_tick_pos_d
+
+
+def cumdelting(num_l, ts_data, chrom):
+    """Update a list of coordinates according to cumdelta."""
+
+    for i in range(len(num_l)):
+        cdel = 0
+        # get proper cumdelta
+        for ix, row in ts_data[chrom].iterrows():
+            if row["End"] <= num_l[i]:
+                cdel = row["cumdelta"]
+            else:
+                break
+        num_l[i] -= cdel
+
+    return num_l

@@ -259,9 +259,9 @@ def plot(
             subdf, id_col, limits, genesmd_df, packed
         )
 
-        # print(genesmd_df)
-        # print(chrmd_df)
-        # print(chrmd_df_grouped)
+        print(genesmd_df.to_string())
+        print(chrmd_df)
+        print(chrmd_df_grouped)
 
         # Deal with introns off
         # adapt coordinates to shrinked
@@ -311,6 +311,10 @@ def plot(
         subdf["exon_ix"] = subdf.groupby(
             ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
         ).cumcount()
+
+        print(genesmd_df.to_string())
+        print(chrmd_df)
+        print(chrmd_df_grouped)
 
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
