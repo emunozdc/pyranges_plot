@@ -299,6 +299,7 @@ def print_default(return_keys=False):
                     "title_size",
                     "title_color",
                     "grid_color",
+                    "exon_border",
                     "shrinked_bkg",
                     "shrinked_alpha",
                 ]

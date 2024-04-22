@@ -39,6 +39,7 @@ def plot_exons_ply(
     plot_border = feat_dict["plot_border"]
     title_dict_ply = feat_dict["title_dict_ply"]
     grid_color = feat_dict["grid_color"]
+    exon_border = feat_dict["exon_border"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     plotly_port = feat_dict["plotly_port"]
@@ -101,6 +102,7 @@ def plot_exons_ply(
             legend,
             transcript_str,
             exon_width,
+            exon_border,
             transcript_utr_width,
             plot_bkg,
             arrow_line_width,
@@ -187,6 +189,7 @@ def _gby_plot_exons(
     legend,
     transcript_str,
     exon_width,
+    exon_border,
     transcript_utr_width,
     plot_background,
     arrow_line_width,
@@ -214,6 +217,9 @@ def _gby_plot_exons(
     else:
         gene_ix = genemd["ycoord"] + 0.5
         exon_color = genemd["color"]
+
+    if exon_border is None:
+        exon_border = exon_color
 
     chrom_ix = chrmd_df_grouped.loc[chrom]["chrom_ix"]
 
@@ -283,6 +289,7 @@ def _gby_plot_exons(
         genename,
         gene_ix,
         exon_color,
+        exon_border,
         chrom_ix,
         geneinfo,
         showinfo,

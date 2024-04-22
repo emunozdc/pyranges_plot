@@ -13,6 +13,7 @@ plot_features_dict = {
     "title_size": (18, "Size of the plots' titles.", " "),
     "title_color": ("black", "Color of the plots' titles.", " "),
     "grid_color": ("lightgrey", "Color of x coordinates grid lines.", " "),
+    "exon_border": (None, "Color of the interval's rectangle border.", " "),
     "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
     "shrink_threshold": (
         0.05,

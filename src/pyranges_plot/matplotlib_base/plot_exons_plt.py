@@ -43,6 +43,7 @@ def plot_exons_plt(
     plot_border = feat_dict["plot_border"]
     title_dict_plt = feat_dict["title_dict_plt"]
     grid_color = feat_dict["grid_color"]
+    exon_border = feat_dict["exon_border"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     arrow_line_width = feat_dict["arrow_line_width"]
@@ -108,6 +109,7 @@ def plot_exons_plt(
             plot_border,
             transcript_str,
             exon_width,
+            exon_border,
             transcript_utr_width,
             arrow_intron_threshold,
             arrow_line_width,
@@ -154,6 +156,7 @@ def _gby_plot_exons(
     plot_border,
     transcript_str,
     exon_width,
+    exon_border,
     transcript_utr_width,
     arrow_intron_threshold,
     arrow_line_width,
@@ -182,6 +185,9 @@ def _gby_plot_exons(
     else:
         gene_ix = genesmd_df["ycoord"] + 0.5
         exon_color = genesmd_df["color"]
+
+    if exon_border is None:
+        exon_border = exon_color
 
     ax = axes[chr_ix]
     if "Strand" in df.columns:
@@ -231,6 +237,7 @@ def _gby_plot_exons(
         strand,
         gene_ix,
         exon_color,
+        exon_border,
         tag_bkg,
         plot_border,
         genename,

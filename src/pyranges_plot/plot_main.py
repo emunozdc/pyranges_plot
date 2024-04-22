@@ -228,6 +228,7 @@ def plot(
                 "size": int(getvalue("title_size", mode)),
             },
             "grid_color": getvalue("grid_color", mode),
+            "exon_border": getvalue("exon_border", mode),
             "exon_width": float(getvalue("exon_width", mode)),
             "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
             "plotly_port": getvalue("plotly_port", mode),
@@ -251,7 +252,7 @@ def plot(
         # concat subset dataframes and create new column with input list index
         subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
             level="pr_ix"
-        )  ### change to pr but doesn't work!!
+        )  ### change to pr but doesn't work yet!!
 
         # No id column, plot each interval individually
         if id_col is None:
