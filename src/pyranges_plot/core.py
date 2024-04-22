@@ -1,5 +1,9 @@
 import pandas as pd
-from .plot_features import plot_features_dict, plot_features_dict_in_use
+from .plot_features import (
+    plot_features_dict,
+    plot_features_dict_in_use,
+    dark_plot_features_dict_in_use,
+)
 
 
 # CORE FUNCTIONS
@@ -129,7 +133,7 @@ def set_default(varname, value):
     )  # (value, description, modified tag)
 
 
-def get_default(varname="all"):
+def get_default(varname="all", mode="light"):
     """
     Obtain the deafault value for a plot layout variable/s and its description.
 
@@ -155,12 +159,18 @@ def get_default(varname="all"):
     # one variable
     else:
         try:
-            if varname in plot_features_dict_in_use:
-                return plot_features_dict_in_use[varname][0]
+            if mode == "light":
+                if varname in plot_features_dict_in_use:
+                    return plot_features_dict_in_use[varname][0]
+                else:
+                    raise Exception(
+                        f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}"
+                    )
+            elif mode == "dark":
+                return dark_plot_features_dict_in_use[varname][0]
+
             else:
-                raise Exception(
-                    f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}"
-                )
+                raise Exception(f"The mode '{mode}' is not a valid mode name.")
         except SystemExit as e:
             print("An error occured:", e)
 
@@ -283,10 +293,12 @@ def print_default(return_keys=False):
             feat_df.index.isin(
                 [
                     "tag_bkg",
+                    "fig_bkg",
                     "plot_bkg",
                     "plot_border",
                     "title_size",
                     "title_color",
+                    "grid_color",
                     "shrinked_bkg",
                     "shrinked_alpha",
                 ]

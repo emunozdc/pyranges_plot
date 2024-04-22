@@ -20,14 +20,14 @@ def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
     ax.yaxis.set_tick_params(left=False)
 
 
-def _ax_limits(ax, x_min, x_max, x_rang):
+def _ax_limits(ax, x_min, x_max, x_rang, grid_color):
     """Adapt plots coordinates."""
 
     ax.set_xlim(
         x_min - 0.05 * x_rang, x_max + 0.05 * x_rang
     )  # add 5% to limit coordinates range
     plt.ticklabel_format(style="plain")
-    ax.grid(visible=True, axis="x", linestyle=":")  # , zorder = -1)
+    ax.grid(visible=True, axis="x", linestyle=":", color=grid_color)  # , zorder = -1)
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.xaxis.get_major_formatter().set_scientific(False)  # not scientific notation
     ax.xaxis.get_major_formatter().set_useOffset(False)  # not offset notation
@@ -81,11 +81,13 @@ def create_fig(
     title_dict_plt,
     plot_background,
     plot_border,
+    grid_color,
     packed,
     legend,
     tick_pos_d,
     ori_tick_pos_d,
     tag_background,
+    fig_bkg,
     shrinked_bkg,
     shrinked_alpha,
 ):
@@ -94,7 +96,7 @@ def create_fig(
     # Unify titles and start figure
     titles = [title_chr.format(**locals()) for chrom in chrmd_df_grouped.index]
     # titles = list(pd.Series(titles).drop_duplicates())
-    fig = plt.figure(figsize=(x, y))
+    fig = plt.figure(figsize=(x, y), facecolor=fig_bkg)
 
     gs = gridspec.GridSpec(
         len(titles),
@@ -117,7 +119,7 @@ def create_fig(
         # set x axis limits
         x_min, x_max = chrmd_df_grouped.loc[chrom]["min_max"]
         x_rang = x_max - x_min
-        _ax_limits(ax, x_min, x_max, x_rang)
+        _ax_limits(ax, x_min, x_max, x_rang, grid_color)
 
         # consider introns off
         if tick_pos_d:
@@ -217,6 +219,8 @@ def create_fig(
                         linewidth=1,
                         zorder=1,
                     )
+
+        ax.tick_params(colors=plot_border, which="both")
 
     plt.subplots_adjust(hspace=0.7)
     # Create legend

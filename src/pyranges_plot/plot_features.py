@@ -7,10 +7,12 @@ plot_features_dict = {
         "Background color of the tooltip annotation for the gene in Matplotlib.",
         " ",
     ),
+    "fig_bkg": ("white", "Bakground color of the whole figure.", " "),
     "plot_bkg": ("white", "Background color for the chromosomes plots.", " "),
     "plot_border": ("black", "Color of the line defining the chromosome plots.", " "),
     "title_size": (18, "Size of the plots' titles.", " "),
     "title_color": ("black", "Color of the plots' titles.", " "),
+    "grid_color": ("lightgrey", "Color of x coordinates grid lines.", " "),
     "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
     "shrink_threshold": (
         0.05,
@@ -51,4 +53,38 @@ plot_features_dict = {
     ),
 }
 
+# Normal (light mode)
 plot_features_dict_in_use = copy.deepcopy(plot_features_dict)
+
+# Dark mode
+dark_plot_features_dict_in_use = copy.deepcopy(plot_features_dict)
+dark_plot_features_dict_in_use["fig_bkg"] = (
+    "#1f1f1f",
+    "Bakground color of the whole figure.",
+    " ",
+)
+dark_plot_features_dict_in_use["plot_border"] = (
+    "white",
+    "Color of the line defining the chromosome plots.",
+    " ",
+)
+dark_plot_features_dict_in_use["title_color"] = (
+    "goldenrod",
+    "Color of the plots' titles.",
+    " ",
+)
+dark_plot_features_dict_in_use["plot_bkg"] = (
+    "grey",
+    "Background color for the chromosomes plots.",
+    " ",
+)
+dark_plot_features_dict_in_use["grid_color"] = (
+    "darkgrey",
+    "Color of x coordinates grid lines.",
+    " ",
+)
+dark_plot_features_dict_in_use["arrow_color"] = (
+    "lightgrey",
+    "Direction arrow color (for stranded PyRanges).",
+    " ",
+)

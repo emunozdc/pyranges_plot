@@ -34,9 +34,11 @@ def plot_exons_ply(
 
     # Get default plot features
     # tag_background = feat_dict['tag_background']
+    fig_bkg = feat_dict["fig_bkg"]
     plot_bkg = feat_dict["plot_bkg"]
     plot_border = feat_dict["plot_border"]
     title_dict_ply = feat_dict["title_dict_ply"]
+    grid_color = feat_dict["grid_color"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     plotly_port = feat_dict["plotly_port"]
@@ -58,6 +60,7 @@ def plot_exons_ply(
             ts_data,
             title_chr,
             title_dict_ply,
+            grid_color,
             packed,
             plot_bkg,
             plot_border,
@@ -110,9 +113,26 @@ def plot_exons_ply(
     )  # .reset_index(level="pr_ix")
 
     # Adjust plot display
-    fig.update_layout(plot_bgcolor=plot_bkg, font_color=plot_border, showlegend=legend)
-    fig.update_xaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
-    fig.update_yaxes(showline=True, linewidth=1, linecolor=plot_border, mirror=True)
+    fig.update_layout(
+        plot_bgcolor=plot_bkg,
+        font_color=plot_border,
+        showlegend=legend,
+        paper_bgcolor=fig_bkg,
+    )
+    fig.update_xaxes(
+        showline=True,
+        linewidth=1,
+        linecolor=plot_border,
+        mirror=True,
+        color=plot_border,
+    )
+    fig.update_yaxes(
+        showline=True,
+        linewidth=1,
+        linecolor=plot_border,
+        mirror=True,
+        color=plot_border,
+    )
 
     # Provide output
     # insert silent information for warnings
