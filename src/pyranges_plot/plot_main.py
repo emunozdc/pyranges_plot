@@ -19,9 +19,6 @@ from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
 
 
-colormap = plotly.colors.qualitative.Alphabet
-
-
 def plot(
     df,
     vcf=None,
@@ -32,7 +29,7 @@ def plot(
     introns_off=False,
     transcript_str=False,
     color_col=None,
-    colormap=colormap,
+    colormap=None,
     limits=None,
     showinfo=None,
     legend=False,
@@ -40,6 +37,7 @@ def plot(
     packed=True,
     to_file=None,
     file_size=None,
+    mode="light",
     **kargs,
 ):
     """
@@ -117,6 +115,9 @@ def plot(
     file_size: list or tuple, default None
         Size of the plot to export defined by a sequence object like: (height, width). The default values
         make the height according to the number of genes and the width as 20 in Matplotlib and 1600 in Plotly.
+
+    mode: str, default "light"
+        General color apperance of the plot. Available modes: "light", "dark".
 
     **kargs
         Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
@@ -197,39 +198,48 @@ def plot(
                 f"The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
             )
 
-        def getvalue(key):
+        def getvalue(key, mode):
             if key in kargs:
                 value = kargs[key]
                 return value  ## add invalid data type??
             else:
-                return get_default(key)
+                return get_default(key, mode)
 
         # Get default plot features
+        if colormap is None:
+            if mode == "light":
+                colormap = plotly.colors.qualitative.Alphabet
+            elif mode == "dark":
+                colormap = "G10"
+
         feat_dict = {
-            "tag_bkg": getvalue("tag_bkg"),
-            "plot_bkg": getvalue("plot_bkg"),
-            "plot_border": getvalue("plot_border"),
+            "tag_bkg": getvalue("tag_bkg", mode),
+            "fig_bkg": getvalue("fig_bkg", mode),
+            "plot_bkg": getvalue("plot_bkg", mode),
+            "plot_border": getvalue("plot_border", mode),
             "title_dict_plt": {
                 "family": "sans-serif",
-                "color": getvalue("title_color"),
-                "size": int(getvalue("title_size")) - 5,
+                "color": getvalue("title_color", mode),
+                "size": int(getvalue("title_size", mode)) - 5,
             },
             "title_dict_ply": {
                 "family": "Arial",
-                "color": getvalue("title_color"),
-                "size": int(getvalue("title_size")),
+                "color": getvalue("title_color", mode),
+                "size": int(getvalue("title_size", mode)),
             },
-            "exon_width": float(getvalue("exon_width")),
-            "transcript_utr_width": 0.3 * float(getvalue("exon_width")),
-            "plotly_port": getvalue("plotly_port"),
-            "arrow_line_width": float(getvalue("arrow_line_width")),
-            "arrow_color": getvalue("arrow_color"),
-            "arrow_size_min": float(getvalue("arrow_size_min")),
-            "arrow_size": float(getvalue("arrow_size")),
-            "arrow_intron_threshold": getvalue("arrow_intron_threshold"),
-            "shrink_threshold": getvalue("shrink_threshold"),
-            "shrinked_bkg": getvalue("shrinked_bkg"),
-            "shrinked_alpha": float(getvalue("shrinked_alpha")),
+            "grid_color": getvalue("grid_color", mode),
+            "exon_border": getvalue("exon_border", mode),
+            "exon_width": float(getvalue("exon_width", mode)),
+            "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
+            "plotly_port": getvalue("plotly_port", mode),
+            "arrow_line_width": float(getvalue("arrow_line_width", mode)),
+            "arrow_color": getvalue("arrow_color", mode),
+            "arrow_size_min": float(getvalue("arrow_size_min", mode)),
+            "arrow_size": float(getvalue("arrow_size", mode)),
+            "arrow_intron_threshold": getvalue("arrow_intron_threshold", mode),
+            "shrink_threshold": getvalue("shrink_threshold", mode),
+            "shrinked_bkg": getvalue("shrinked_bkg", mode),
+            "shrinked_alpha": float(getvalue("shrinked_alpha", mode)),
         }
         shrink_threshold = feat_dict["shrink_threshold"]
 
@@ -242,7 +252,7 @@ def plot(
         # concat subset dataframes and create new column with input list index
         subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
             level="pr_ix"
-        )  ### change to pr but doesn't work!!
+        )  ### change to pr but doesn't work yet!!
 
         # No id column, plot each interval individually
         if id_col is None:
