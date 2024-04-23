@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Rectangle
 from pyranges_plot.core import cumdelting
 import pandas as pd
@@ -31,6 +32,9 @@ def _ax_limits(ax, x_min, x_max, x_rang, grid_color):
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.xaxis.get_major_formatter().set_scientific(False)  # not scientific notation
     ax.xaxis.get_major_formatter().set_useOffset(False)  # not offset notation
+    ax.xaxis.set_major_locator(
+        MaxNLocator(integer=True)
+    )  # only integer ticks for bases
 
 
 def _ax_shrink_rects(
