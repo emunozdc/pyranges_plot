@@ -174,10 +174,11 @@ def plot(
     # Deal with transcript structure
     if transcript_str:
         try:
-            if "Feature" not in df.columns:
-                raise Exception(
-                    "The transcript structure information must be stored in 'Feature' column of the data."
-                )
+            for df_item in df:
+                if "Feature" not in df_item.columns:
+                    raise Exception(
+                        "The transcript structure information must be stored in 'Feature' column of the data."
+                    )
         except SystemExit as e:
             print("An error occured:", e)
 
@@ -247,17 +248,26 @@ def plot(
         df_d = {}
         tot_ngenes_l = []
         for pr_ix, df_item in enumerate(df):
-            df_d[pr_ix], tot_ngenes = make_subset(df_item.copy(), id_col, max_shown)
-            tot_ngenes_l.append(tot_ngenes)
+            df_item = df_item.copy()
+            # consider not known id_col, plot each interval individually
+            if id_col is None:
+                df_item["id_col"] = [str(i) for i in range(len(df_item))]
+                df_d[pr_ix], tot_ngenes = make_subset(df_item, "id_col", max_shown)
+                tot_ngenes_l.append(tot_ngenes)
+
+            # known id_col
+            else:
+                df_d[pr_ix], tot_ngenes = make_subset(df_item, id_col, max_shown)
+                tot_ngenes_l.append(tot_ngenes)
+
+        # set not known id_col
+        if id_col is None:
+            id_col = "id_col"
+
         # concat subset dataframes and create new column with input list index
         subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
             level="pr_ix"
         )  ### change to pr but doesn't work yet!!
-
-        # No id column, plot each interval individually
-        if id_col is None:
-            subdf["id_col"] = [str(i) for i in range(len(subdf))]
-            id_col = "id_col"
 
         # Create genes metadata DataFrame
         if color_col is None:
