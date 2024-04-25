@@ -15,7 +15,7 @@ r_window = r.window(2)
 r_window["transcript_id"] = ["r.window(2)"] * len(r_window)  # rename for plot
 
 # tile_genome object
-tile_g = pr.genomicfeatures.tile_genome(
+tile_g = pr.tile_genome(
     pr.PyRanges({"Chromosome": [1], "Start": [0], "End": [max(r["End"])]}), 2
 )
 tile_g["transcript_id"] = ["pr.tile_genome(2)"] * len(tile_g)  # rename for plot

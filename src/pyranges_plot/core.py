@@ -312,6 +312,7 @@ def print_default(return_keys=False):
                     "arrow_line_width",
                     "arrow_color",
                     "arrow_size",
+                    "arrow_size_min",
                     "arrow_intron_threshold",
                 ]
             )

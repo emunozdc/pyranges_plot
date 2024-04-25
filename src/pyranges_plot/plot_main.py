@@ -41,7 +41,7 @@ def plot(
     **kargs,
 ):
     """
-    Create genes plot from PyRanges object DataFrame
+    Create genes plot from 1/+ PyRanges objects.
 
     Parameters
     ----------
