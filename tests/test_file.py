@@ -38,10 +38,13 @@ def test_subset():
     result_subset_2, _ = make_subset(df_2, "transcript_id", 2)
     expected_subset_2 = pr.PyRanges(
         {
-            "Chromosme": ["a", "a", "a", "a"],
-            "Start": [1, 2, 3, 4],
-            "End": [10, 20, 30, 40],
-            "transcript_id": ["T1", "T2", "T3", "T4"],
+            "Chromosme": [
+                "a",
+                "a",
+            ],
+            "Start": [1, 2],
+            "End": [10, 20],
+            "transcript_id": ["T1", "T2"],
         }
     )
 
@@ -60,10 +63,14 @@ def test_subset():
     result_subset_3, _ = make_subset(df_3, "transcript_id", 3)
     expected_subset_3 = pr.PyRanges(
         {
-            "Chromosme": ["a", "b"],
-            "Start": [1, 2],
-            "End": [10, 20],
-            "transcript_id": ["T1", "T2"],
+            "Chromosme": [
+                "a",
+                "a",
+                "a",
+            ],
+            "Start": [1, 2, 3],
+            "End": [10, 20, 30],
+            "transcript_id": ["T1", "T2", "T3"],
         }
     )
 
