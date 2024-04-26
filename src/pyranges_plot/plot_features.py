@@ -17,7 +17,7 @@ plot_features_dict = {
     "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
     "shrink_threshold": (
         0.05,
-        "Minimum lenght of an intron in order for it to be shrinked while using the introns_off feature. When threshold is float, it represents the percentage of the plot space, while an int threshold represents number of positions or base pairs.",
+        "Minimum length of an intron in order for it to be shrinked while using the introns_off feature. When threshold is float, it represents the percentage of the plot space, while an int threshold represents number of positions or base pairs.",
         " ",
     ),
     "plotly_port": (8050, "Port to run plotly app.", " "),
@@ -29,7 +29,7 @@ plot_features_dict = {
     "arrow_color": ("grey", "Direction arrow color (for stranded PyRanges).", " "),
     "arrow_size_min": (
         0.002,
-        "Minimum size of the arrow to plot direction in exons if necessary. Provided as a float correspondig to the plot fraction or percentage.",
+        "Minimum size of the arrow to plot direction in exons if necessary. Provided as a float corresponding to the plot fraction or percentage.",
         " ",
     ),
     "arrow_size": (
@@ -39,7 +39,7 @@ plot_features_dict = {
     ),
     "arrow_intron_threshold": (
         0.04,
-        "Minimum size of the intron to plot a direction arrow in it. Provided as a float correspondig to the plot fraction or percentage.",
+        "Minimum size of the intron to plot a direction arrow in it. Provided as a float corresponding to the plot fraction or percentage.",
         " ",
     ),
     "shrinked_bkg": (
@@ -61,7 +61,7 @@ plot_features_dict_in_use = copy.deepcopy(plot_features_dict)
 dark_plot_features_dict_in_use = copy.deepcopy(plot_features_dict)
 dark_plot_features_dict_in_use["fig_bkg"] = (
     "#1f1f1f",
-    "Bakground color of the whole figure.",
+    "Background color of the whole figure.",
     " ",
 )
 dark_plot_features_dict_in_use["plot_border"] = (

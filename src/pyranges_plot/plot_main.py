@@ -49,7 +49,7 @@ def plot(
         Pyranges, derived dataframe or list of them with annotation data.
 
     engine: str, default None
-        Library in which the plot sould be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
+        Library in which the plot should be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
         Plotly ['ply'/'plotly'].
 
     id_col: str, default None
@@ -80,7 +80,7 @@ def plot(
 
     limits: {None, dict, tuple, pyranges.pyranges_main.PyRanges}, default None
         Customization of coordinates for the chromosome plots.
-        - None: minimun and maximum exon coordinate plotted plus a 5% of the range on each side.
+        - None: minimum and maximum exon coordinate plotted plus a 5% of the range on each side.
         - dict: {chr_name1: (min_coord, max coord), chr_name2: (min_coord, max_coord), ...}. Not
         all the plotted chromosomes need to be specified in the dictionary and some coordinates
         can be indicated as None, both cases lead to the use of the default value.
@@ -92,7 +92,7 @@ def plot(
 
     showinfo: str, default None
         Dataframe information to show in a tooltip when placing the mouse over a gene, the given
-        informarion will be added to the default: strand, start-end coordinates and id. This must be
+        information will be added to the default: strand, start-end coordinates and id. This must be
         provided as a string containing the column names of the values to be shown within curly brackets.
         For example if you want to show the value of the pointed gene for the column "col1" a valid showinfo
         string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
@@ -102,7 +102,7 @@ def plot(
         Whether the legend should appear in the plot.
 
     title_chr: str, default "Chromosome {chrom}"
-        String providing the desired titile for the chromosome plots. It should be given in a way where
+        String providing the desired title for the chromosome plots. It should be given in a way where
         the chromosome value in the data is indicated as {chrom}.
 
     packed: bool, default True
@@ -117,7 +117,7 @@ def plot(
         make the height according to the number of genes and the width as 20 in Matplotlib and 1600 in Plotly.
 
     mode: str, default "light"
-        General color apperance of the plot. Available modes: "light", "dark".
+        General color appearance of the plot. Available modes: "light", "dark".
 
     **kargs
         Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
