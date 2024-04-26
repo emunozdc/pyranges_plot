@@ -1,5 +1,5 @@
 import pyranges as pr
-from pyranges_plot import make_subset
+from pyranges_plot.data_preparation import make_subset
 
 
 def test_subset():
