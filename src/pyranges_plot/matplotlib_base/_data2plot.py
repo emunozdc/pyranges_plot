@@ -124,7 +124,7 @@ def _apply_gene_bridge(
                 arrow_style,
                 arrow_width,
                 dir_flag,
-                arrow_size,
+                transcript_str,
             ),
             axis=1,
         )
@@ -163,6 +163,14 @@ def _apply_gene_bridge(
             )
             ax.add_patch(start_utr)
             ax.add_patch(end_utr)
+            # add ID annotation for utr
+            ax.annotate(
+                genename,
+                xy=(tr_start, gene_ix),
+                horizontalalignment="right",
+                verticalalignment="center",
+                color=plot_border,
+            )
 
             # make annotation for utr
             # get the gene information to print on hover
@@ -205,7 +213,7 @@ def _apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
-                    arrow_size,
+                    transcript_str,
                 ),
                 axis=1,
             )
@@ -235,7 +243,7 @@ def _apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
-                    arrow_size,
+                    transcript_str,
                 ),
                 axis=1,
             )
@@ -264,7 +272,7 @@ def _apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
-                    arrow_size,
+                    transcript_str,
                 ),
                 axis=1,
             )
@@ -292,7 +300,7 @@ def _plot_row(
     arrow_style,
     arrow_width,
     dir_flag,
-    arrow_size,
+    transcript_str,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -330,7 +338,7 @@ def _plot_row(
     make_annotation(exon_rect, fig, ax, geneinfo, tag_background)
 
     # Add ID annotation if it is the first exon
-    if row["exon_ix"] == 0:
+    if row["exon_ix"] == 0 and not transcript_str:
         ax.annotate(
             genename,
             xy=(start, gene_ix),
