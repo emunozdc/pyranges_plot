@@ -40,9 +40,15 @@ prp.plot(
 
 ### prp complex
 
-gr = pr.example_data.ensembl_gtf
+gr = pr.example_data.ncbi_gff
+grp = gr[gr.Feature.isin(["CDS", "exon"])]
+
+grpp = grp[
+    ["Chromosome", "Feature", "Start", "End", "Strand", "ID", "Parent", "protein_id"]
+]
 
 prp.plot(
-    gr,
-    id_col="gene_id",
+    grpp,
+    id_col="Parent",
+    transcript_str=True,
 )
