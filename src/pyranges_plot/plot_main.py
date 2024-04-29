@@ -33,6 +33,7 @@ def plot(
     limits=None,
     showinfo=None,
     legend=False,
+    id_ann=True,
     title_chr="Chromosome {chrom}",
     packed=True,
     to_file=None,
@@ -100,6 +101,9 @@ def plot(
 
     legend: bool, default False
         Whether the legend should appear in the plot.
+
+    id_ann: bool, default True
+        Whether the id annotation should appear beside the gene in the plot.
 
     title_chr: str, default "Chromosome {chrom}"
         String providing the desired title for the chromosome plots. It should be given in a way where
@@ -347,6 +351,7 @@ def plot(
                 transcript_str=transcript_str,
                 showinfo=showinfo,
                 legend=legend,
+                id_ann=id_ann,
                 title_chr=title_chr,
                 packed=packed,
                 to_file=to_file,
@@ -371,6 +376,7 @@ def plot(
                 transcript_str=transcript_str,
                 showinfo=showinfo,
                 legend=legend,
+                id_ann=id_ann,
                 title_chr=title_chr,
                 packed=packed,
                 to_file=to_file,

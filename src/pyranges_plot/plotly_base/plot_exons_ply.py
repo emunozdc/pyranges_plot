@@ -22,6 +22,7 @@ def plot_exons_ply(
     transcript_str=False,
     showinfo=None,
     legend=False,
+    id_ann=True,
     title_chr=None,
     packed=True,
     to_file=None,
@@ -101,6 +102,7 @@ def plot_exons_ply(
             showinfo,
             legend,
             transcript_str,
+            id_ann,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -188,6 +190,7 @@ def _gby_plot_exons(
     showinfo,
     legend,
     transcript_str,
+    id_ann,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -283,6 +286,7 @@ def _gby_plot_exons(
     # Plot the gene rows
     _apply_gene_bridge(
         transcript_str,
+        id_ann,
         df,
         fig,
         strand,

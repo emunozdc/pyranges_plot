@@ -26,6 +26,7 @@ def plot_exons_plt(
     transcript_str=False,
     showinfo=None,
     legend=False,
+    id_ann=True,
     title_chr=None,
     packed=True,
     to_file=None,
@@ -108,6 +109,7 @@ def plot_exons_plt(
             tag_bkg,
             plot_border,
             transcript_str,
+            id_ann,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -155,6 +157,7 @@ def _gby_plot_exons(
     tag_bkg,
     plot_border,
     transcript_str,
+    id_ann,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -231,6 +234,7 @@ def _gby_plot_exons(
     # Plot the gene rows as EXONS
     _apply_gene_bridge(
         transcript_str,
+        id_ann,
         df,
         fig,
         ax,
