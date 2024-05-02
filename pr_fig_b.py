@@ -27,8 +27,11 @@ r_tile["transcript_id"] = ["r.tile(2)"] * len(r_tile)  # rename for plot
 # plot
 prp.plot(
     [r, r_window, tile_g, r_tile],
-    engine="ply",
+    engine="plt",
     id_col="transcript_id",
     exon_border="black",
-    # packed=False,
+    title_chr=" ",
+    limits=(-4, None),
+    to_file="fig3_2.png",
+    file_size=(9, 6),
 )

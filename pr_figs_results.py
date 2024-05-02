@@ -16,39 +16,42 @@ gr = pr.PyRanges(
     }
 )
 
-# "default" plot
-prp.set_engine("ply")
+gr_1 = gr[gr["Chromosome"] == "1"]
+
+# "default" plot (Figure 1.1)
+prp.set_engine("plt")
 prp.plot(gr)
 
-# id, color col and cmap
+# id, color col and cmap (Figure 1.2)
 prp.plot(
-    gr,
+    gr_1,
     id_col="transcript_id",
     color_col="Strand",
     colormap={"+": "lightgreen", "-": "lightblue"},
+    # to_file="fig1_2.png",
 )
 
-# id, packed, title and default
-prp.plot(
-    gr,
-    id_col="transcript_id",
-    packed=False,
-    title_chr="Chr{chrom}",
-    title_size=30,
-    exon_width=0.7,
-)
 
 ### prp complex
 
 gr = pr.example_data.ncbi_gff
 grp = gr[gr.Feature.isin(["CDS", "exon"])]
+grp = grp[
+    grp.Parent.isin(["rna-DGYR_LOCUS12552-2", "rna-DGYR_LOCUS12552"])
+]  # , "rna-DGYR_LOCUS13738", "rna-DGYR_LOCUS13739", "rna-DGYR_LOCUS13730"])]
 
-grpp = grp[
-    ["Chromosome", "Feature", "Start", "End", "Strand", "ID", "Parent", "protein_id"]
-]
+grpp = grp[["Chromosome", "Feature", "Start", "End", "Strand", "Parent"]]
 
 prp.plot(
     grpp,
     id_col="Parent",
     transcript_str=True,
+    id_ann=False,
+)
+
+prp.plot(
+    gr_1,
+    id_col="transcript_id",
+    introns_off=True,
+    id_ann=False,
 )

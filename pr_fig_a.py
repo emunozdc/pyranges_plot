@@ -42,7 +42,10 @@ prp.plot(
         pr.concat([g_subseq, g_subseq_id]),
         pr.concat([g_spl_subseq_for, g_spl_subseq_rev]),
     ],
-    engine="ply",
+    engine="plt",
     id_col="transcript_id",
-    # packed=False,
+    title_chr=" ",
+    limits=(-4, None),
+    to_file="fig3_1.png",
+    file_size=(9, 6),
 )
