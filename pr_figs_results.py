@@ -1,7 +1,7 @@
 import pyranges as pr, pyranges_plot as prp
 
 
-### prp simple
+# Figure 1
 gr = pr.PyRanges(
     {
         "Chromosome": ["1"] * 10 + ["2"] * 10,
@@ -32,8 +32,7 @@ prp.plot(
 )
 
 
-### prp complex
-
+# Figure 2
 gr = pr.example_data.ncbi_gff
 grp = gr[gr.Feature.isin(["CDS", "exon"])]
 grp = grp[
@@ -42,6 +41,7 @@ grp = grp[
 
 grpp = grp[["Chromosome", "Feature", "Start", "End", "Strand", "Parent"]]
 
+# show transcript_str (Figure 2.1)
 prp.plot(
     grpp,
     id_col="Parent",
@@ -49,9 +49,9 @@ prp.plot(
     id_ann=False,
 )
 
+# show introns off (Figure 2.2)
 prp.plot(
     gr_1,
     id_col="transcript_id",
     introns_off=True,
-    id_ann=False,
 )

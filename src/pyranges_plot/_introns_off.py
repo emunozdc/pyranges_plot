@@ -39,7 +39,9 @@ def get_introns(p, id_col) -> "pr.PyRanges":
 
     introns = (
         p.copy()
-        .groupby([id_col, "pr_ix"], group_keys=False, observed=True)
+        .groupby(
+            [id_col, "pr_ix"], group_keys=False, observed=True
+        )  ## tambien por feature si esta
         .apply(pr.PyRanges.sort_by_position)
     )
 
