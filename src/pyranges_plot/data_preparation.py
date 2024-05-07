@@ -108,7 +108,6 @@ def _update_y(genesmd_df):
 ###colors for genes
 def is_pltcolormap(colormap_string):
     """Checks whether the string given is a valid plt colormap name."""
-
     try:
         colormap = plt.colormaps[colormap_string]
         if colormap is not None and isinstance(colormap, mcolors.Colormap):
