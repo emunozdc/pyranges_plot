@@ -6,7 +6,6 @@ import pyranges as pr
 from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
-import matplotlib.cm as cm
 from .core import get_engine, get_warnings, cumdelting
 from .matplotlib_base._core import plt_popup_warning
 
@@ -111,13 +110,13 @@ def is_pltcolormap(colormap_string):
     """Checks whether the string given is a valid plt colormap name."""
 
     try:
-        colormap = cm.get_cmap(colormap_string)
-        if colormap is not None and colormap._isinit:
+        colormap = plt.colormaps[colormap_string]
+        if colormap is not None and isinstance(colormap, mcolors.Colormap):
             return True
         else:
             return False
 
-    except ValueError:
+    except KeyError:
         return False
 
 
