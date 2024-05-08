@@ -46,6 +46,6 @@ prp.plot(
     id_col="transcript_id",
     title_chr=" ",
     limits=(-4, None),
-    # to_file="fig3_1.png",
-    file_size=(9, 6),
+    to_file="fig3_1.png",
+    file_size=(10, 8),
 )

@@ -141,7 +141,7 @@ def plot_exons_plt(
                 )
         plt.show()
     else:
-        plt.savefig(to_file, format=to_file[-3:])
+        plt.savefig(to_file, format=to_file[-3:], dpi=400)
 
 
 def _gby_plot_exons(
