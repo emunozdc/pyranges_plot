@@ -8,7 +8,7 @@ a = pr.PyRanges(
         "Strand": ["+"] * 2 + ["-"] * 3 + ["+"] * 2,
     }
 )
-
+.
 b = pr.PyRanges(
     {
         "Chromosome": [1] * 5,
@@ -19,7 +19,7 @@ b = pr.PyRanges(
 )
 
 a_ov_b = a.overlap(b)
-# slack??
+a_ov_b_slack = a.overlap(b, slack=2)
 a_ov_b_nostrand = a.overlap(b, strand_behavior="ignore")
 a_ov_b_opstrand = a.overlap(b, strand_behavior="opposite")
 
@@ -33,14 +33,19 @@ prp.plot(
     [
         a,
         b,
-        pr.concat([a_ov_b, a_ov_b_nostrand, a_ov_b_opstrand]),
-        pr.concat([a_inters_b, a_setinters_b]),
+        a_ov_b,
+        a_ov_b_slack,
+        a_ov_b_nostrand,
+        a_ov_b_opstrand,
+        a_inters_b,
+        a_setinters_b,
         a_subt_b,
     ],
     engine="plt",
     title_chr=" ",
+    id_ann=False,
     # limits=(-4, None),
-    # to_file="fig3_1.png",
+    # to_file="fig3_3.png",
     file_size=(10, 8),
     colormap=["black"],
 )

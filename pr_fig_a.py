@@ -15,9 +15,9 @@ g_ext_id = g.extend(1, transcript_id="transcript_id")
 g_ext_id["transcript_id"] = ["g.extend(1, id)"] * len(g_ext_id)
 
 b = g.boundaries("transcript_id")
-b["transcript_id"] = ["g.boundaries"] * len(b)
+b["transcript_id"] = ["g.boundaries()"] * len(b)
 b_subseq = b.subsequence(0, 10)
-b_subseq["transcript_id"] = ["g.boundaries.subsequence(0,10)"] * len(b_subseq)
+b_subseq["transcript_id"] = ["g.boundaries().subsequence(0,10)"] * len(b_subseq)
 
 g_subseq_id = g.subsequence(0, 10, "transcript_id")
 g_subseq_id["transcript_id"] = ["g.subsequence(0,10,id)"] * len(g_subseq_id)

@@ -344,11 +344,6 @@ def plot(
         genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
         chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
 
-        print(genesmd_df)
-        print(genesmd_df["ycoord"])
-        print(chrmd_df)
-        print(chrmd_df_grouped)
-
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
                 subdf=subdf,
