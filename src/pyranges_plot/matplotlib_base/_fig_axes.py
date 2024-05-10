@@ -94,6 +94,7 @@ def create_fig(
     fig_bkg,
     shrinked_bkg,
     shrinked_alpha,
+    v_space,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -176,19 +177,21 @@ def create_fig(
         # set y axis limits
         y_min = 0
         y_max = chrmd_df_grouped.loc[chrom]["y_height"]
-        ax.set_ylim(y_min, y_max)
+        ax.set_ylim(y_min - 0.5 * v_space, y_max + 0.5 * v_space)
         # gene name as y labels
         y_ticks_val = []
         y_ticks_name = []
         if not packed:
-            y_ticks_val = [i + 0.5 for i in range(int(y_max))]
+            y_ticks_val = [(i + 0.5) * v_space for i in range(int(y_max / v_space))]
             y_ticks_name_d = (
                 genesmd_df[genesmd_df["Chromosome"] == chrom]
                 .groupby("pr_ix", group_keys=False, observed=True)
                 .groups
             )
+            print(y_ticks_name_d)
             y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
-            y_ticks_name = [list(id) + [""] for id in y_ticks_name_d.values()]
+            print(y_ticks_name_d)
+            y_ticks_name = [list(id)[::-1] + [""] for id in y_ticks_name_d.values()]
             y_ticks_name = [item for sublist in y_ticks_name for item in sublist][:-1]
 
         ax.set_yticks(y_ticks_val)
@@ -218,7 +221,7 @@ def create_fig(
                 if pr_line_y != 0:
                     ax.plot(
                         [x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
-                        [pr_line_y + 0.5, pr_line_y + 0.5],
+                        [pr_line_y + 0.5 * v_space, pr_line_y + 0.5 * v_space],
                         color=plot_border,
                         linewidth=1,
                         zorder=1,

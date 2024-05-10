@@ -15,6 +15,7 @@ plot_features_dict = {
     "grid_color": ("lightgrey", "Color of x coordinates grid lines.", " "),
     "exon_border": (None, "Color of the interval's rectangle border.", " "),
     "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
+    "v_space": (1, "Vertical distance between exons in different y heights.", " "),
     "shrink_threshold": (
         0.01,
         "Minimum length of an intron in order for it to be shrinked while using the introns_off feature. When threshold is float, it represents the percentage of the plot space, while an int threshold represents number of positions or base pairs.",

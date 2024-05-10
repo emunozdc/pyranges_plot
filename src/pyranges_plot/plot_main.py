@@ -236,6 +236,7 @@ def plot(
             "exon_border": getvalue("exon_border", mode),
             "exon_width": float(getvalue("exon_width", mode)),
             "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
+            "v_space": float(getvalue("v_space", mode)),
             "plotly_port": getvalue("plotly_port", mode),
             "arrow_line_width": float(getvalue("arrow_line_width", mode)),
             "arrow_color": getvalue("arrow_color", mode),
@@ -276,16 +277,14 @@ def plot(
         # Create genes metadata DataFrame
         if color_col is None:
             color_col = id_col
-        genesmd_df = get_genes_metadata(subdf, id_col, color_col, packed, colormap)
+        genesmd_df = get_genes_metadata(
+            subdf, id_col, color_col, packed, colormap, feat_dict["v_space"]
+        )
 
         # Create chromosome metadata DataFrame
         chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-            subdf, id_col, limits, genesmd_df, packed
+            subdf, id_col, limits, genesmd_df, packed, feat_dict["v_space"]
         )
-
-        # print(genesmd_df)
-        # print(chrmd_df)
-        # print(chrmd_df_grouped)
 
         # Deal with introns off
         # adapt coordinates to shrinked
@@ -317,7 +316,13 @@ def plot(
 
             # recompute limits
             chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-                subdf, id_col, limits, genesmd_df, packed, ts_data=ts_data
+                subdf,
+                id_col,
+                limits,
+                genesmd_df,
+                packed,
+                feat_dict["v_space"],
+                ts_data=ts_data,
             )
 
             # compute new axis values and positions if needed
@@ -335,6 +340,14 @@ def plot(
         subdf["exon_ix"] = subdf.groupby(
             ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
         ).cumcount()
+
+        genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
+        chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
+
+        print(genesmd_df)
+        print(genesmd_df["ycoord"])
+        print(chrmd_df)
+        print(chrmd_df_grouped)
 
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
