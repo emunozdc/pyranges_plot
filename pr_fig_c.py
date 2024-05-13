@@ -1,5 +1,6 @@
 import pyranges as pr, pyranges_plot as prp
 
+# Load data
 a = pr.PyRanges(
     {
         "Chromosome": [1] * 7,
@@ -8,7 +9,7 @@ a = pr.PyRanges(
         "Strand": ["+"] * 2 + ["-"] * 3 + ["+"] * 2,
     }
 )
-.
+
 b = pr.PyRanges(
     {
         "Chromosome": [1] * 5,
@@ -18,17 +19,20 @@ b = pr.PyRanges(
     }
 )
 
+# overlap
 a_ov_b = a.overlap(b)
 a_ov_b_slack = a.overlap(b, slack=2)
 a_ov_b_nostrand = a.overlap(b, strand_behavior="ignore")
 a_ov_b_opstrand = a.overlap(b, strand_behavior="opposite")
 
+# intersection
 a_inters_b = a.intersect(b)
 a_setinters_b = a.set_intersect(b)
 
+# subtract
 a_subt_b = a.subtract_ranges(b)  ## is this a.subtract(the slack one)
 
-
+# Get plot
 prp.plot(
     [
         a,
@@ -44,8 +48,10 @@ prp.plot(
     engine="plt",
     title_chr=" ",
     id_ann=False,
-    # limits=(-4, None),
-    # to_file="fig3_3.png",
-    file_size=(10, 8),
-    colormap=["black"],
+    to_file="fig3_3.png",
+    file_size=(5, 4),
+    colormap=["#4169E1"],
+    arrow_color="black",
+    arrow_line_width=0.6,
+    arrow_size_min=0.001,
 )

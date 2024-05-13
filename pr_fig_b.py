@@ -24,14 +24,14 @@ tile_g["transcript_id"] = ["pr.tile_genome(2)"] * len(tile_g)  # rename for plot
 r_tile = r.tile(2)
 r_tile["transcript_id"] = ["r.tile(2)"] * len(r_tile)  # rename for plot
 
-# plot
+# Get plot
 prp.plot(
     [r, r_window, tile_g, r_tile],
     engine="plt",
     id_col="transcript_id",
     exon_border="black",
     title_chr=" ",
-    limits=(-4, None),
+    limits=(-6, None),
     to_file="fig3_2.png",
-    file_size=(9, 6),
+    file_size=(7, 4),
 )
