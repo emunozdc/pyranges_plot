@@ -57,7 +57,7 @@ def _ax_shrink_rects(
         ts_range = Rectangle(
             (a, y_min - 1),
             b - a,
-            y_max + 1,
+            y_max + 3,
             edgecolor="grey",
             facecolor=shrinked_bkg,
             alpha=shrinked_alpha,
