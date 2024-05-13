@@ -6,9 +6,7 @@ import pyranges as pr
 from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
-import matplotlib.cm as cm
-from .core import get_engine, get_warnings
-from ._introns_off import cumdelting
+from .core import get_engine, get_warnings, cumdelting
 from .matplotlib_base._core import plt_popup_warning
 
 
@@ -76,13 +74,6 @@ def _genesmd_packed(genesmd_df):
     return genesmd_df
 
 
-# def _adj_y_prix(row, min_pr_ix):
-#     if row == min_pr_ix:
-#         return 0
-#     else:
-#         return 1
-
-
 def _update_y(genesmd_df):
     """xxx"""
 
@@ -110,15 +101,14 @@ def _update_y(genesmd_df):
 ###colors for genes
 def is_pltcolormap(colormap_string):
     """Checks whether the string given is a valid plt colormap name."""
-
     try:
-        colormap = cm.get_cmap(colormap_string)
-        if colormap is not None and colormap._isinit:
+        colormap = plt.colormaps[colormap_string]
+        if colormap is not None and isinstance(colormap, mcolors.Colormap):
             return True
         else:
             return False
 
-    except ValueError:
+    except KeyError:
         return False
 
 
@@ -219,7 +209,7 @@ def _genesmd_assigncolor(genesmd_df, colormap):
     return genesmd_df
 
 
-def get_genes_metadata(df, id_col, color_col, packed, colormap):
+def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
     """Create genes metadata df."""
 
     # Start df with chromosome and the column defining color
@@ -289,6 +279,10 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap):
 
     # column with rectangle objects with same color as gene
     genesmd_df["legend_item"] = genesmd_df["color"].apply(create_legend_rect)
+
+    # Update vertical space
+    ##genesmd_df["ycoord_1base"] = genesmd_df["ycoord"]*v_space
+    ##genesmd_df["ycoord"] = genesmd_df["ycoord"] * v_space
 
     return genesmd_df
 
@@ -369,7 +363,9 @@ def _fill_min_max(row, ts_data):
     return row
 
 
-def get_chromosome_metadata(df, id_col, limits, genesmd_df, packed, ts_data=None):
+def get_chromosome_metadata(
+    df, id_col, limits, genesmd_df, packed, v_space, ts_data=None
+):
     """Create chromosome metadata df."""
 
     # Start df
@@ -409,9 +405,10 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, packed, ts_data=None
             genesmd_df.groupby(["Chromosome"], group_keys=False, observed=True)[
                 "ycoord"
             ].max()
+            * v_space
         )
         chrmd_df_grouped.rename(columns={"ycoord": "y_height"}, inplace=True)
-        chrmd_df_grouped["y_height"] += 1  # count from 1
+        chrmd_df_grouped["y_height"] += 1 * v_space  # count from 1
 
     else:
         y_height_df = chrmd_df.groupby("Chromosome", observed=True)["n_genes"].sum()
@@ -419,6 +416,7 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, packed, ts_data=None
         chrmd_df_grouped.rename(columns={"n_genes": "y_height"}, inplace=True)
         chrmd_df_grouped["y_height"] += chrmd_df_grouped["n_pr_ix"]
         chrmd_df_grouped["y_height"] -= 1
+        chrmd_df_grouped["y_height"] = chrmd_df_grouped["y_height"] * v_space
 
     # Obtain the positions of lines separating pr objects
     chrmd_df = chrmd_df.join(
@@ -432,6 +430,7 @@ def get_chromosome_metadata(df, id_col, limits, genesmd_df, packed, ts_data=None
         -1, fill_value=-1
     )
     chrmd_df["pr_line"] += 1
+    ##chrmd_df["pr_line"] = chrmd_df["pr_line"]*v_space
 
     # Set chrom_ix to get the right association to the plot index
     chrmd_df_grouped["chrom_ix"] = chrmd_df_grouped.groupby(

@@ -26,6 +26,7 @@ def plot_exons_plt(
     transcript_str=False,
     showinfo=None,
     legend=False,
+    id_ann=True,
     title_chr=None,
     packed=True,
     to_file=None,
@@ -46,6 +47,7 @@ def plot_exons_plt(
     exon_border = feat_dict["exon_border"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
+    v_space = feat_dict["v_space"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
     arrow_size_min = feat_dict["arrow_size_min"]
@@ -91,6 +93,7 @@ def plot_exons_plt(
         fig_bkg,
         shrinked_bkg,
         shrinked_alpha,
+        v_space,
     )
 
     # Plot genes
@@ -108,6 +111,7 @@ def plot_exons_plt(
             tag_bkg,
             plot_border,
             transcript_str,
+            id_ann,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -116,6 +120,7 @@ def plot_exons_plt(
             arrow_color,
             arrow_size_min,
             arrow_size,
+            v_space,
         )
     )
 
@@ -139,7 +144,7 @@ def plot_exons_plt(
                 )
         plt.show()
     else:
-        plt.savefig(to_file, format=to_file[-3:])
+        plt.savefig(to_file, format=to_file[-3:], dpi=400)
 
 
 def _gby_plot_exons(
@@ -155,6 +160,7 @@ def _gby_plot_exons(
     tag_bkg,
     plot_border,
     transcript_str,
+    id_ann,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -163,6 +169,7 @@ def _gby_plot_exons(
     arrow_color,
     arrow_size_min,
     arrow_size,
+    v_space,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -179,11 +186,11 @@ def _gby_plot_exons(
         genesmd_df = genesmd_df[
             genesmd_df["pr_ix"] == pr_ix
         ]  # in case same gene in +1 pr
-        gene_ix = genesmd_df["ycoord"].loc[genename] + 0.5
+        gene_ix = genesmd_df["ycoord"].loc[genename] + 0.5 * v_space
         exon_color = genesmd_df["color"].iloc[0]
     # in case gene in single pr
     else:
-        gene_ix = genesmd_df["ycoord"] + 0.5
+        gene_ix = genesmd_df["ycoord"] + 0.5 * v_space
         exon_color = genesmd_df["color"]
 
     if exon_border is None:
@@ -231,6 +238,7 @@ def _gby_plot_exons(
     # Plot the gene rows as EXONS
     _apply_gene_bridge(
         transcript_str,
+        id_ann,
         df,
         fig,
         ax,

@@ -92,6 +92,7 @@ def plot_direction(
 
 def _apply_gene_bridge(
     transcript_str,
+    id_ann,
     df,
     fig,
     strand,
@@ -132,14 +133,15 @@ def _apply_gene_bridge(
                 arrow_color,
                 arrow_line_width,
                 dir_flag,
-                arrow_size,
+                transcript_str,
+                id_ann,
             ),
             axis=1,
         )
 
     # WITH transcript structure
     else:
-        # transcript has only CDS and exon
+        # transcript has "only" CDS and exon
         if (
             df.Feature.str.contains("CDS").any()
             and df.Feature.str.contains("exon").any()
@@ -174,6 +176,20 @@ def _apply_gene_bridge(
                 row=chrom_ix + 1,
                 col=1,
             )
+            # add ID annotaion before start utr
+            if id_ann:
+                fig.add_annotation(
+                    dict(
+                        x=x0,
+                        y=(y0 + y1) / 2,
+                        showarrow=False,
+                        text=genename,
+                        textangle=0,
+                        xanchor="right",
+                    ),
+                    row=chrom_ix + 1,
+                    col=1,
+                )
 
             # create end utr
             x0, x1 = cds_end, utr_end
@@ -217,7 +233,8 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    arrow_size,
+                    transcript_str,
+                    id_ann,
                 ),
                 axis=1,
             )
@@ -244,7 +261,8 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    arrow_size,
+                    transcript_str,
+                    id_ann,
                 ),
                 axis=1,
             )
@@ -272,7 +290,8 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    arrow_size,
+                    transcript_str,
+                    id_ann,
                 ),
                 axis=1,
             )
@@ -298,7 +317,8 @@ def _plot_row(
     arrow_color,
     arrow_line_width,
     dir_flag,
-    arrow_size,
+    transcript_str,
+    id_ann,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -349,7 +369,7 @@ def _plot_row(
     )
 
     # Add ID annotation if it is the first exon
-    if row["exon_ix"] == 0:
+    if row["exon_ix"] == 0 and not transcript_str and id_ann:
         fig.add_annotation(
             dict(
                 x=x0,

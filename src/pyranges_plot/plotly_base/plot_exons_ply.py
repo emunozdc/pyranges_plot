@@ -22,6 +22,7 @@ def plot_exons_ply(
     transcript_str=False,
     showinfo=None,
     legend=False,
+    id_ann=True,
     title_chr=None,
     packed=True,
     to_file=None,
@@ -42,6 +43,7 @@ def plot_exons_ply(
     exon_border = feat_dict["exon_border"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
+    v_space = feat_dict["v_space"]
     plotly_port = feat_dict["plotly_port"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
@@ -69,6 +71,7 @@ def plot_exons_ply(
             ori_tick_pos_d,
             shrinked_bkg,
             shrinked_alpha,
+            v_space,
         )
 
     else:
@@ -101,6 +104,7 @@ def plot_exons_ply(
             showinfo,
             legend,
             transcript_str,
+            id_ann,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -111,6 +115,7 @@ def plot_exons_ply(
             arrow_size,
             arrow_intron_threshold,
             vcf,
+            v_space,
         )
     )  # .reset_index(level="pr_ix")
 
@@ -188,6 +193,7 @@ def _gby_plot_exons(
     showinfo,
     legend,
     transcript_str,
+    id_ann,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -198,6 +204,7 @@ def _gby_plot_exons(
     arrow_size,
     arrow_intron_threshold,
     vcf,
+    v_space,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -211,11 +218,11 @@ def _gby_plot_exons(
     genemd = genesmd_df.loc[genename]
     if not isinstance(genemd, pd.Series):
         genemd = genemd[genemd["pr_ix"] == pr_ix]  # in case same gene in +1 pr
-        gene_ix = genemd["ycoord"].loc[genename] + 0.5
+        gene_ix = genemd["ycoord"].loc[genename] + 0.5 * v_space
         exon_color = genemd["color"].iloc[0]
     # in case different genes in different pr
     else:
-        gene_ix = genemd["ycoord"] + 0.5
+        gene_ix = genemd["ycoord"] + 0.5 * v_space
         exon_color = genemd["color"]
 
     if exon_border is None:
@@ -283,6 +290,7 @@ def _gby_plot_exons(
     # Plot the gene rows
     _apply_gene_bridge(
         transcript_str,
+        id_ann,
         df,
         fig,
         strand,

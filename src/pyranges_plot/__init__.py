@@ -5,6 +5,8 @@ from .core import (
     get_idcol,
     set_warnings,
     get_warnings,
+    print_default,
+    set_default,
+    reset_default,
 )
 from .plot_main import plot
-from .core import print_default, set_default, reset_default

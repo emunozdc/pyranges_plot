@@ -309,9 +309,11 @@ def print_default(return_keys=False):
             feat_df.index.isin(
                 [
                     "exon_width",
+                    "v_space",
                     "arrow_line_width",
                     "arrow_color",
                     "arrow_size",
+                    "arrow_size_min",
                     "arrow_intron_threshold",
                 ]
             )

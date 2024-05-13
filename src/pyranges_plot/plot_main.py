@@ -33,6 +33,7 @@ def plot(
     limits=None,
     showinfo=None,
     legend=False,
+    id_ann=True,
     title_chr="Chromosome {chrom}",
     packed=True,
     to_file=None,
@@ -41,7 +42,7 @@ def plot(
     **kargs,
 ):
     """
-    Create genes plot from PyRanges object DataFrame
+    Create genes plot from 1/+ PyRanges objects.
 
     Parameters
     ----------
@@ -49,7 +50,7 @@ def plot(
         Pyranges, derived dataframe or list of them with annotation data.
 
     engine: str, default None
-        Library in which the plot sould be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
+        Library in which the plot should be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
         Plotly ['ply'/'plotly'].
 
     id_col: str, default None
@@ -80,7 +81,7 @@ def plot(
 
     limits: {None, dict, tuple, pyranges.pyranges_main.PyRanges}, default None
         Customization of coordinates for the chromosome plots.
-        - None: minimun and maximum exon coordinate plotted plus a 5% of the range on each side.
+        - None: minimum and maximum exon coordinate plotted plus a 5% of the range on each side.
         - dict: {chr_name1: (min_coord, max coord), chr_name2: (min_coord, max_coord), ...}. Not
         all the plotted chromosomes need to be specified in the dictionary and some coordinates
         can be indicated as None, both cases lead to the use of the default value.
@@ -92,7 +93,7 @@ def plot(
 
     showinfo: str, default None
         Dataframe information to show in a tooltip when placing the mouse over a gene, the given
-        informarion will be added to the default: strand, start-end coordinates and id. This must be
+        information will be added to the default: strand, start-end coordinates and id. This must be
         provided as a string containing the column names of the values to be shown within curly brackets.
         For example if you want to show the value of the pointed gene for the column "col1" a valid showinfo
         string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
@@ -101,8 +102,11 @@ def plot(
     legend: bool, default False
         Whether the legend should appear in the plot.
 
+    id_ann: bool, default True
+        Whether the id annotation should appear beside the gene in the plot.
+
     title_chr: str, default "Chromosome {chrom}"
-        String providing the desired titile for the chromosome plots. It should be given in a way where
+        String providing the desired title for the chromosome plots. It should be given in a way where
         the chromosome value in the data is indicated as {chrom}.
 
     packed: bool, default True
@@ -117,7 +121,7 @@ def plot(
         make the height according to the number of genes and the width as 20 in Matplotlib and 1600 in Plotly.
 
     mode: str, default "light"
-        General color apperance of the plot. Available modes: "light", "dark".
+        General color appearance of the plot. Available modes: "light", "dark".
 
     **kargs
         Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
@@ -174,10 +178,11 @@ def plot(
     # Deal with transcript structure
     if transcript_str:
         try:
-            if "Feature" not in df.columns:
-                raise Exception(
-                    "The transcript structure information must be stored in 'Feature' column of the data."
-                )
+            for df_item in df:
+                if "Feature" not in df_item.columns:
+                    raise Exception(
+                        "The transcript structure information must be stored in 'Feature' column of the data."
+                    )
         except SystemExit as e:
             print("An error occured:", e)
 
@@ -231,6 +236,7 @@ def plot(
             "exon_border": getvalue("exon_border", mode),
             "exon_width": float(getvalue("exon_width", mode)),
             "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
+            "v_space": float(getvalue("v_space", mode)),
             "plotly_port": getvalue("plotly_port", mode),
             "arrow_line_width": float(getvalue("arrow_line_width", mode)),
             "arrow_color": getvalue("arrow_color", mode),
@@ -247,31 +253,38 @@ def plot(
         df_d = {}
         tot_ngenes_l = []
         for pr_ix, df_item in enumerate(df):
-            df_d[pr_ix], tot_ngenes = make_subset(df_item.copy(), id_col, max_shown)
-            tot_ngenes_l.append(tot_ngenes)
+            df_item = df_item.copy()
+            # consider not known id_col, plot each interval individually
+            if id_col is None:
+                df_item["id_col"] = [str(i) for i in range(len(df_item))]
+                df_d[pr_ix], tot_ngenes = make_subset(df_item, "id_col", max_shown)
+                tot_ngenes_l.append(tot_ngenes)
+
+            # known id_col
+            else:
+                df_d[pr_ix], tot_ngenes = make_subset(df_item, id_col, max_shown)
+                tot_ngenes_l.append(tot_ngenes)
+
+        # set not known id_col
+        if id_col is None:
+            id_col = "id_col"
+
         # concat subset dataframes and create new column with input list index
         subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
             level="pr_ix"
         )  ### change to pr but doesn't work yet!!
 
-        # No id column, plot each interval individually
-        if id_col is None:
-            subdf["id_col"] = [str(i) for i in range(len(subdf))]
-            id_col = "id_col"
-
         # Create genes metadata DataFrame
         if color_col is None:
             color_col = id_col
-        genesmd_df = get_genes_metadata(subdf, id_col, color_col, packed, colormap)
+        genesmd_df = get_genes_metadata(
+            subdf, id_col, color_col, packed, colormap, feat_dict["v_space"]
+        )
 
         # Create chromosome metadata DataFrame
         chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-            subdf, id_col, limits, genesmd_df, packed
+            subdf, id_col, limits, genesmd_df, packed, feat_dict["v_space"]
         )
-
-        print(genesmd_df.to_string())
-        print(chrmd_df)
-        print(chrmd_df_grouped)
 
         # Deal with introns off
         # adapt coordinates to shrinked
@@ -303,7 +316,13 @@ def plot(
 
             # recompute limits
             chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-                subdf, id_col, limits, genesmd_df, packed, ts_data=ts_data
+                subdf,
+                id_col,
+                limits,
+                genesmd_df,
+                packed,
+                feat_dict["v_space"],
+                ts_data=ts_data,
             )
 
             # compute new axis values and positions if needed
@@ -322,9 +341,8 @@ def plot(
             ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
         ).cumcount()
 
-        print(genesmd_df.to_string())
-        print(chrmd_df)
-        print(chrmd_df_grouped)
+        genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
+        chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
 
         if engine == "plt" or engine == "matplotlib":
             plot_exons_plt(
@@ -341,6 +359,7 @@ def plot(
                 transcript_str=transcript_str,
                 showinfo=showinfo,
                 legend=legend,
+                id_ann=id_ann,
                 title_chr=title_chr,
                 packed=packed,
                 to_file=to_file,
@@ -365,6 +384,7 @@ def plot(
                 transcript_str=transcript_str,
                 showinfo=showinfo,
                 legend=legend,
+                id_ann=id_ann,
                 title_chr=title_chr,
                 packed=packed,
                 to_file=to_file,
