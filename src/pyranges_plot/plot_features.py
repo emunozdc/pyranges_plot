@@ -15,6 +15,16 @@ plot_features_dict = {
     "grid_color": ("lightgrey", "Color of x coordinates grid lines.", " "),
     "exon_border": (None, "Color of the interval's rectangle border.", " "),
     "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
+    "id_ann_pad": (
+        1,
+        "Space in number of bases where the id annotation is placed beside the interval.",
+        " ",
+    ),
+    "id_ann_slice": (
+        "[0:]",
+        "String of the slice applied to id annotation in the plot.",
+        " ",
+    ),
     "v_space": (0.7, "Vertical distance between exons in different y heights.", " "),
     "shrink_threshold": (
         0.01,

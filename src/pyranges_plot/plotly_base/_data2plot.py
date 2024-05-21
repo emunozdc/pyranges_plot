@@ -93,6 +93,8 @@ def plot_direction(
 def _apply_gene_bridge(
     transcript_str,
     id_ann,
+    id_ann_pad,
+    id_ann_slice,
     df,
     fig,
     strand,
@@ -135,6 +137,8 @@ def _apply_gene_bridge(
                 dir_flag,
                 transcript_str,
                 id_ann,
+                id_ann_pad,
+                id_ann_slice,
             ),
             axis=1,
         )
@@ -181,10 +185,10 @@ def _apply_gene_bridge(
             if id_ann:
                 fig.add_annotation(
                     dict(
-                        x=x0,
+                        x=x0 - id_ann_pad,
                         y=(y0 + y1) / 2,
                         showarrow=False,
-                        text=genename,
+                        text=eval(f"genename{id_ann_slice}"),
                         textangle=0,
                         xanchor="right",
                     ),
@@ -236,6 +240,8 @@ def _apply_gene_bridge(
                     dir_flag,
                     transcript_str,
                     id_ann,
+                    id_ann_pad,
+                    id_ann_slice,
                 ),
                 axis=1,
             )
@@ -264,6 +270,8 @@ def _apply_gene_bridge(
                     dir_flag,
                     transcript_str,
                     id_ann,
+                    id_ann_pad,
+                    id_ann_slice,
                 ),
                 axis=1,
             )
@@ -293,6 +301,8 @@ def _apply_gene_bridge(
                     dir_flag,
                     transcript_str,
                     id_ann,
+                    id_ann_pad,
+                    id_ann_slice,
                 ),
                 axis=1,
             )
@@ -320,6 +330,8 @@ def _plot_row(
     dir_flag,
     transcript_str,
     id_ann,
+    id_ann_pad,
+    id_ann_slice,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -373,10 +385,10 @@ def _plot_row(
     if row["exon_ix"] == 0 and id_ann:
         fig.add_annotation(
             dict(
-                x=x0,
+                x=x0 - id_ann_pad,
                 y=(y0 + y1) / 2,
                 showarrow=False,
-                text=genename,
+                text=eval(f"genename{id_ann_slice}"),
                 textangle=0,
                 xanchor="right",
             ),
