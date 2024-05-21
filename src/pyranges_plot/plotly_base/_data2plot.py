@@ -141,6 +141,7 @@ def _apply_gene_bridge(
 
     # WITH transcript structure
     else:
+        ## add warning for no good transcript str here
         # transcript has "only" CDS and exon
         if (
             df.Feature.str.contains("CDS").any()
@@ -369,7 +370,7 @@ def _plot_row(
     )
 
     # Add ID annotation if it is the first exon
-    if row["exon_ix"] == 0 and not transcript_str and id_ann:
+    if row["exon_ix"] == 0 and id_ann:
         fig.add_annotation(
             dict(
                 x=x0,
