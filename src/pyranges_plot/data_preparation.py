@@ -233,7 +233,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
             .reset_index(level=1)
         )
 
-    # Sort by pr_ix
+    # Sort bu pr_ix
     genesmd_df.sort_values(by="pr_ix", inplace=True)
 
     genesmd_df["chrix"] = genesmd_df.groupby(

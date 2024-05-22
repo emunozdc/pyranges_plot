@@ -2,7 +2,7 @@ import plotly.subplots as sp
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
-from pyranges_plot._introns_off import cumdelting
+from pyranges_plot.core import cumdelting
 
 
 def calculate_ticks(subdf, num_ticks=10):
