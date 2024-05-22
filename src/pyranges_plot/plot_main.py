@@ -236,6 +236,8 @@ def plot(
             "exon_border": getvalue("exon_border", mode),
             "exon_width": float(getvalue("exon_width", mode)),
             "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
+            "id_ann_pad": float(getvalue("id_ann_pad", mode)),
+            "id_ann_slice": getvalue("id_ann_slice", mode),
             "v_space": float(getvalue("v_space", mode)),
             "plotly_port": getvalue("plotly_port", mode),
             "arrow_line_width": float(getvalue("arrow_line_width", mode)),

@@ -10,3 +10,4 @@ from .core import (
     reset_default,
 )
 from .plot_main import plot
+from .pr_register_plot import register_plot

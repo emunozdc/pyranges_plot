@@ -3,7 +3,7 @@ import pandas as pd
 
 
 # def get_introns(self, id_col: str) -> "pr.PyRanges":
-def get_introns(p, id_col) -> "pr.PyRanges":
+def get_introns(p, id_cols) -> "pr.PyRanges":
     """Calculate introns from a PyRanges object.
 
      Parameters
@@ -37,23 +37,14 @@ def get_introns(p, id_col) -> "pr.PyRanges":
     Contains 1 chromosomes.
     """
 
-    introns = (
-        p.copy()
-        .groupby(
-            [id_col, "pr_ix"], group_keys=False, observed=True
-        )  ## tambien por feature si esta
-        .apply(pr.PyRanges.sort_by_position)
+    introns = p.merge_overlaps(match_by=id_cols).sort_ranges(
+        by=id_cols, use_strand=False
     )
 
     # intron start is exon end shifted
-    if "pr_ix" in introns.columns:
-        introns["End"] = introns.groupby(
-            [id_col, "pr_ix"], group_keys=False, observed=True
-        )["End"].shift()
-    else:
-        introns["End"] = introns.groupby(id_col, group_keys=False, observed=True)[
-            "End"
-        ].shift()
+    introns["End"] = introns.groupby(id_cols, group_keys=False, observed=True)[
+        "End"
+    ].shift()
 
     # remove first exon rows
     introns.dropna(subset="End", inplace=True)
@@ -76,7 +67,7 @@ def introns_resize(df, ts_data, id_col):
     # Calculate shrinkable intron ranges
     # get flexible introns
     exons = p.copy()
-    introns = get_introns(p, id_col)
+    introns = get_introns(p, ["pr_ix", id_col])
     to_shrink = pr.PyRanges()
 
     if not introns.empty:
