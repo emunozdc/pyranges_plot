@@ -7,7 +7,7 @@ from pyranges_plot.core import cumdelting
 from .core import make_annotation
 
 
-def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
+def ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
     """Set plot features."""
 
     if title:
@@ -20,7 +20,7 @@ def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
     ax.yaxis.set_tick_params(left=False)
 
 
-def _ax_limits(ax, x_min, x_max, x_rang, grid_color):
+def ax_limits(ax, x_min, x_max, x_rang, grid_color):
     """Adapt plots coordinates."""
 
     ax.set_xlim(
@@ -36,7 +36,7 @@ def _ax_limits(ax, x_min, x_max, x_rang, grid_color):
     )  # only integer ticks for bases
 
 
-def _ax_shrink_rects(
+def ax_shrink_rects(
     ax, fig, ts_data, chrom, y_min, y_max, shrinked_bkg, shrinked_alpha, tag_background
 ):
     """Add shrinked regions rectangles to the plot."""
@@ -118,12 +118,12 @@ def create_fig(
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
-        _ax_display(ax, title_chr, chrom, title_dict_plt, plot_background, plot_border)
+        ax_display(ax, title_chr, chrom, title_dict_plt, plot_background, plot_border)
 
         # set x axis limits
         x_min, x_max = chrmd_df_grouped.loc[chrom]["min_max"]
         x_rang = x_max - x_min
-        _ax_limits(ax, x_min, x_max, x_rang, grid_color)
+        ax_limits(ax, x_min, x_max, x_rang, grid_color)
 
         # consider introns off
         if tick_pos_d:
@@ -198,7 +198,7 @@ def create_fig(
 
         # Add shrink rectangles
         if ts_data:
-            _ax_shrink_rects(
+            ax_shrink_rects(
                 ax,
                 fig,
                 ts_data,

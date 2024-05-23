@@ -52,7 +52,7 @@ def make_subset(df, id_col, max_shown):
 
 
 ###packed
-def _genesmd_packed(genesmd_df):
+def genesmd_packed(genesmd_df):
     """xxx"""
 
     # Initialize IntervalTree and used y-coordinates list
@@ -74,7 +74,7 @@ def _genesmd_packed(genesmd_df):
     return genesmd_df
 
 
-def _update_y(genesmd_df):
+def update_y(genesmd_df):
     """xxx"""
 
     min_pr_ix = genesmd_df["pr_ix"].min()
@@ -138,7 +138,7 @@ def get_plycolormap(colormap_string):
         return getattr(pc.qualitative, colormap_string)
 
 
-def _genesmd_assigncolor(genesmd_df, colormap):
+def genesmd_assigncolor(genesmd_df, colormap):
     """Match color with gene"""
 
     color_tags = genesmd_df.color_tag.drop_duplicates()
@@ -249,8 +249,8 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
         genesmd_df["ycoord"] = -1
         genesmd_df = genesmd_df.groupby(
             ["chrix", "pr_ix"], group_keys=False, observed=True
-        ).apply(_genesmd_packed)  # add packed ycoord column
-        genesmd_df = genesmd_df.groupby("Chromosome").apply(_update_y)
+        ).apply(genesmd_packed)  # add packed ycoord column
+        genesmd_df = genesmd_df.groupby("Chromosome").apply(update_y)
         genesmd_df.reset_index(level="Chromosome", drop=True, inplace=True)
 
     else:
@@ -271,7 +271,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
         genesmd_df.reset_index("pr_ix", inplace=True)
 
     # Assign color to each gene
-    genesmd_df = _genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
+    genesmd_df = genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
 
     # Add legend info
     def create_legend_rect(color):
@@ -291,7 +291,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
 
 
 ##limits
-def _chrmd_limits(chrmd_df, limits):
+def chrmd_limits(chrmd_df, limits):
     """Compute 'min_max' column for chromosome metadata"""
 
     # 1- create min_max column containing (plot min, plot max)
@@ -335,7 +335,7 @@ def _chrmd_limits(chrmd_df, limits):
         ]  # fills with None the chromosomes not specified
 
 
-def _fill_min_max(row, ts_data):
+def fill_min_max(row, ts_data):
     """Complete min_max column for chromosome metadata if needed."""
 
     minmax_t = row["min_max"]
@@ -389,8 +389,8 @@ def get_chromosome_metadata(
         )["max"].transform("max")
 
     # Add limits
-    _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
-    chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
+    chrmd_limits(chrmd_df, limits)  # unknown limits are nan
+    chrmd_df = chrmd_df.apply(lambda x: fill_min_max(x, ts_data), axis=1)
 
     chrmd_df_grouped = (
         chrmd_df.reset_index(level="pr_ix")

@@ -4,7 +4,7 @@ import pandas as pd
 from .core import plt_popup_warning
 from .fig_axes import create_fig
 from .data2plot import (
-    _apply_gene_bridge,
+    apply_gene_bridge,
     plot_introns,
 )
 
@@ -91,7 +91,7 @@ def plot_exons_plt(
 
     # Plot genes
     subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
-        lambda subdf: _gby_plot_exons(
+        lambda subdf: gby_plot_exons(
             subdf,
             axes,
             fig,
@@ -142,7 +142,7 @@ def plot_exons_plt(
         plt.savefig(to_file, format=to_file[-3:], dpi=400)
 
 
-def _gby_plot_exons(
+def gby_plot_exons(
     df,
     axes,
     fig,
@@ -233,7 +233,7 @@ def _gby_plot_exons(
     )
 
     # Plot the gene rows as EXONS
-    _apply_gene_bridge(
+    apply_gene_bridge(
         transcript_str,
         text,
         text_pad,

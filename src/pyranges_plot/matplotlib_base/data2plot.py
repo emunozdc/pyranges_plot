@@ -80,7 +80,7 @@ def plot_direction(
     return dir_flag
 
 
-def _apply_gene_bridge(
+def apply_gene_bridge(
     transcript_str,
     text,
     text_pad,
@@ -105,11 +105,11 @@ def _apply_gene_bridge(
     dir_flag,
     arrow_size,
 ):
-    """Evaluate data and provide _plot_row with right parameters."""
+    """Evaluate data and provide plot_row with right parameters."""
     # NOT transcript strucutre
     if not transcript_str:
         df.apply(
-            _plot_row,
+            plot_row,
             args=(
                 fig,
                 ax,
@@ -203,7 +203,7 @@ def _apply_gene_bridge(
             # keep CDS data and plot it
             df = df.groupby("Feature", group_keys=False, observed=True).get_group("CDS")
             df.apply(
-                _plot_row,
+                plot_row,
                 args=(
                     fig,
                     ax,
@@ -236,7 +236,7 @@ def _apply_gene_bridge(
         ):
             # plot just as utr
             df.apply(
-                _plot_row,
+                plot_row,
                 args=(
                     fig,
                     ax,
@@ -268,7 +268,7 @@ def _apply_gene_bridge(
             and not df.Feature.str.contains("exon").any()
         ):
             df.apply(
-                _plot_row,
+                plot_row,
                 args=(
                     fig,
                     ax,
@@ -299,7 +299,7 @@ def _apply_gene_bridge(
             return
 
 
-def _plot_row(
+def plot_row(
     row,
     fig,
     ax,

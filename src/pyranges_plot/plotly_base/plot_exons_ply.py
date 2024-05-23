@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from .core import initialize_dash_app
 from .fig_axes import create_fig
-from .data2plot import plot_introns, _apply_gene_bridge
+from .data2plot import plot_introns, apply_gene_bridge
 
 
 def plot_exons_ply(
@@ -75,7 +75,7 @@ def plot_exons_ply(
 
     # Plot genes
     subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
-        lambda subdf: _gby_plot_exons(
+        lambda subdf: gby_plot_exons(
             subdf,
             fig,
             chrmd_df,
@@ -165,7 +165,7 @@ def plot_exons_ply(
         pio.write_image(fig, to_file)
 
 
-def _gby_plot_exons(
+def gby_plot_exons(
     df,
     fig,
     chrmd_df,
@@ -270,7 +270,7 @@ def _gby_plot_exons(
     )
 
     # Plot the gene rows
-    _apply_gene_bridge(
+    apply_gene_bridge(
         transcript_str,
         text,
         text_pad,
