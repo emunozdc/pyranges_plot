@@ -292,12 +292,8 @@ def plot(
             subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
         elif isinstance(shrink_threshold, float):
             subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-            subdf = subdf.groupby(
-                "Chromosome", group_keys=False, observed=True
-            ).apply(
-                lambda x: compute_thresh(x, chrmd_df_grouped)
-                if not x.empty
-                else None
+            subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
+                lambda x: compute_thresh(x, chrmd_df_grouped) if not x.empty else None
             )
 
         subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
