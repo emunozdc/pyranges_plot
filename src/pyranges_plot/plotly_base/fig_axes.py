@@ -65,7 +65,7 @@ def create_fig(
 
     # Unify titles and start figure
     titles = [title_chr.format(**locals()) for chrom in chrmd_df_grouped.index]
-    titles = list(pd.Series(titles).drop_duplicates())
+    titles = list(pd.Series(titles))
     fig = sp.make_subplots(
         rows=len(titles),
         cols=1,
@@ -82,8 +82,9 @@ def create_fig(
         chrom = chrmd_df_grouped.index[i]
         fig.add_trace(go.Scatter(x=[], y=[]), row=i + 1, col=1)
 
-        # set title format
-        fig.layout.annotations[i].update(font=title_dict_ply)
+        # set title format if there are titles
+        if fig.layout.annotations:
+            fig.layout.annotations[i].update(font=title_dict_ply)
 
         # set x axis limits
         x_min, x_max = chrmd_df_grouped.loc[chrom]["min_max"]
