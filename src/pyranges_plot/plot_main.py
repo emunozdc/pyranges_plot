@@ -3,7 +3,7 @@ import pyranges as pr
 import plotly.colors
 from .core import (
     get_engine,
-    get_idcol,
+    get_id_col,
     print_default,
     get_default,
     get_warnings,
@@ -161,12 +161,12 @@ def plot(
 
     # Deal with id column
     if id_col is None:
-        id_col = get_idcol()
+        id_col = get_id_col()
 
     for df_item in df:
         if id_col is not None and id_col not in df_item.columns:
             raise Exception(
-                "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
+                "Please define a correct name of the ID column using either set_id_col() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
             )
 
     # Deal with transcript structure

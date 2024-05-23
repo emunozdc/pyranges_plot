@@ -1,8 +1,8 @@
 from .core import (
     set_engine,
     get_engine,
-    set_idcol,
-    get_idcol,
+    set_id_col,
+    get_id_col,
     set_warnings,
     get_warnings,
     print_default,

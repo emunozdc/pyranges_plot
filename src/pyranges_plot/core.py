@@ -40,7 +40,7 @@ def get_engine():
 id_col = None
 
 
-def set_idcol(name):
+def set_id_col(name):
     """
     Defines the ID column for the data.
 
@@ -54,7 +54,7 @@ def set_idcol(name):
     --------
     >>> import pyranges_plot as prp
 
-    >>> prp.set_idcol('gene_id')
+    >>> prp.set_id_col('gene_id')
 
     """
 
@@ -62,7 +62,7 @@ def set_idcol(name):
     id_col = name
 
 
-def get_idcol():
+def get_id_col():
     """Shows the current defined ID column (id_col)."""
 
     return id_col
@@ -310,6 +310,7 @@ def print_default(return_keys=False):
                 [
                     "exon_width",
                     "id_ann_pad",
+                    "id_ann_slice",
                     "id_ann_slice",
                     "v_space",
                     "arrow_line_width",
