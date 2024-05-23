@@ -4,8 +4,8 @@ import plotly.colors
 from .core import (
     get_engine,
     get_id_col,
-    print_default,
-    get_default,
+    print_options,
+    get_options,
     get_warnings,
 )
 from .data_preparation import (
@@ -124,7 +124,7 @@ def plot(
         General color appearance of the plot. Available modes: "light", "dark".
 
     **kargs
-        Customizable plot features can be defined using kargs. Use print_default() function to check the variables'
+        Customizable plot features can be defined using kargs. Use print_options() function to check the variables'
         nomenclature, description and default values.
 
 
@@ -187,10 +187,10 @@ def plot(
 
     # PREPARE DATA for plot
     # Deal with plot features as kargs
-    wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
+    wrong_keys = [k for k in kargs if k not in print_options(return_keys=True)]
     if wrong_keys:
         raise Exception(
-            f"The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
+            f"The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_options function."
         )
 
     def getvalue(key, mode):
@@ -198,7 +198,7 @@ def plot(
             value = kargs[key]
             return value  ## add invalid data type??
         else:
-            return get_default(key, mode)
+            return get_options(key, mode)
 
     # Get default plot features
     if colormap is None:

@@ -5,9 +5,9 @@ from .core import (
     get_id_col,
     set_warnings,
     get_warnings,
-    print_default,
-    set_default,
-    reset_default,
+    print_options,
+    set_options,
+    reset_options,
 )
 from .plot_main import plot
 from .pr_register_plot import register_plot

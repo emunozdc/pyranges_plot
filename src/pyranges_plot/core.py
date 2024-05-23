@@ -99,10 +99,10 @@ def get_warnings():
     return warnings
 
 
-# Related to default features
+# Related to default features (options)
 
 
-def set_default(varname, value):
+def set_options(varname, value):
     """
     Define some features of the plot layout.
 
@@ -120,9 +120,9 @@ def set_default(varname, value):
     --------
     >>> import pyranges_plot as prp
 
-    >>> prp.set_default('plot_background', 'magenta')
+    >>> prp.set_options('plot_background', 'magenta')
 
-    >>> prp.set_default('title_size', 20)
+    >>> prp.set_options('title_size', 20)
 
     """
 
@@ -133,7 +133,7 @@ def set_default(varname, value):
     )  # (value, description, modified tag)
 
 
-def get_default(varname="all", mode="light"):
+def get_options(varname="all", mode="light"):
     """
     Obtain the deafault value for a plot layout variable/s and its description.
 
@@ -175,13 +175,13 @@ def get_default(varname="all", mode="light"):
             print("An error occured:", e)
 
 
-def get_original_default():
+def get_original_options():
     """Returns the dictionary with the original plot features."""
 
     return plot_features_dict
 
 
-def reset_default(varname="all"):
+def reset_options(varname="all"):
     """
     Reset the deafault value for one, some or all plot layout variables to their original vlaue.
 
@@ -195,19 +195,19 @@ def reset_default(varname="all"):
     --------
     >>> import pyranges_plot as prp
 
-    >>> prp.reset_default()
+    >>> prp.reset_options()
 
-    >>> prp.reset_default('all')
+    >>> prp.reset_options('all')
 
-    >>> prp.reset_default('tag_background')
+    >>> prp.reset_options('tag_background')
 
-    >>> prp.reset_default(['title_dict_plt', 'tag_background'])
+    >>> prp.reset_options(['title_dict_plt', 'tag_background'])
 
-    >>> prp.reset_default('title_dict_ply')
+    >>> prp.reset_options('title_dict_ply')
     """
 
-    plot_features_dict_in_use = get_default()
-    plot_features_dict = get_original_default()
+    plot_features_dict_in_use = get_options()
+    plot_features_dict = get_original_options()
 
     # list of variables
     if isinstance(varname, list):
@@ -247,11 +247,11 @@ def divide_desc(desc, cutoff):
     return lines_l
 
 
-def print_default(return_keys=False):
+def print_options(return_keys=False):
     """Prints the customizable features default values and description."""
 
     # store data
-    plot_features_dict_in_use = get_default()
+    plot_features_dict_in_use = get_options()
 
     # prepare data to print
     if not return_keys:
