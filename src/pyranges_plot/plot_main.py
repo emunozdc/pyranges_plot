@@ -245,7 +245,11 @@ def plot(
     df_d = {}
     tot_ngenes_l = []
     for pr_ix, df_item in enumerate(data):
+        # deal with empty PyRanges
+        if df_item.empty:
+            continue
         df_item = df_item.copy()
+
         # consider not known id_col, plot each interval individually
         if id_col is None:
             df_item["id_col"] = [str(i) for i in range(len(df_item))]
@@ -262,6 +266,8 @@ def plot(
         id_col = "id_col"
 
     # concat subset dataframes and create new column with input list index
+    if not df_d:
+        raise Exception("The provided PyRanges object/s are empty.")
     subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
         level="pr_ix"
     )  ### change to pr but doesn't work yet!!
