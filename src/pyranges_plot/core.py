@@ -271,12 +271,12 @@ def print_options(return_keys=False):
 
         # Function to format row
         def format_row(key, value):
-            if len(value[1]) <= 60:
-                return f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {value[1]:<{desc_sz}} |"
+            if len(value.iloc[1]) <= 60:
+                return f"| {key:^{name_sz}} | {str(value.iloc[0]):^{value_sz}} | {value.iloc[2]:^{mod_sz}} | {value.iloc[1]:<{desc_sz}} |"
 
             else:
-                lines_l = divide_desc(value[1], cutoff=desc_sz)
-                fstr = f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {lines_l[0]:<{desc_sz}} |"
+                lines_l = divide_desc(value.iloc[1], cutoff=desc_sz)
+                fstr = f"| {key:^{name_sz}} | {str(value.iloc[0]):^{value_sz}} | {value.iloc[2]:^{mod_sz}} | {lines_l[0]:<{desc_sz}} |"
                 empty = " "
                 for i in range(1, len(lines_l)):
                     fstr += f"\n| {empty:^{name_sz}} | {empty:^{value_sz}} | {empty:^{mod_sz}} | {lines_l[i]:<{desc_sz}} |"
