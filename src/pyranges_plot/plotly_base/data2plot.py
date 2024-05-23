@@ -1,4 +1,4 @@
-from ._core import coord2percent, percent2coord
+from .core import coord2percent, percent2coord
 import plotly.graph_objects as go
 import pandas as pd
 

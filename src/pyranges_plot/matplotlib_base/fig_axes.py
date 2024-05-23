@@ -4,8 +4,7 @@ from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Rectangle
 from pyranges_plot.core import cumdelting
-import pandas as pd
-from ._core import make_annotation
+from .core import make_annotation
 
 
 def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):

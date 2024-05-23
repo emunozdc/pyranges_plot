@@ -1,4 +1,4 @@
-from ._core import coord2percent, percent2coord, make_annotation
+from .core import coord2percent, percent2coord, make_annotation
 from matplotlib.patches import Rectangle
 import pandas as pd
 

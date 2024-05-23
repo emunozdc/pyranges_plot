@@ -3,9 +3,9 @@ import plotly.colors
 import plotly.io as pio
 import pandas as pd
 import numpy as np
-from ._core import initialize_dash_app
-from ._fig_axes import create_fig, create_fig_with_vfc
-from ._data2plot import plot_introns, _apply_gene_bridge
+from .core import initialize_dash_app
+from .fig_axes import create_fig, create_fig_with_vfc
+from .data2plot import plot_introns, _apply_gene_bridge
 
 
 def plot_exons_ply(

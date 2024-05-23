@@ -14,7 +14,7 @@ from .data_preparation import (
     get_chromosome_metadata,
     compute_thresh,
 )
-from ._introns_off import introns_resize, recalc_axis
+from .introns_off import introns_resize, recalc_axis
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
 
@@ -46,7 +46,7 @@ def plot(
 
     Parameters
     ----------
-    df: {pyranges.PyRanges, pandas.DataFrame or list of pyranges.PyRanges}
+    df: {pyranges.PyRanges or list of pyranges.PyRanges}
         Pyranges, derived dataframe or list of them with annotation data.
 
     engine: str, default None
@@ -154,37 +154,28 @@ def plot(
     # Deal with export
     if to_file:
         ext = to_file[-4:]
-        try:
-            if ext not in [".pdf", ".png"]:
-                raise Exception(
-                    "Please specify the desired format to export the file including either '.png' or '.pdf' as an extension."
-                )
-        except SystemExit as e:
-            print("An error occured:", e)
+        if ext not in [".pdf", ".png"]:
+            raise Exception(
+                "Please specify the desired format to export the file including either '.png' or '.pdf' as an extension."
+            )
 
     # Deal with id column
     if id_col is None:
         id_col = get_idcol()
 
-    try:
-        for df_item in df:
-            if id_col is not None and id_col not in df_item.columns:
-                raise Exception(
-                    "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
-                )
-    except SystemExit as e:
-        print("An error occured:", e)
+    for df_item in df:
+        if id_col is not None and id_col not in df_item.columns:
+            raise Exception(
+                "Please define a correct name of the ID column using either set_idcol() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
+            )
 
     # Deal with transcript structure
     if transcript_str:
-        try:
-            for df_item in df:
-                if "Feature" not in df_item.columns:
-                    raise Exception(
-                        "The transcript structure information must be stored in 'Feature' column of the data."
-                    )
-        except SystemExit as e:
-            print("An error occured:", e)
+        for df_item in df:
+            if "Feature" not in df_item.columns:
+                raise Exception(
+                    "The transcript structure information must be stored in 'Feature' column of the data."
+                )
 
     # Deal with warnings
     if warnings is None:
@@ -194,211 +185,208 @@ def plot(
     if engine is None:
         engine = get_engine()
 
-    try:
-        # PREPARE DATA for plot
-        # Deal with plot features as kargs
-        wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
-        if wrong_keys:
-            raise Exception(
-                f"The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
-            )
+    # PREPARE DATA for plot
+    # Deal with plot features as kargs
+    wrong_keys = [k for k in kargs if k not in print_default(return_keys=True)]
+    if wrong_keys:
+        raise Exception(
+            f"The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_default function."
+        )
 
-        def getvalue(key, mode):
-            if key in kargs:
-                value = kargs[key]
-                return value  ## add invalid data type??
-            else:
-                return get_default(key, mode)
+    def getvalue(key, mode):
+        if key in kargs:
+            value = kargs[key]
+            return value  ## add invalid data type??
+        else:
+            return get_default(key, mode)
 
-        # Get default plot features
-        if colormap is None:
-            if mode == "light":
-                colormap = plotly.colors.qualitative.Alphabet
-            elif mode == "dark":
-                colormap = "G10"
+    # Get default plot features
+    if colormap is None:
+        if mode == "light":
+            colormap = plotly.colors.qualitative.Alphabet
+        elif mode == "dark":
+            colormap = "G10"
 
-        feat_dict = {
-            "tag_bkg": getvalue("tag_bkg", mode),
-            "fig_bkg": getvalue("fig_bkg", mode),
-            "plot_bkg": getvalue("plot_bkg", mode),
-            "plot_border": getvalue("plot_border", mode),
-            "title_dict_plt": {
-                "family": "sans-serif",
-                "color": getvalue("title_color", mode),
-                "size": int(getvalue("title_size", mode)) - 5,
-            },
-            "title_dict_ply": {
-                "family": "Arial",
-                "color": getvalue("title_color", mode),
-                "size": int(getvalue("title_size", mode)),
-            },
-            "grid_color": getvalue("grid_color", mode),
-            "exon_border": getvalue("exon_border", mode),
-            "exon_width": float(getvalue("exon_width", mode)),
-            "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
-            "id_ann_pad": float(getvalue("id_ann_pad", mode)),
-            "id_ann_slice": getvalue("id_ann_slice", mode),
-            "v_space": float(getvalue("v_space", mode)),
-            "plotly_port": getvalue("plotly_port", mode),
-            "arrow_line_width": float(getvalue("arrow_line_width", mode)),
-            "arrow_color": getvalue("arrow_color", mode),
-            "arrow_size_min": float(getvalue("arrow_size_min", mode)),
-            "arrow_size": float(getvalue("arrow_size", mode)),
-            "arrow_intron_threshold": getvalue("arrow_intron_threshold", mode),
-            "shrink_threshold": getvalue("shrink_threshold", mode),
-            "shrinked_bkg": getvalue("shrinked_bkg", mode),
-            "shrinked_alpha": float(getvalue("shrinked_alpha", mode)),
-        }
-        shrink_threshold = feat_dict["shrink_threshold"]
+    feat_dict = {
+        "tag_bkg": getvalue("tag_bkg", mode),
+        "fig_bkg": getvalue("fig_bkg", mode),
+        "plot_bkg": getvalue("plot_bkg", mode),
+        "plot_border": getvalue("plot_border", mode),
+        "title_dict_plt": {
+            "family": "sans-serif",
+            "color": getvalue("title_color", mode),
+            "size": int(getvalue("title_size", mode)) - 5,
+        },
+        "title_dict_ply": {
+            "family": "Arial",
+            "color": getvalue("title_color", mode),
+            "size": int(getvalue("title_size", mode)),
+        },
+        "grid_color": getvalue("grid_color", mode),
+        "exon_border": getvalue("exon_border", mode),
+        "exon_width": float(getvalue("exon_width", mode)),
+        "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
+        "id_ann_pad": float(getvalue("id_ann_pad", mode)),
+        "id_ann_slice": getvalue("id_ann_slice", mode),
+        "v_space": float(getvalue("v_space", mode)),
+        "plotly_port": getvalue("plotly_port", mode),
+        "arrow_line_width": float(getvalue("arrow_line_width", mode)),
+        "arrow_color": getvalue("arrow_color", mode),
+        "arrow_size_min": float(getvalue("arrow_size_min", mode)),
+        "arrow_size": float(getvalue("arrow_size", mode)),
+        "arrow_intron_threshold": getvalue("arrow_intron_threshold", mode),
+        "shrink_threshold": getvalue("shrink_threshold", mode),
+        "shrinked_bkg": getvalue("shrinked_bkg", mode),
+        "shrinked_alpha": float(getvalue("shrinked_alpha", mode)),
+    }
+    shrink_threshold = feat_dict["shrink_threshold"]
 
-        # Make DataFrame subset if needed
-        df_d = {}
-        tot_ngenes_l = []
-        for pr_ix, df_item in enumerate(df):
-            df_item = df_item.copy()
-            # consider not known id_col, plot each interval individually
-            if id_col is None:
-                df_item["id_col"] = [str(i) for i in range(len(df_item))]
-                df_d[pr_ix], tot_ngenes = make_subset(df_item, "id_col", max_shown)
-                tot_ngenes_l.append(tot_ngenes)
-
-            # known id_col
-            else:
-                df_d[pr_ix], tot_ngenes = make_subset(df_item, id_col, max_shown)
-                tot_ngenes_l.append(tot_ngenes)
-
-        # set not known id_col
+    # Make DataFrame subset if needed
+    df_d = {}
+    tot_ngenes_l = []
+    for pr_ix, df_item in enumerate(df):
+        df_item = df_item.copy()
+        # consider not known id_col, plot each interval individually
         if id_col is None:
-            id_col = "id_col"
+            df_item["id_col"] = [str(i) for i in range(len(df_item))]
+            df_d[pr_ix], tot_ngenes = make_subset(df_item, "id_col", max_shown)
+            tot_ngenes_l.append(tot_ngenes)
 
-        # concat subset dataframes and create new column with input list index
-        subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
-            level="pr_ix"
-        )  ### change to pr but doesn't work yet!!
+        # known id_col
+        else:
+            df_d[pr_ix], tot_ngenes = make_subset(df_item, id_col, max_shown)
+            tot_ngenes_l.append(tot_ngenes)
 
-        # Create genes metadata DataFrame
-        if color_col is None:
-            color_col = id_col
-        genesmd_df = get_genes_metadata(
-            subdf, id_col, color_col, packed, colormap, feat_dict["v_space"]
-        )
+    # set not known id_col
+    if id_col is None:
+        id_col = "id_col"
 
-        # Create chromosome metadata DataFrame
+    # concat subset dataframes and create new column with input list index
+    subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
+        level="pr_ix"
+    )  ### change to pr but doesn't work yet!!
+
+    # Create genes metadata DataFrame
+    if color_col is None:
+        color_col = id_col
+    genesmd_df = get_genes_metadata(
+        subdf, id_col, color_col, packed, colormap, feat_dict["v_space"]
+    )
+
+    # Create chromosome metadata DataFrame
+    chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
+        subdf, id_col, limits, genesmd_df, packed, feat_dict["v_space"]
+    )
+
+    # Deal with introns off
+    # adapt coordinates to shrinked
+    ts_data = {}
+    subdf["oriStart"] = subdf["Start"]
+    subdf["oriEnd"] = subdf["End"]
+    tick_pos_d = {}
+    ori_tick_pos_d = {}
+
+    if introns_off:
+        # compute threshold
+        if isinstance(shrink_threshold, int):
+            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+        elif isinstance(shrink_threshold, float):
+            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+            subdf = subdf.groupby(
+                "Chromosome", group_keys=False, observed=True
+            ).apply(
+                lambda x: compute_thresh(x, chrmd_df_grouped)
+                if not x.empty
+                else None
+            )
+
+        subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
+            lambda x: introns_resize(x, ts_data, id_col)  # if not x.empty else None
+        )  # empty rows when subset
+        subdf["Start"] = subdf["Start_adj"]
+        subdf["End"] = subdf["End_adj"]
+
+        # recompute limits
         chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-            subdf, id_col, limits, genesmd_df, packed, feat_dict["v_space"]
+            subdf,
+            id_col,
+            limits,
+            genesmd_df,
+            packed,
+            feat_dict["v_space"],
+            ts_data=ts_data,
         )
 
-        # Deal with introns off
-        # adapt coordinates to shrinked
-        ts_data = {}
-        subdf["oriStart"] = subdf["Start"]
-        subdf["oriEnd"] = subdf["End"]
-        tick_pos_d = {}
-        ori_tick_pos_d = {}
-
-        if introns_off:
-            # compute threshold
-            if isinstance(shrink_threshold, int):
-                subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-            elif isinstance(shrink_threshold, float):
-                subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-                subdf = subdf.groupby(
-                    "Chromosome", group_keys=False, observed=True
-                ).apply(
-                    lambda x: compute_thresh(x, chrmd_df_grouped)
-                    if not x.empty
-                    else None
-                )
-
-            subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
-                lambda x: introns_resize(x, ts_data, id_col)  # if not x.empty else None
-            )  # empty rows when subset
-            subdf["Start"] = subdf["Start_adj"]
-            subdf["End"] = subdf["End_adj"]
-
-            # recompute limits
-            chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-                subdf,
-                id_col,
-                limits,
-                genesmd_df,
-                packed,
-                feat_dict["v_space"],
-                ts_data=ts_data,
+        # compute new axis values and positions if needed
+        if ts_data:
+            tick_pos_d, ori_tick_pos_d = recalc_axis(
+                ts_data, tick_pos_d, ori_tick_pos_d
             )
 
-            # compute new axis values and positions if needed
-            if ts_data:
-                tick_pos_d, ori_tick_pos_d = recalc_axis(
-                    ts_data, tick_pos_d, ori_tick_pos_d
-                )
+    else:
+        subdf["cumdelta"] = [0] * len(subdf)
 
-        else:
-            subdf["cumdelta"] = [0] * len(subdf)
+    # Sort data to plot chromosomes and pr objects in order
+    subdf.sort_values(["Chromosome", "pr_ix", id_col, "Start"], inplace=True)
+    chrmd_df.sort_values(["Chromosome", "pr_ix"], inplace=True)
+    subdf["exon_ix"] = subdf.groupby(
+        ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
+    ).cumcount()
 
-        # Sort data to plot chromosomes and pr objects in order
-        subdf.sort_values(["Chromosome", "pr_ix", id_col, "Start"], inplace=True)
-        chrmd_df.sort_values(["Chromosome", "pr_ix"], inplace=True)
-        subdf["exon_ix"] = subdf.groupby(
-            ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
-        ).cumcount()
+    genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
+    chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
 
-        genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
-        chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
+    if engine == "plt" or engine == "matplotlib":
+        plot_exons_plt(
+            subdf=subdf,
+            vcf=vcf,
+            tot_ngenes_l=tot_ngenes_l,
+            feat_dict=feat_dict,
+            genesmd_df=genesmd_df,
+            chrmd_df=chrmd_df,
+            chrmd_df_grouped=chrmd_df_grouped,
+            ts_data=ts_data,
+            max_shown=max_shown,
+            id_col=id_col,
+            transcript_str=transcript_str,
+            showinfo=showinfo,
+            legend=legend,
+            id_ann=id_ann,
+            title_chr=title_chr,
+            packed=packed,
+            to_file=to_file,
+            file_size=file_size,
+            warnings=warnings,
+            tick_pos_d=tick_pos_d,
+            ori_tick_pos_d=ori_tick_pos_d,
+        )
 
-        if engine == "plt" or engine == "matplotlib":
-            plot_exons_plt(
-                subdf=subdf,
-                vcf=vcf,
-                tot_ngenes_l=tot_ngenes_l,
-                feat_dict=feat_dict,
-                genesmd_df=genesmd_df,
-                chrmd_df=chrmd_df,
-                chrmd_df_grouped=chrmd_df_grouped,
-                ts_data=ts_data,
-                max_shown=max_shown,
-                id_col=id_col,
-                transcript_str=transcript_str,
-                showinfo=showinfo,
-                legend=legend,
-                id_ann=id_ann,
-                title_chr=title_chr,
-                packed=packed,
-                to_file=to_file,
-                file_size=file_size,
-                warnings=warnings,
-                tick_pos_d=tick_pos_d,
-                ori_tick_pos_d=ori_tick_pos_d,
-            )
+    elif engine == "ply" or engine == "plotly":
+        plot_exons_ply(
+            subdf=subdf,
+            vcf=vcf,
+            tot_ngenes_l=tot_ngenes_l,
+            feat_dict=feat_dict,
+            genesmd_df=genesmd_df,
+            chrmd_df=chrmd_df,
+            chrmd_df_grouped=chrmd_df_grouped,
+            ts_data=ts_data,
+            max_shown=max_shown,
+            id_col=id_col,
+            transcript_str=transcript_str,
+            showinfo=showinfo,
+            legend=legend,
+            id_ann=id_ann,
+            title_chr=title_chr,
+            packed=packed,
+            to_file=to_file,
+            file_size=file_size,
+            warnings=warnings,
+            tick_pos_d=tick_pos_d,
+            ori_tick_pos_d=ori_tick_pos_d,
+        )
 
-        elif engine == "ply" or engine == "plotly":
-            plot_exons_ply(
-                subdf=subdf,
-                vcf=vcf,
-                tot_ngenes_l=tot_ngenes_l,
-                feat_dict=feat_dict,
-                genesmd_df=genesmd_df,
-                chrmd_df=chrmd_df,
-                chrmd_df_grouped=chrmd_df_grouped,
-                ts_data=ts_data,
-                max_shown=max_shown,
-                id_col=id_col,
-                transcript_str=transcript_str,
-                showinfo=showinfo,
-                legend=legend,
-                id_ann=id_ann,
-                title_chr=title_chr,
-                packed=packed,
-                to_file=to_file,
-                file_size=file_size,
-                warnings=warnings,
-                tick_pos_d=tick_pos_d,
-                ori_tick_pos_d=ori_tick_pos_d,
-            )
-
-        else:
-            raise Exception(
-                "Please define engine with set_engine() or specifying it with the 'engine' parameter."
-            )
-    except SystemExit as e:
-        print("An error occured:", e)
+    else:
+        raise Exception(
+            "Please define engine with set_engine() or specifying it with the 'engine' parameter."
+        )

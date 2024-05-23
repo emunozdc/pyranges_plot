@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from ._core import plt_popup_warning
-from ._fig_axes import create_fig
-from .plot_vcf_plt import _gby_plot_vcf
-from ._data2plot import (
+from .core import plt_popup_warning
+from .fig_axes import create_fig
+from .data2plot import (
     _apply_gene_bridge,
     plot_introns,
 )

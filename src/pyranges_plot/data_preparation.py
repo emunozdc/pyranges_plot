@@ -7,7 +7,7 @@ from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
 from .core import get_engine, get_warnings, cumdelting
-from .matplotlib_base._core import plt_popup_warning
+from .matplotlib_base.core import plt_popup_warning
 
 
 ############ COMPUTE INTRONS OFF THRESHOLD
@@ -305,7 +305,7 @@ def _chrmd_limits(chrmd_df, limits):
         chrmd_df["min_max"] = [limits] * len(chrmd_df)
 
     # pyranges object
-    elif type(limits) is pr.pyranges_main.PyRanges:
+    elif type(limits) is pr.PyRanges:
         # create dict to map limits
         limits_df = limits.df
         limits_chrmd_df = limits_df.groupby(
