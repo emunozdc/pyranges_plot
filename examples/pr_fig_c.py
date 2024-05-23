@@ -47,7 +47,7 @@ prp.plot(
     ],
     engine="plt",
     title_chr=" ",
-    id_ann=False,
+    text=False,
     to_file="fig3_3.png",
     file_size=(5, 4),
     colormap=["#4169E1"],

@@ -20,20 +20,20 @@ from .plotly_base.plot_exons_ply import plot_exons_ply
 
 
 def plot(
-    df,
-    vcf=None,
+    data,
+    *,
     engine=None,
     id_col=None,
     warnings=None,
     max_shown=25,
-    introns_off=False,
-    transcript_str=False,
+    shrink=False,
+    thick_cds=False,
     color_col=None,
     colormap=None,
     limits=None,
-    showinfo=None,
+    tooltip=None,
     legend=False,
-    id_ann=True,
+    text=False,
     title_chr="Chromosome {chrom}",
     packed=True,
     to_file=None,
@@ -46,7 +46,7 @@ def plot(
 
     Parameters
     ----------
-    df: {pyranges.PyRanges or list of pyranges.PyRanges}
+    data: {pyranges.PyRanges or list of pyranges.PyRanges}
         Pyranges, derived dataframe or list of them with annotation data.
 
     engine: str, default None
@@ -62,10 +62,10 @@ def plot(
     max_shown: int, default 20
         Maximum number of genes plotted in the dataframe order.
 
-    introns_off: bool, default False
+    shrink: bool, default False
         Whether to compress the intron ranges to facilitate visualization or not.
 
-    transcript_str: bool, default False
+    thick_cds: bool, default False
         Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
         must be stored in the 'Feature' column of the PyRanges object or the dataframe.
 
@@ -91,18 +91,18 @@ def plot(
         in the pyranges object defined as limits. If some plotted chromosomes are not present they
         will be left as default.
 
-    showinfo: str, default None
+    tooltip: str, default None
         Dataframe information to show in a tooltip when placing the mouse over a gene, the given
         information will be added to the default: strand, start-end coordinates and id. This must be
         provided as a string containing the column names of the values to be shown within curly brackets.
-        For example if you want to show the value of the pointed gene for the column "col1" a valid showinfo
+        For example if you want to show the value of the pointed gene for the column "col1" a valid tooltip
         string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
         strings. If you want to introduce a newline you can use "\n".
 
     legend: bool, default False
         Whether the legend should appear in the plot.
 
-    id_ann: bool, default True
+    text: bool, default False
         Whether the id annotation should appear beside the gene in the plot.
 
     title_chr: str, default "Chromosome {chrom}"
@@ -142,13 +142,13 @@ def plot(
 
     >>> plot(p, engine='ply', id_col="transcript_id", limits = {'1': (1000, 50000), '2': None, '3': (10000, None)})
 
-    >>> plot(p, engine='plotly', id_col="transcript_id", introns_off=True, showinfo = "Feature1: {feature1}")
+    >>> plot(p, engine='plotly', id_col="transcript_id", shrink=True, tooltip = "Feature1: {feature1}")
 
-    >>> plot(df, engine='plt', id_col="transcript_id", color_col='Strand', packed=False, to_file='my_plot.pdf')
+    >>> plot(data, engine='plt', id_col="transcript_id", color_col='Strand', packed=False, to_file='my_plot.pdf')
     """
 
-    if not isinstance(df, list):
-        df = [df]
+    if not isinstance(data, list):
+        data = [data]
     # for df_i in df:
 
     # Deal with export
@@ -163,15 +163,15 @@ def plot(
     if id_col is None:
         id_col = get_id_col()
 
-    for df_item in df:
+    for df_item in data:
         if id_col is not None and id_col not in df_item.columns:
             raise Exception(
                 "Please define a correct name of the ID column using either set_id_col() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
             )
 
     # Deal with transcript structure
-    if transcript_str:
-        for df_item in df:
+    if thick_cds:
+        for df_item in data:
             if "Feature" not in df_item.columns:
                 raise Exception(
                     "The transcript structure information must be stored in 'Feature' column of the data."
@@ -226,8 +226,8 @@ def plot(
         "exon_border": getvalue("exon_border", mode),
         "exon_width": float(getvalue("exon_width", mode)),
         "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
-        "id_ann_pad": float(getvalue("id_ann_pad", mode)),
-        "id_ann_slice": getvalue("id_ann_slice", mode),
+        "text_pad": float(getvalue("text_pad", mode)),
+        "text_slice": getvalue("text_slice", mode),
         "v_space": float(getvalue("v_space", mode)),
         "plotly_port": getvalue("plotly_port", mode),
         "arrow_line_width": float(getvalue("arrow_line_width", mode)),
@@ -244,7 +244,7 @@ def plot(
     # Make DataFrame subset if needed
     df_d = {}
     tot_ngenes_l = []
-    for pr_ix, df_item in enumerate(df):
+    for pr_ix, df_item in enumerate(data):
         df_item = df_item.copy()
         # consider not known id_col, plot each interval individually
         if id_col is None:
@@ -286,7 +286,7 @@ def plot(
     tick_pos_d = {}
     ori_tick_pos_d = {}
 
-    if introns_off:
+    if shrink:
         # compute threshold
         if isinstance(shrink_threshold, int):
             subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
@@ -335,7 +335,6 @@ def plot(
     if engine == "plt" or engine == "matplotlib":
         plot_exons_plt(
             subdf=subdf,
-            vcf=vcf,
             tot_ngenes_l=tot_ngenes_l,
             feat_dict=feat_dict,
             genesmd_df=genesmd_df,
@@ -344,10 +343,10 @@ def plot(
             ts_data=ts_data,
             max_shown=max_shown,
             id_col=id_col,
-            transcript_str=transcript_str,
-            showinfo=showinfo,
+            transcript_str=thick_cds,
+            tooltip=tooltip,
             legend=legend,
-            id_ann=id_ann,
+            text=text,
             title_chr=title_chr,
             packed=packed,
             to_file=to_file,
@@ -360,7 +359,6 @@ def plot(
     elif engine == "ply" or engine == "plotly":
         plot_exons_ply(
             subdf=subdf,
-            vcf=vcf,
             tot_ngenes_l=tot_ngenes_l,
             feat_dict=feat_dict,
             genesmd_df=genesmd_df,
@@ -369,10 +367,10 @@ def plot(
             ts_data=ts_data,
             max_shown=max_shown,
             id_col=id_col,
-            transcript_str=transcript_str,
-            showinfo=showinfo,
+            transcript_str=thick_cds,
+            tooltip=tooltip,
             legend=legend,
-            id_ann=id_ann,
+            text=text,
             title_chr=title_chr,
             packed=packed,
             to_file=to_file,

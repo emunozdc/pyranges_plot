@@ -309,9 +309,8 @@ def print_options(return_keys=False):
             feat_df.index.isin(
                 [
                     "exon_width",
-                    "id_ann_pad",
-                    "id_ann_slice",
-                    "id_ann_slice",
+                    "text_pad",
+                    "text_slice",
                     "v_space",
                     "arrow_line_width",
                     "arrow_color",

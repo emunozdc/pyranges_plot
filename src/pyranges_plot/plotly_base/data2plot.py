@@ -92,9 +92,9 @@ def plot_direction(
 
 def _apply_gene_bridge(
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_pad,
+    text_slice,
     df,
     fig,
     strand,
@@ -136,9 +136,9 @@ def _apply_gene_bridge(
                 arrow_line_width,
                 dir_flag,
                 transcript_str,
-                id_ann,
-                id_ann_pad,
-                id_ann_slice,
+                text,
+                text_pad,
+                text_slice,
             ),
             axis=1,
         )
@@ -182,13 +182,13 @@ def _apply_gene_bridge(
                 col=1,
             )
             # add ID annotaion before start utr
-            if id_ann:
+            if text:
                 fig.add_annotation(
                     dict(
-                        x=x0 - id_ann_pad,
+                        x=x0 - text_pad,
                         y=(y0 + y1) / 2,
                         showarrow=False,
-                        text=eval(f"genename{id_ann_slice}"),
+                        text=eval(f"genename{text_slice}"),
                         textangle=0,
                         xanchor="right",
                     ),
@@ -239,9 +239,9 @@ def _apply_gene_bridge(
                     arrow_line_width,
                     dir_flag,
                     transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_pad,
+                    text_slice,
                 ),
                 axis=1,
             )
@@ -269,9 +269,9 @@ def _apply_gene_bridge(
                     arrow_line_width,
                     dir_flag,
                     transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_pad,
+                    text_slice,
                 ),
                 axis=1,
             )
@@ -300,9 +300,9 @@ def _apply_gene_bridge(
                     arrow_line_width,
                     dir_flag,
                     transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_pad,
+                    text_slice,
                 ),
                 axis=1,
             )
@@ -329,9 +329,9 @@ def _plot_row(
     arrow_line_width,
     dir_flag,
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_pad,
+    text_slice,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -382,13 +382,13 @@ def _plot_row(
     )
 
     # Add ID annotation if it is the first exon
-    if row["exon_ix"] == 0 and id_ann:
+    if row["exon_ix"] == 0 and text:
         fig.add_annotation(
             dict(
-                x=x0 - id_ann_pad,
+                x=x0 - text_pad,
                 y=(y0 + y1) / 2,
                 showarrow=False,
-                text=eval(f"genename{id_ann_slice}"),
+                text=eval(f"genename{text_slice}"),
                 textangle=0,
                 xanchor="right",
             ),

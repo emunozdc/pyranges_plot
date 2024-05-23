@@ -13,7 +13,6 @@ arrow_style = "round"
 
 def plot_exons_plt(
     subdf,
-    vcf,
     tot_ngenes_l,
     feat_dict,
     genesmd_df,
@@ -23,9 +22,9 @@ def plot_exons_plt(
     id_col,
     max_shown=25,
     transcript_str=False,
-    showinfo=None,
+    tooltip=None,
     legend=False,
-    id_ann=True,
+    text=True,
     title_chr=None,
     packed=True,
     to_file=None,
@@ -46,8 +45,8 @@ def plot_exons_plt(
     exon_border = feat_dict["exon_border"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
-    id_ann_pad = feat_dict["id_ann_pad"]
-    id_ann_slice = feat_dict["id_ann_slice"]
+    text_pad = feat_dict["text_pad"]
+    text_slice = feat_dict["text_slice"]
     v_space = feat_dict["v_space"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
@@ -63,16 +62,9 @@ def plot_exons_plt(
         y = file_size[1]
     else:
         x = 20
-        if vcf is None:
-            y = (
-                sum(chrmd_df_grouped["y_height"]) + len(chrmd_df_grouped.index) * 2
-            ) / 2  # height according to genes and add 2 per each chromosome
-        else:
-            y = (
-                sum(chrmd_df_grouped["y_height"])
-                + len(chrmd_df.index.columns.get_loc("Chromosome").drop_duplicates())
-                * 3
-            ) / 2  # increase 1 per chromosome to show variants plot
+        y = (
+            sum(chrmd_df_grouped["y_height"]) + len(chrmd_df_grouped.index) * 2
+        ) / 2  # height according to genes and add 2 per each chromosome
 
     fig, axes = create_fig(
         x,
@@ -108,13 +100,13 @@ def plot_exons_plt(
             genesmd_df,
             ts_data,
             id_col,
-            showinfo,
+            tooltip,
             tag_bkg,
             plot_border,
             transcript_str,
-            id_ann,
-            id_ann_pad,
-            id_ann_slice,
+            text,
+            text_pad,
+            text_slice,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -163,9 +155,9 @@ def _gby_plot_exons(
     tag_bkg,
     plot_border,
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_pad,
+    text_slice,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -243,9 +235,9 @@ def _gby_plot_exons(
     # Plot the gene rows as EXONS
     _apply_gene_bridge(
         transcript_str,
-        id_ann,
-        id_ann_pad,
-        id_ann_slice,
+        text,
+        text_pad,
+        text_slice,
         df,
         fig,
         ax,

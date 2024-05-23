@@ -41,12 +41,12 @@ prp.plot(
 
 
 # Figure 2
-# show transcript_str and save png (Figure 2.1)
+# show thick_cds and save png (Figure 2.1)
 prp.plot(
     gr_2,
     id_col="Parent",
-    transcript_str=True,
-    id_ann=False,
+    thick_cds=True,
+    text=False,
     to_file="fig2_1.png",
     file_size=(5, 3),
 )
@@ -55,7 +55,7 @@ prp.plot(
 prp.plot(
     gr_1,
     id_col="transcript_id",
-    introns_off=True,
+    shrink=True,
     to_file="fig2_2.png",
     file_size=(5, 3),
 )

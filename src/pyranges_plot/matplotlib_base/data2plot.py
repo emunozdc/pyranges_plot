@@ -82,9 +82,9 @@ def plot_direction(
 
 def _apply_gene_bridge(
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_pad,
+    text_slice,
     df,
     fig,
     ax,
@@ -128,9 +128,9 @@ def _apply_gene_bridge(
                 arrow_width,
                 dir_flag,
                 transcript_str,
-                id_ann,
-                id_ann_pad,
-                id_ann_slice,
+                text,
+                text_pad,
+                text_slice,
             ),
             axis=1,
         )
@@ -171,10 +171,10 @@ def _apply_gene_bridge(
             ax.add_patch(start_utr)
             ax.add_patch(end_utr)
             # add ID annotation for utr
-            if id_ann:
+            if text:
                 ax.annotate(
-                    eval(f"genename{id_ann_slice}"),
-                    xy=(tr_start - id_ann_pad, gene_ix),
+                    eval(f"genename{text_slice}"),
+                    xy=(tr_start - text_pad, gene_ix),
                     horizontalalignment="right",
                     verticalalignment="center",
                     color=plot_border,
@@ -194,8 +194,8 @@ def _apply_gene_bridge(
 
             # customized
             # showinfo_dict = row.to_dict()  # first element of gene rows
-            # if showinfo:
-            #     geneinfo += "\n" + showinfo.format(**showinfo_dict)
+            # if tooltip:
+            #     geneinfo += "\n" + tooltip.format(**showinfo_dict)
 
             make_annotation(start_utr, fig, ax, geneinfo_start, tag_background)
             make_annotation(end_utr, fig, ax, geneinfo_end, tag_background)
@@ -222,9 +222,9 @@ def _apply_gene_bridge(
                     arrow_width,
                     dir_flag,
                     transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_pad,
+                    text_slice,
                 ),
                 axis=1,
             )
@@ -255,9 +255,9 @@ def _apply_gene_bridge(
                     arrow_width,
                     dir_flag,
                     transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_pad,
+                    text_slice,
                 ),
                 axis=1,
             )
@@ -287,9 +287,9 @@ def _apply_gene_bridge(
                     arrow_width,
                     dir_flag,
                     transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_pad,
+                    text_slice,
                 ),
                 axis=1,
             )
@@ -318,9 +318,9 @@ def _plot_row(
     arrow_width,
     dir_flag,
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_pad,
+    text_slice,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -358,10 +358,10 @@ def _plot_row(
     make_annotation(exon_rect, fig, ax, geneinfo, tag_background)
 
     # Add ID annotation if it is the first exon
-    if row["exon_ix"] == 0 and id_ann:
+    if row["exon_ix"] == 0 and text:
         ax.annotate(
-            eval(f"genename{id_ann_slice}"),
-            xy=(start - id_ann_pad, gene_ix),
+            eval(f"genename{text_slice}"),
+            xy=(start - text_pad, gene_ix),
             horizontalalignment="right",
             verticalalignment="center",
             color=plot_border,

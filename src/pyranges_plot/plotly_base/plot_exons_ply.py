@@ -1,10 +1,9 @@
 import plotly.graph_objects as go
-import plotly.colors
 import plotly.io as pio
 import pandas as pd
 import numpy as np
 from .core import initialize_dash_app
-from .fig_axes import create_fig, create_fig_with_vfc
+from .fig_axes import create_fig
 from .data2plot import plot_introns, _apply_gene_bridge
 
 
@@ -13,16 +12,15 @@ def plot_exons_ply(
     tot_ngenes_l,
     feat_dict,
     genesmd_df,
-    vcf,
     chrmd_df,
     chrmd_df_grouped,
     ts_data,
     id_col,
     max_shown=25,
     transcript_str=False,
-    showinfo=None,
+    tooltip=None,
     legend=False,
-    id_ann=True,
+    text=True,
     title_chr=None,
     packed=True,
     to_file=None,
@@ -43,8 +41,8 @@ def plot_exons_ply(
     exon_border = feat_dict["exon_border"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
-    id_ann_pad = feat_dict["id_ann_pad"]
-    id_ann_slice = feat_dict["id_ann_slice"]
+    text_pad = feat_dict["text_pad"]
+    text_slice = feat_dict["text_slice"]
     v_space = feat_dict["v_space"]
     plotly_port = feat_dict["plotly_port"]
     arrow_line_width = feat_dict["arrow_line_width"]
@@ -56,42 +54,24 @@ def plot_exons_ply(
     shrinked_alpha = feat_dict["shrinked_alpha"]
 
     # Create figure and chromosome plots
-    if vcf is None:
-        fig = create_fig(
-            subdf,
-            chrmd_df,
-            chrmd_df_grouped,
-            genesmd_df,
-            ts_data,
-            title_chr,
-            title_dict_ply,
-            grid_color,
-            packed,
-            plot_bkg,
-            plot_border,
-            tick_pos_d,
-            ori_tick_pos_d,
-            shrinked_bkg,
-            shrinked_alpha,
-            v_space,
-        )
-
-    else:
-        fig = create_fig_with_vfc(
-            subdf,
-            vcf,
-            chrmd_df,
-            genesmd_df,
-            ts_data,
-            title_chr,
-            title_dict_ply,
-            packed,
-            plot_bkg,
-            tick_pos_d,
-            ori_tick_pos_d,
-            shrinked_bkg,
-            shrinked_alpha,
-        )
+    fig = create_fig(
+        subdf,
+        chrmd_df,
+        chrmd_df_grouped,
+        genesmd_df,
+        ts_data,
+        title_chr,
+        title_dict_ply,
+        grid_color,
+        packed,
+        plot_bkg,
+        plot_border,
+        tick_pos_d,
+        ori_tick_pos_d,
+        shrinked_bkg,
+        shrinked_alpha,
+        v_space,
+    )
 
     # Plot genes
     subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
@@ -103,12 +83,12 @@ def plot_exons_ply(
             genesmd_df,
             ts_data,
             id_col,
-            showinfo,
+            tooltip,
             legend,
             transcript_str,
-            id_ann,
-            id_ann_pad,
-            id_ann_slice,
+            text,
+            text_pad,
+            text_slice,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -118,7 +98,6 @@ def plot_exons_ply(
             arrow_size_min,
             arrow_size,
             arrow_intron_threshold,
-            vcf,
             v_space,
         )
     )  # .reset_index(level="pr_ix")
@@ -197,9 +176,9 @@ def _gby_plot_exons(
     showinfo,
     legend,
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_pad,
+    text_slice,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -209,7 +188,6 @@ def _gby_plot_exons(
     arrow_size_min,
     arrow_size,
     arrow_intron_threshold,
-    vcf,
     v_space,
 ):
     """Plot elements corresponding to the df rows of one gene."""
@@ -236,8 +214,6 @@ def _gby_plot_exons(
 
     chrom_ix = chrmd_df_grouped.loc[chrom]["chrom_ix"]
 
-    if vcf is not None:
-        chrom_ix = 2 * chrom_ix + 1
     if "Strand" in df.columns:
         strand = df["Strand"].unique()[0]
     else:
@@ -296,9 +272,9 @@ def _gby_plot_exons(
     # Plot the gene rows
     _apply_gene_bridge(
         transcript_str,
-        id_ann,
-        id_ann_pad,
-        id_ann_slice,
+        text,
+        text_pad,
+        text_slice,
         df,
         fig,
         strand,
