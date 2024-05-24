@@ -26,19 +26,18 @@ def plot(
     id_col=None,
     warnings=None,
     max_shown=25,
-    shrink=False,
-    thick_cds=False,
+    packed=True,
     color_col=None,
     colormap=None,
+    shrink=False,
     limits=None,
-    tooltip=None,
-    legend=False,
-    y_labels=None,
+    thick_cds=False,
     text=False,
+    legend=False,
     title_chr="Chromosome {chrom}",
-    packed=True,
+    y_labels=None,
+    tooltip=None,
     to_file=None,
-    file_size=None,
     mode="light",
     **kargs,
 ):
@@ -63,12 +62,9 @@ def plot(
     max_shown: int, default 20
         Maximum number of genes plotted in the dataframe order.
 
-    shrink: bool, default False
-        Whether to compress the intron ranges to facilitate visualization or not.
-
-    thick_cds: bool, default False
-        Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
-        must be stored in the 'Feature' column of the PyRanges object or the dataframe.
+    packed: bool, default True
+        Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
+        they do not overlap) and False for unpacked (one row per gene).
 
     color_col: str, default None
         Name of the column used to color the genes.
@@ -79,6 +75,9 @@ def plot(
         color objects from Matplotlib and Plotly, or a dictionary with the following
         structure {color_column_value1: color1, color_column_value2: color2, ...}. When a specific
         color_col value is not specified in the dictionary it will be colored in black.
+
+    shrink: bool, default False
+        Whether to compress the intron ranges to facilitate visualization or not.
 
     limits: {None, dict, tuple, pyranges.pyranges_main.PyRanges}, default None
         Customization of coordinates for the chromosome plots.
@@ -92,6 +91,23 @@ def plot(
         in the pyranges object defined as limits. If some plotted chromosomes are not present they
         will be left as default.
 
+    thick_cds: bool, default False
+        Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
+        must be stored in the 'Feature' column of the PyRanges object or the dataframe.
+
+    text: bool, default False
+        Whether the id annotation should appear beside the gene in the plot.
+
+    legend: bool, default False
+        Whether the legend should appear in the plot.
+
+    title_chr: str, default "Chromosome {chrom}"
+        String providing the desired title for the chromosome plots. It should be given in a way where
+        the chromosome value in the data is indicated as {chrom}.
+
+    y_labels: list, default None
+        Name to identify the PyRanges object/s in the plot.
+
     tooltip: str, default None
         Dataframe information to show in a tooltip when placing the mouse over a gene, the given
         information will be added to the default: strand, start-end coordinates and id. This must be
@@ -100,29 +116,10 @@ def plot(
         string could be: "Value of col1: {col1}". Note that the values in the curly brackets are not
         strings. If you want to introduce a newline you can use "\n".
 
-    legend: bool, default False
-        Whether the legend should appear in the plot.
-
-    y_labels: list, default None
-        Name to identify the PyRanges object/s in the plot.
-
-    text: bool, default False
-        Whether the id annotation should appear beside the gene in the plot.
-
-    title_chr: str, default "Chromosome {chrom}"
-        String providing the desired title for the chromosome plots. It should be given in a way where
-        the chromosome value in the data is indicated as {chrom}.
-
-    packed: bool, default True
-        Disposition of the genes in the plot. Use True for a packed disposition (genes in the same line if
-        they do not overlap) and False for unpacked (one row per gene).
-
-    to_file: str, default None
+    to_file: {str, tuple}, default None
         Name of the file to export specifying the desired extension. The supported extensions are '.png' and '.pdf'.
-
-    file_size: list or tuple, default None
-        Size of the plot to export defined by a sequence object like: (height, width). The default values
-        make the height according to the number of genes and the width as 20 in Matplotlib and 1600 in Plotly.
+        Optionally, a tuple can be privided where the file name is specified as a str in the first position and in the
+        second position there is a tuple specifying the height and width of the figure in px.
 
     mode: str, default "light"
         General color appearance of the plot. Available modes: "light", "dark".
@@ -157,11 +154,23 @@ def plot(
 
     # Deal with export
     if to_file:
-        ext = to_file[-4:]
-        if ext not in [".pdf", ".png"]:
-            raise Exception(
-                "Please specify the desired format to export the file including either '.png' or '.pdf' as an extension."
-            )
+        if isinstance(to_file, str):
+            ext = to_file[-4:]
+            if ext not in [".pdf", ".png"]:
+                raise Exception(
+                    "Please specify the desired format to export the file including either '.png' or '.pdf' as an extension."
+                )
+            file_size = (1600, 800)
+        else:
+            ext = to_file[0][-4:]
+            if ext not in [".pdf", ".png"]:
+                raise Exception(
+                    "Please specify the desired format to export the file including either '.png' or '.pdf' as an extension."
+                )
+            file_size = to_file[1]
+            to_file = to_file[0]
+    else:
+        file_size = (1600, 800)
 
     # Deal with id column
     if id_col is None:

@@ -58,14 +58,10 @@ def plot_exons_plt(
     shrinked_alpha = feat_dict["shrinked_alpha"]
 
     # Create figure and axes
-    if file_size:
-        x = file_size[0]
-        y = file_size[1]
-    else:
-        x = 20
-        y = (
-            sum(chrmd_df_grouped["y_height"]) + len(chrmd_df_grouped.index) * 2
-        ) / 2  # height according to genes and add 2 per each chromosome
+    # pixel in inches
+    px = 1 / plt.rcParams["figure.dpi"]
+    x = file_size[0] * px
+    y = file_size[1] * px
 
     fig, axes = create_fig(
         x,

@@ -159,11 +159,7 @@ def plot_exons_ply(
         app_instance.run(port=plotly_port)
 
     else:
-        if not file_size:
-            fig.update_layout(width=1600, height=800)
-        else:
-            fig.update_layout(width=file_size[0], height=file_size[1])
-
+        fig.update_layout(width=file_size[0], height=file_size[1])
         pio.write_image(fig, to_file)
 
 
