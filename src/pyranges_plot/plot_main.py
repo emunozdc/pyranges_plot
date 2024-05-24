@@ -33,6 +33,7 @@ def plot(
     limits=None,
     tooltip=None,
     legend=False,
+    y_labels=None,
     text=False,
     title_chr="Chromosome {chrom}",
     packed=True,
@@ -101,6 +102,9 @@ def plot(
 
     legend: bool, default False
         Whether the legend should appear in the plot.
+
+    y_labels: list, default None
+        Name to identify the PyRanges object/s in the plot.
 
     text: bool, default False
         Whether the id annotation should appear beside the gene in the plot.
@@ -352,6 +356,7 @@ def plot(
             transcript_str=thick_cds,
             tooltip=tooltip,
             legend=legend,
+            y_labels=y_labels,
             text=text,
             title_chr=title_chr,
             packed=packed,
@@ -376,6 +381,7 @@ def plot(
             transcript_str=thick_cds,
             tooltip=tooltip,
             legend=legend,
+            y_labels=y_labels,
             text=text,
             title_chr=title_chr,
             packed=packed,

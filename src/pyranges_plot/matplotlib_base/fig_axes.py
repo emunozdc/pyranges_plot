@@ -87,6 +87,7 @@ def create_fig(
     grid_color,
     packed,
     legend,
+    y_labels,
     tick_pos_d,
     ori_tick_pos_d,
     tag_background,
@@ -177,21 +178,52 @@ def create_fig(
         y_min = 0
         y_max = chrmd_df_grouped.loc[chrom]["y_height"]
         ax.set_ylim(y_min - 0.5 * v_space, y_max + 0.5 * v_space)
-        # gene name as y labels
+        # gene name as y labels if not packed and not y_labels
         y_ticks_val = []
         y_ticks_name = []
-        if not packed:
+        if not packed and not y_labels:
             y_ticks_val = [(i + 0.5) * v_space for i in range(int(y_max / v_space))]
             y_ticks_name_d = (
                 genesmd_df[genesmd_df["Chromosome"] == chrom]
                 .groupby("pr_ix", group_keys=False, observed=True)
                 .groups
             )
-            print(y_ticks_name_d)
             y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
-            print(y_ticks_name_d)
             y_ticks_name = [list(id)[::-1] + [""] for id in y_ticks_name_d.values()]
             y_ticks_name = [item for sublist in y_ticks_name for item in sublist][:-1]
+
+        # Draw lines separating pr objects
+        if chrmd_df["pr_line"].drop_duplicates().max() != 0:
+            pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
+            if isinstance(pr_line_y_l, int):
+                pr_line_y_l = [pr_line_y_l]
+            pr_line_y_l = [y_max] + pr_line_y_l
+            present_pr_l = chrmd_df_grouped.loc[chrom]["present_pr"]
+
+            # separate items with horizontal lines
+            for j, pr_line_y in enumerate(pr_line_y_l):
+                if pr_line_y != 0:
+                    ax.plot(
+                        [x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
+                        [pr_line_y + 0.5 * v_space, pr_line_y + 0.5 * v_space],
+                        color=plot_border,
+                        linewidth=1,
+                        zorder=1,
+                    )
+
+                    # add y_label in the middle of the subplot if needed
+                    if y_labels:
+                        if pr_line_y_l[j + 1] != 0:
+                            y_ticks_val.append(
+                                (
+                                    (pr_line_y + 0.5 * v_space)
+                                    + (pr_line_y_l[j + 1] + 0.5 * v_space)
+                                )
+                                / 2
+                            )
+                        else:
+                            y_ticks_val.append((pr_line_y) / 2)
+                        y_ticks_name.append(y_labels[int(present_pr_l[j])])
 
         ax.set_yticks(y_ticks_val)
         ax.set_yticklabels(list(y_ticks_name))
@@ -209,22 +241,6 @@ def create_fig(
                 shrinked_alpha,
                 tag_background,
             )
-
-        # Draw lines separating pr objects
-        if chrmd_df["pr_line"].drop_duplicates().max() != 0:
-            pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
-            if isinstance(pr_line_y_l, int):
-                pr_line_y_l = [pr_line_y_l]
-            # separate items with horizontal lines
-            for pr_line_y in pr_line_y_l:
-                if pr_line_y != 0:
-                    ax.plot(
-                        [x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
-                        [pr_line_y + 0.5 * v_space, pr_line_y + 0.5 * v_space],
-                        color=plot_border,
-                        linewidth=1,
-                        zorder=1,
-                    )
 
         ax.tick_params(colors=plot_border, which="both")
 

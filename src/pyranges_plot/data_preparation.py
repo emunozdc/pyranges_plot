@@ -395,9 +395,16 @@ def get_chromosome_metadata(
     chrmd_df_grouped = (
         chrmd_df.reset_index(level="pr_ix")
         .groupby("Chromosome", group_keys=False, observed=True)
-        .agg({"min": "first", "max": "first", "min_max": "first", "pr_ix": "size"})
+        .agg(
+            {
+                "min": "first",
+                "max": "first",
+                "min_max": "first",
+                "pr_ix": ["size", list],
+            }
+        )
     )
-    chrmd_df_grouped.rename(columns={"pr_ix": "n_pr_ix"}, inplace=True)
+    chrmd_df_grouped.columns = ["min", "max", "min_max", "n_pr_ix", "present_pr"]
 
     # Store plot y height
     if packed:
