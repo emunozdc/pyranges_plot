@@ -1,6 +1,5 @@
 import pandas as pd
 import pyranges as pr
-import plotly.colors
 from .core import (
     get_engine,
     get_id_col,
@@ -386,7 +385,6 @@ def plot(
     elif engine == "ply" or engine == "plotly":
         plot_exons_ply(
             subdf=subdf,
-            tot_ngenes_l=tot_ngenes_l,
             feat_dict=feat_dict,
             genesmd_df=genesmd_df,
             chrmd_df=chrmd_df,
@@ -409,6 +407,4 @@ def plot(
         )
 
     else:
-        raise Exception(
-            "Please define engine with set_engine() or specifying it with the 'engine' parameter."
-        )
+        raise Exception("Please define engine with set_engine().")

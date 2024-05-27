@@ -9,7 +9,6 @@ from .data2plot import plot_introns, apply_gene_bridge
 
 def plot_exons_ply(
     subdf,
-    tot_ngenes_l,
     feat_dict,
     genesmd_df,
     chrmd_df,
@@ -191,6 +190,7 @@ def gby_plot_exons(
     chrom = df["Chromosome"].iloc[0]
     pr_ix = df["pr_ix"].iloc[0]
     genename = df[id_col].iloc[0]
+    genesmd_df = genesmd_df.loc[genename]  # store data for the gene
     df["legend_tag"] = [genename] + [""] * (len(df) - 1)
 
     # in case same gene in +1 pr

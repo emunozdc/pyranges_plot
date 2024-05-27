@@ -75,10 +75,6 @@ def create_fig(
     )
 
     # one subplot per chromosome
-    # chrmd_df_grouped = chrmd_df.groupby(
-    #     ["Chromosome"], group_keys=False, observed=True
-    # ).agg({"n_genes": "sum", "min_max": "first", "y_height": "first"})
-
     for i in range(len(titles)):
         chrom = chrmd_df_grouped.index[i]
         fig.add_trace(go.Scatter(x=[], y=[]), row=i + 1, col=1)
