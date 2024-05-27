@@ -128,7 +128,7 @@ def set_theme(name):
     if isinstance(theme, str):
         if theme not in builtin_themes.keys():
             raise Exception(
-                f"The name {theme} is not a valid theme name. Accepted themes are: {builtin_themes.keys()}"
+                f'The name "{theme}" is not a valid theme name. Accepted themes are: {builtin_themes.keys()}'
             )
         else:
             name = builtin_themes[theme]
@@ -257,11 +257,11 @@ def reset_options(varname="all"):
 
     >>> prp.reset_options('all')
 
-    >>> prp.reset_options('tag_background')
+    >>> prp.reset_options('tag_bkg')
 
-    >>> prp.reset_options(['title_dict_plt', 'tag_background'])
+    >>> prp.reset_options(['title_size', 'tag_background'])
 
-    >>> prp.reset_options('title_dict_ply')
+    >>> prp.reset_options('title_color')
     """
 
     plot_features_dict_in_use = get_options()
@@ -369,7 +369,6 @@ def print_options(return_keys=False):
                 [
                     "exon_width",
                     "text_pad",
-                    "text_slice",
                     "v_space",
                     "arrow_line_width",
                     "arrow_color",

@@ -84,7 +84,6 @@ def apply_gene_bridge(
     transcript_str,
     text,
     text_pad,
-    text_slice,
     df,
     fig,
     ax,
@@ -103,7 +102,8 @@ def apply_gene_bridge(
     arrow_style,
     arrow_width,
     dir_flag,
-    arrow_size,
+    genesmd_df,
+    id_col,
 ):
     """Evaluate data and provide plot_row with right parameters."""
     # NOT transcript strucutre
@@ -130,7 +130,8 @@ def apply_gene_bridge(
                 transcript_str,
                 text,
                 text_pad,
-                text_slice,
+                genesmd_df,
+                id_col,
             ),
             axis=1,
         )
@@ -172,8 +173,17 @@ def apply_gene_bridge(
             ax.add_patch(end_utr)
             # add ID annotation for utr
             if text:
+                # text == True
+                if isinstance(text, bool):
+                    ann = genename
+                # text == '{string}'
+                else:
+                    genesmd_df[
+                        id_col
+                    ] = genesmd_df.name  # temporary solution to slice id
+                    ann = eval(f"genesmd_df{text}")
                 ax.annotate(
-                    eval(f"genename{text_slice}"),
+                    ann,
                     xy=(tr_start - text_pad, gene_ix),
                     horizontalalignment="right",
                     verticalalignment="center",
@@ -224,7 +234,8 @@ def apply_gene_bridge(
                     transcript_str,
                     text,
                     text_pad,
-                    text_slice,
+                    genesmd_df,
+                    id_col,
                 ),
                 axis=1,
             )
@@ -257,7 +268,8 @@ def apply_gene_bridge(
                     transcript_str,
                     text,
                     text_pad,
-                    text_slice,
+                    genesmd_df,
+                    id_col,
                 ),
                 axis=1,
             )
@@ -289,7 +301,8 @@ def apply_gene_bridge(
                     transcript_str,
                     text,
                     text_pad,
-                    text_slice,
+                    genesmd_df,
+                    id_col,
                 ),
                 axis=1,
             )
@@ -320,7 +333,8 @@ def plot_row(
     transcript_str,
     text,
     text_pad,
-    text_slice,
+    genesmd_df,
+    id_col,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -359,8 +373,16 @@ def plot_row(
 
     # Add ID annotation if it is the first exon
     if row["exon_ix"] == 0 and text:
+        # text == True
+        if isinstance(text, bool):
+            ann = genename
+        # text == '{string}'
+        else:
+            genesmd_df[id_col] = genesmd_df.name  # temporary solution to slice id
+            ann = eval(f"genesmd_df{text}")
+
         ax.annotate(
-            eval(f"genename{text_slice}"),
+            ann,
             xy=(start - text_pad, gene_ix),
             horizontalalignment="right",
             verticalalignment="center",

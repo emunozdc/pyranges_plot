@@ -90,8 +90,9 @@ def plot(
         Display differentially transcript regions belonging and not belonging to CDS. The CDS/exon information
         must be stored in the 'Feature' column of the PyRanges object or the dataframe.
 
-    text: bool, default False
-        Whether the id annotation should appear beside the gene in the plot.
+    text: {bool, '{string}'}, default False
+        Whether ann annotation should appear beside the gene in the plot. If True, the id/index will be used. To
+        customize the annotation use the '{string}' option to choose another data column.
 
     legend: bool, default False
         Whether the legend should appear in the plot.
@@ -241,7 +242,6 @@ def plot(
         "exon_width": float(getvalue("exon_width")),
         "transcript_utr_width": 0.3 * float(getvalue("exon_width")),
         "text_pad": float(getvalue("text_pad")),
-        "text_slice": getvalue("text_slice"),
         "v_space": float(getvalue("v_space")),
         "plotly_port": getvalue("plotly_port"),
         "arrow_line_width": float(getvalue("arrow_line_width")),
@@ -354,6 +354,7 @@ def plot(
         ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
     ).cumcount()
 
+    # Adjust vertical space
     genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
     chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
 

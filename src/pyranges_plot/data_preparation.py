@@ -213,24 +213,25 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
     """Create genes metadata df."""
 
     # Start df with chromosome and the column defining color
+    # Define the aggregation functions for each column
+    agg_funcs = {
+        col: "first" for col in df.columns if col not in ["Start", "End", "pr_ix"]
+    }
+    agg_funcs["Start"] = "min"
+    agg_funcs["End"] = "max"
     if color_col == "Chromosome":
-        genesmd_df = df.groupby([id_col, "pr_ix"], group_keys=False, observed=True).agg(
-            {"Chromosome": "first", "Start": "min", "End": "max"}
+        genesmd_df = (
+            df.groupby([id_col, "pr_ix"], group_keys=False, observed=True)
+            .agg(agg_funcs)
+            .reset_index(level="pr_ix")
         )
         genesmd_df["chromosome"] = genesmd_df["Chromosome"]
         color_col = "chromosome"
     else:
         genesmd_df = (
             df.groupby([id_col, "pr_ix"], group_keys=False, observed=True)
-            .agg(
-                {
-                    "Chromosome": "first",
-                    "Start": "min",
-                    "End": "max",
-                    color_col: "first",
-                }
-            )
-            .reset_index(level=1)
+            .agg(agg_funcs)
+            .reset_index(level="pr_ix")
         )
 
     # Sort bu pr_ix

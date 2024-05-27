@@ -1,5 +1,4 @@
 import copy
-import plotly.colors as pc
 
 
 plot_features_dict = {
@@ -24,11 +23,6 @@ plot_features_dict = {
     "text_pad": (
         1,
         "Space in number of bases where the id annotation is placed beside the interval.",
-        " ",
-    ),
-    "text_slice": (
-        "[0:]",
-        "String of the slice applied to id annotation in the plot.",
         " ",
     ),
     "v_space": (0.7, "Vertical distance between exons in different y heights.", " "),

@@ -47,7 +47,6 @@ def plot_exons_plt(
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     text_pad = feat_dict["text_pad"]
-    text_slice = feat_dict["text_slice"]
     v_space = feat_dict["v_space"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
@@ -104,7 +103,6 @@ def plot_exons_plt(
             transcript_str,
             text,
             text_pad,
-            text_slice,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -155,7 +153,6 @@ def gby_plot_exons(
     transcript_str,
     text,
     text_pad,
-    text_slice,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -181,12 +178,9 @@ def gby_plot_exons(
         genesmd_df = genesmd_df[
             genesmd_df["pr_ix"] == pr_ix
         ]  # in case same gene in +1 pr
-        gene_ix = genesmd_df["ycoord"].loc[genename] + 0.5 * v_space
-        exon_color = genesmd_df["color"].iloc[0]
-    # in case gene in single pr
-    else:
-        gene_ix = genesmd_df["ycoord"] + 0.5 * v_space
-        exon_color = genesmd_df["color"]
+        genesmd_df = pd.Series(genesmd_df.iloc[0])
+    gene_ix = genesmd_df["ycoord"] + 0.5 * v_space
+    exon_color = genesmd_df["color"]
 
     if exon_border is None:
         exon_border = exon_color
@@ -235,7 +229,6 @@ def gby_plot_exons(
         transcript_str,
         text,
         text_pad,
-        text_slice,
         df,
         fig,
         ax,
@@ -254,5 +247,6 @@ def gby_plot_exons(
         arrow_style,
         arrow_line_width,
         dir_flag,
-        arrow_size,
+        genesmd_df,
+        id_col,
     )

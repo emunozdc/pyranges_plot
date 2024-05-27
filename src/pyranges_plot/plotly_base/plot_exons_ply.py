@@ -43,7 +43,6 @@ def plot_exons_ply(
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     text_pad = feat_dict["text_pad"]
-    text_slice = feat_dict["text_slice"]
     v_space = feat_dict["v_space"]
     plotly_port = feat_dict["plotly_port"]
     arrow_line_width = feat_dict["arrow_line_width"]
@@ -90,7 +89,6 @@ def plot_exons_ply(
             transcript_str,
             text,
             text_pad,
-            text_slice,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -176,7 +174,6 @@ def gby_plot_exons(
     transcript_str,
     text,
     text_pad,
-    text_slice,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -197,15 +194,13 @@ def gby_plot_exons(
     df["legend_tag"] = [genename] + [""] * (len(df) - 1)
 
     # in case same gene in +1 pr
-    genemd = genesmd_df.loc[genename]
-    if not isinstance(genemd, pd.Series):
-        genemd = genemd[genemd["pr_ix"] == pr_ix]  # in case same gene in +1 pr
-        gene_ix = genemd["ycoord"].loc[genename] + 0.5 * v_space
-        exon_color = genemd["color"].iloc[0]
-    # in case different genes in different pr
-    else:
-        gene_ix = genemd["ycoord"] + 0.5 * v_space
-        exon_color = genemd["color"]
+    if not isinstance(genesmd_df, pd.Series):
+        genesmd_df = genesmd_df[
+            genesmd_df["pr_ix"] == pr_ix
+        ]  # in case same gene in +1 pr
+        genesmd_df = pd.Series(genesmd_df.iloc[0])
+    gene_ix = genesmd_df["ycoord"] + 0.5 * v_space
+    exon_color = genesmd_df["color"]
 
     if exon_border is None:
         exon_border = exon_color
@@ -272,7 +267,6 @@ def gby_plot_exons(
         transcript_str,
         text,
         text_pad,
-        text_slice,
         df,
         fig,
         strand,
@@ -290,5 +284,6 @@ def gby_plot_exons(
         arrow_color,
         arrow_line_width,
         dir_flag,
-        arrow_size,
+        genesmd_df,
+        id_col,
     )
