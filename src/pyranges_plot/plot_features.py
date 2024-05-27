@@ -73,3 +73,25 @@ plot_features_dict = {
 
 # Normal (light theme)
 plot_features_dict_in_use = copy.deepcopy(plot_features_dict)
+plot_features_dict_vals = {}
+for key, val in plot_features_dict.items():
+    plot_features_dict_vals[key] = val[0]
+
+# Dark theme
+theme_dark = {
+    "colormap": "G10",
+    "fig_bkg": "#1f1f1f",
+    "plot_border": "white",
+    "title_color": "goldenrod",
+    "plot_bkg": "grey",
+    "grid_color": "darkgrey",
+    "arrow_color": "lightgrey",
+    "shrinked_bkg": "lightblue",
+    "shrinked_alpha": 0.4,
+}
+
+# Store themes
+builtin_themes = {
+    "light": plot_features_dict_vals,
+    "dark": theme_dark,
+}

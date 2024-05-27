@@ -1,8 +1,9 @@
 import pandas as pd
-import plotly.colors as pc
 from .plot_features import (
     plot_features_dict,
     plot_features_dict_in_use,
+    theme_dark,
+    builtin_themes,
 )
 
 
@@ -125,20 +126,12 @@ def set_theme(name):
     theme = name
 
     if isinstance(theme, str):
-        if theme == "dark":  # deal with colormap
-            name = {
-                "colormap": "G10",
-                "fig_bkg": "#1f1f1f",
-                "plot_border": "white",
-                "title_color": "goldenrod",
-                "plot_bkg": "grey",
-                "grid_color": "darkgrey",
-                "arrow_color": "lightgrey",
-                "shrinked_bkg": "lightblue",
-                "shrinked_alpha": 0.4,
-            }
-        elif theme == "light":
-            reset_options()  # default options
+        if theme not in builtin_themes.keys():
+            raise Exception(
+                f"The name {theme} is not a valid theme name. Accepted themes are: {builtin_themes.keys()}"
+            )
+        else:
+            name = builtin_themes[theme]
 
     if isinstance(name, dict):
         for key, value in name.items():
