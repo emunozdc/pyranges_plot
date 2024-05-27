@@ -5,6 +5,8 @@ from .core import (
     get_id_col,
     set_warnings,
     get_warnings,
+    set_theme,
+    get_theme,
     print_options,
     set_options,
     reset_options,

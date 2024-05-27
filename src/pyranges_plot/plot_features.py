@@ -1,7 +1,13 @@
 import copy
+import plotly.colors as pc
 
 
 plot_features_dict = {
+    "colormap": (
+        "Alphabet",
+        "Sequence of colors for the genes, it can be provided as a Matplotlib colormap,a Plotly color sequence (built as lists), a string naming the previously mentioned color objects from Matplotlib and Plotly, or a dictionary with the following structure {color_column_value1: color1, color_column_value2: color2, ...}. When a specific color_col value is not specified in the dictionary it will be colored in black.",
+        " ",
+    ),
     "tag_bkg": (
         "grey",
         "Background color of the tooltip annotation for the gene in Matplotlib.",
@@ -65,38 +71,5 @@ plot_features_dict = {
     ),
 }
 
-# Normal (light mode)
+# Normal (light theme)
 plot_features_dict_in_use = copy.deepcopy(plot_features_dict)
-
-# Dark mode
-dark_plot_features_dict_in_use = copy.deepcopy(plot_features_dict)
-dark_plot_features_dict_in_use["fig_bkg"] = (
-    "#1f1f1f",
-    "Background color of the whole figure.",
-    " ",
-)
-dark_plot_features_dict_in_use["plot_border"] = (
-    "white",
-    "Color of the line defining the chromosome plots.",
-    " ",
-)
-dark_plot_features_dict_in_use["title_color"] = (
-    "goldenrod",
-    "Color of the plots' titles.",
-    " ",
-)
-dark_plot_features_dict_in_use["plot_bkg"] = (
-    "grey",
-    "Background color for the chromosomes plots.",
-    " ",
-)
-dark_plot_features_dict_in_use["grid_color"] = (
-    "darkgrey",
-    "Color of x coordinates grid lines.",
-    " ",
-)
-dark_plot_features_dict_in_use["arrow_color"] = (
-    "lightgrey",
-    "Direction arrow color (for stranded PyRanges).",
-    " ",
-)

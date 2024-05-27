@@ -7,6 +7,9 @@ from .core import (
     print_options,
     get_options,
     get_warnings,
+    set_theme,
+    get_theme,
+    set_options,
 )
 from .data_preparation import (
     make_subset,
@@ -28,7 +31,6 @@ def plot(
     max_shown=25,
     packed=True,
     color_col=None,
-    colormap=None,
     shrink=False,
     limits=None,
     thick_cds=False,
@@ -38,7 +40,7 @@ def plot(
     y_labels=None,
     tooltip=None,
     to_file=None,
-    mode="light",
+    theme=None,
     **kargs,
 ):
     """
@@ -68,13 +70,6 @@ def plot(
 
     color_col: str, default None
         Name of the column used to color the genes.
-
-    colormap: {matplotlib.colors.ListedColormap, list, str, dict}, default plotly.colors.qualitative.Alphabet
-        Sequence of colors for the genes, it can be provided as a Matplotlib colormap,
-        a Plotly color sequence (built as lists), a string naming the previously mentioned
-        color objects from Matplotlib and Plotly, or a dictionary with the following
-        structure {color_column_value1: color1, color_column_value2: color2, ...}. When a specific
-        color_col value is not specified in the dictionary it will be colored in black.
 
     shrink: bool, default False
         Whether to compress the intron ranges to facilitate visualization or not.
@@ -121,7 +116,7 @@ def plot(
         Optionally, a tuple can be privided where the file name is specified as a str in the first position and in the
         second position there is a tuple specifying the height and width of the figure in px.
 
-    mode: str, default "light"
+    theme: str, default "light"
         General color appearance of the plot. Available modes: "light", "dark".
 
     **kargs
@@ -206,53 +201,64 @@ def plot(
             f"The following keys do not match any customizable features: {wrong_keys}.\nCheck the customizable variable names using the print_options function."
         )
 
-    def getvalue(key, mode):
+    def getvalue(key):
         if key in kargs:
             value = kargs[key]
             return value  ## add invalid data type??
         else:
-            return get_options(key, mode)
+            return get_options(key)
 
     # Get default plot features
-    if colormap is None:
-        if mode == "light":
-            colormap = plotly.colors.qualitative.Alphabet
-        elif mode == "dark":
-            colormap = "G10"
+    # store old options to reset them after the plot
+    oldtheme = get_theme()
+    oldfeat_dict = get_options("values")
+
+    # check option modifications in params
+    if theme is None:  # not specified in params
+        theme = get_theme()
+        if theme is None:  # not specified with set_theme
+            theme = "light"
+    set_theme(theme)
 
     feat_dict = {
-        "tag_bkg": getvalue("tag_bkg", mode),
-        "fig_bkg": getvalue("fig_bkg", mode),
-        "plot_bkg": getvalue("plot_bkg", mode),
-        "plot_border": getvalue("plot_border", mode),
+        "colormap": getvalue("colormap"),
+        "tag_bkg": getvalue("tag_bkg"),
+        "fig_bkg": getvalue("fig_bkg"),
+        "plot_bkg": getvalue("plot_bkg"),
+        "plot_border": getvalue("plot_border"),
         "title_dict_plt": {
             "family": "sans-serif",
-            "color": getvalue("title_color", mode),
-            "size": int(getvalue("title_size", mode)) - 5,
+            "color": getvalue("title_color"),
+            "size": int(getvalue("title_size")) - 5,
         },
         "title_dict_ply": {
             "family": "Arial",
-            "color": getvalue("title_color", mode),
-            "size": int(getvalue("title_size", mode)),
+            "color": getvalue("title_color"),
+            "size": int(getvalue("title_size")),
         },
-        "grid_color": getvalue("grid_color", mode),
-        "exon_border": getvalue("exon_border", mode),
-        "exon_width": float(getvalue("exon_width", mode)),
-        "transcript_utr_width": 0.3 * float(getvalue("exon_width", mode)),
-        "text_pad": float(getvalue("text_pad", mode)),
-        "text_slice": getvalue("text_slice", mode),
-        "v_space": float(getvalue("v_space", mode)),
-        "plotly_port": getvalue("plotly_port", mode),
-        "arrow_line_width": float(getvalue("arrow_line_width", mode)),
-        "arrow_color": getvalue("arrow_color", mode),
-        "arrow_size_min": float(getvalue("arrow_size_min", mode)),
-        "arrow_size": float(getvalue("arrow_size", mode)),
-        "arrow_intron_threshold": getvalue("arrow_intron_threshold", mode),
-        "shrink_threshold": getvalue("shrink_threshold", mode),
-        "shrinked_bkg": getvalue("shrinked_bkg", mode),
-        "shrinked_alpha": float(getvalue("shrinked_alpha", mode)),
+        "grid_color": getvalue("grid_color"),
+        "exon_border": getvalue("exon_border"),
+        "exon_width": float(getvalue("exon_width")),
+        "transcript_utr_width": 0.3 * float(getvalue("exon_width")),
+        "text_pad": float(getvalue("text_pad")),
+        "text_slice": getvalue("text_slice"),
+        "v_space": float(getvalue("v_space")),
+        "plotly_port": getvalue("plotly_port"),
+        "arrow_line_width": float(getvalue("arrow_line_width")),
+        "arrow_color": getvalue("arrow_color"),
+        "arrow_size_min": float(getvalue("arrow_size_min")),
+        "arrow_size": float(getvalue("arrow_size")),
+        "arrow_intron_threshold": getvalue("arrow_intron_threshold"),
+        "shrink_threshold": getvalue("shrink_threshold"),
+        "shrinked_bkg": getvalue("shrinked_bkg"),
+        "shrinked_alpha": float(getvalue("shrinked_alpha")),
     }
     shrink_threshold = feat_dict["shrink_threshold"]
+    colormap = feat_dict["colormap"]
+
+    # restore options set before plot is called
+    set_theme(oldtheme)
+    set_options(oldfeat_dict)
 
     # Make DataFrame subset if needed
     df_d = {}

@@ -1,8 +1,8 @@
 import pandas as pd
+import plotly.colors as pc
 from .plot_features import (
     plot_features_dict,
     plot_features_dict_in_use,
-    dark_plot_features_dict_in_use,
 )
 
 
@@ -99,22 +99,83 @@ def get_warnings():
     return warnings
 
 
+theme = None
+
+
+def set_theme(name):
+    """
+    Defines the engine for the plots
+
+    Parameters
+    ----------
+    name: {str, dict}
+        Name of the predefined theme or dictionary with defined options to be set as new default.
+        Currently available themes are "dark" and "light".
+
+    Examples
+    --------
+    >>> import pyranges_plot as prp
+
+    >>> prp.set_theme("dark")
+    >>> prp.set_theme({"title_color": "goldenrod", "exon_width": 0.8})
+
+    """
+
+    global theme
+    theme = name
+
+    if isinstance(theme, str):
+        if theme == "dark":  # deal with colormap
+            name = {
+                "colormap": "G10",
+                "fig_bkg": "#1f1f1f",
+                "plot_border": "white",
+                "title_color": "goldenrod",
+                "plot_bkg": "grey",
+                "grid_color": "darkgrey",
+                "arrow_color": "lightgrey",
+                "shrinked_bkg": "lightblue",
+                "shrinked_alpha": 0.4,
+            }
+        elif theme == "light":
+            reset_options()  # default options
+
+    if isinstance(name, dict):
+        for key, value in name.items():
+            # is it different from default?
+            mod_tag = " "
+            if name[key] != plot_features_dict[key][0]:
+                mod_tag = "*"
+
+            plot_features_dict_in_use[key] = (
+                value,
+                plot_features_dict[key][1],
+                mod_tag,
+            )  # (value, description, modified tag)
+
+
+def get_theme():
+    """Shows the current defined engine."""
+
+    return theme
+
+
 # Related to default features (options)
 
 
-def set_options(varname, value):
+def set_options(varname, value=None):
     """
     Define some features of the plot layout.
 
     Parameters
     ----------
-    varname: str
+    varname: {str, dict}
 
-        Name of the variable to change.
+        Name of the variable to change, or dictionary with the variable: value pairs.
 
     value:
 
-        New value of the variable to be assigned.
+        New value of the variable to be assigned if needed.
 
     Examples
     --------
@@ -126,14 +187,21 @@ def set_options(varname, value):
 
     """
 
-    plot_features_dict_in_use[varname] = (
-        value,
-        plot_features_dict[varname][1],
-        "*",
-    )  # (value, description, modified tag)
+    if isinstance(varname, str):
+        varname = {varname: value}
+
+    for key, val in varname.items():
+        mod_tag = " "
+        if varname[key] != plot_features_dict[key][0]:
+            mod_tag = "*"
+        plot_features_dict_in_use[key] = (
+            val,
+            plot_features_dict[key][1],
+            mod_tag,
+        )  # (value, description, modified tag)
 
 
-def get_options(varname="all", mode="light"):
+def get_options(varname="all"):
     """
     Obtain the deafault value for a plot layout variable/s and its description.
 
@@ -141,7 +209,8 @@ def get_options(varname="all", mode="light"):
     ----------
     varname: {str, list}, default 'all'
 
-        Name of the variable/s to get the value and description.
+        Name of the variable/s to get the value and description. Use "values" to get
+        only the variables values excluding the description and modified tag.
 
     """
 
@@ -155,24 +224,20 @@ def get_options(varname="all", mode="light"):
     # all variables
     elif varname == "all":
         return plot_features_dict_in_use
+    elif varname == "values":
+        val_features_dict_in_use = {}
+        for key, val in plot_features_dict_in_use.items():
+            val_features_dict_in_use[key] = val[0]
+        return val_features_dict_in_use
 
     # one variable
     else:
-        try:
-            if mode == "light":
-                if varname in plot_features_dict_in_use:
-                    return plot_features_dict_in_use[varname][0]
-                else:
-                    raise Exception(
-                        f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}"
-                    )
-            elif mode == "dark":
-                return dark_plot_features_dict_in_use[varname][0]
-
-            else:
-                raise Exception(f"The mode '{mode}' is not a valid mode name.")
-        except SystemExit as e:
-            print("An error occured:", e)
+        if varname in plot_features_dict_in_use:
+            return plot_features_dict_in_use[varname][0]
+        else:
+            raise Exception(
+                f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}"
+            )
 
 
 def get_original_options():
@@ -292,6 +357,7 @@ def print_options(return_keys=False):
         extragen_feat_df = feat_df[
             feat_df.index.isin(
                 [
+                    "colormap",
                     "tag_bkg",
                     "fig_bkg",
                     "plot_bkg",
