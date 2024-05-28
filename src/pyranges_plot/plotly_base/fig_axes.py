@@ -65,7 +65,7 @@ def create_fig(
     """Generate the figure and axes fitting the data."""
 
     # Unify titles and start figure
-    titles = [title_chr.format(**locals()) for chrom in chrmd_df_grouped.index]
+    titles = [title_chr.format(**{"chrom": chrom}) for chrom in chrmd_df_grouped.index]
     titles = list(pd.Series(titles))
     fig = sp.make_subplots(
         rows=len(titles),
