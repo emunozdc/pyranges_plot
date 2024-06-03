@@ -403,8 +403,8 @@ def plot_row(
             ann = genename
         # text == '{string}'
         else:
-            genesmd_df[id_col] = genesmd_df.name  # temporary solution to slice id
-            ann = eval(f"genesmd_df{text}")
+            row_dict = row.to_dict()
+            ann = text.format_map(row_dict)
 
         fig.add_annotation(
             dict(

@@ -90,8 +90,9 @@ def plot(
         must be stored in the 'Feature' column of the PyRanges object or the dataframe.
 
     text: {bool, '{string}'}, default False
-        Whether ann annotation should appear beside the gene in the plot. If True, the id/index will be used. To
-        customize the annotation use the '{string}' option to choose another data column.
+        Whether an annotation should appear beside the gene in the plot. If True, the id/index will be used. To
+        customize the annotation use the '{string}' option to choose another data column. Providing the text as
+        a '{data_column_name}' allows slicing in the case of strings by using '{data_column_name[:4]}'.
 
     legend: bool, default False
         Whether the legend should appear in the plot.
