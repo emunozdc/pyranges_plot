@@ -93,6 +93,7 @@ def plot_direction(
 def apply_gene_bridge(
     transcript_str,
     text,
+    text_size,
     text_pad,
     df,
     fig,
@@ -137,6 +138,7 @@ def apply_gene_bridge(
                 dir_flag,
                 transcript_str,
                 text,
+                text_size,
                 text_pad,
                 genesmd_df,
                 id_col,
@@ -189,10 +191,8 @@ def apply_gene_bridge(
                     ann = genename
                 # text == '{string}'
                 else:
-                    genesmd_df[
-                        id_col
-                    ] = genesmd_df.name  # temporary solution to slice id
-                    ann = eval(f"genesmd_df{text}")
+                    row_dict = df.iloc[0].to_dict()  # use first row
+                    ann = text.format_map(row_dict)
 
                 fig.add_annotation(
                     dict(
@@ -205,6 +205,7 @@ def apply_gene_bridge(
                     ),
                     row=chrom_ix + 1,
                     col=1,
+                    font={"size": text_size},
                 )
 
             # create end utr
@@ -251,6 +252,7 @@ def apply_gene_bridge(
                     dir_flag,
                     transcript_str,
                     text,
+                    text_size,
                     text_pad,
                     genesmd_df,
                     id_col,
@@ -282,6 +284,7 @@ def apply_gene_bridge(
                     dir_flag,
                     transcript_str,
                     text,
+                    text_size,
                     text_pad,
                     genesmd_df,
                     id_col,
@@ -314,6 +317,7 @@ def apply_gene_bridge(
                     dir_flag,
                     transcript_str,
                     text,
+                    text_size,
                     text_pad,
                     genesmd_df,
                     id_col,
@@ -344,6 +348,7 @@ def plot_row(
     dir_flag,
     transcript_str,
     text,
+    text_size,
     text_pad,
     genesmd_df,
     id_col,
@@ -417,6 +422,7 @@ def plot_row(
             ),
             row=chrom_ix + 1,
             col=1,
+            font={"size": text_size},
         )
 
     # Plot DIRECTION ARROW in EXON

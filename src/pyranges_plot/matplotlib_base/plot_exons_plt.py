@@ -46,6 +46,7 @@ def plot_exons_plt(
     exon_border = feat_dict["exon_border"]
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
+    text_size = feat_dict["text_size"]
     text_pad = feat_dict["text_pad"]
     v_space = feat_dict["v_space"]
     arrow_line_width = feat_dict["arrow_line_width"]
@@ -102,6 +103,7 @@ def plot_exons_plt(
             plot_border,
             transcript_str,
             text,
+            text_size,
             text_pad,
             exon_width,
             exon_border,
@@ -152,6 +154,7 @@ def gby_plot_exons(
     plot_border,
     transcript_str,
     text,
+    text_size,
     text_pad,
     exon_width,
     exon_border,
@@ -228,6 +231,7 @@ def gby_plot_exons(
     apply_gene_bridge(
         transcript_str,
         text,
+        text_size,
         text_pad,
         df,
         fig,

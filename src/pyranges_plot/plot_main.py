@@ -241,6 +241,7 @@ def plot(
         "exon_border": getvalue("exon_border"),
         "exon_width": float(getvalue("exon_width")),
         "transcript_utr_width": 0.3 * float(getvalue("exon_width")),
+        "text_size": float(getvalue("text_size")),
         "text_pad": float(getvalue("text_pad")),
         "v_space": float(getvalue("v_space")),
         "plotly_port": getvalue("plotly_port"),
