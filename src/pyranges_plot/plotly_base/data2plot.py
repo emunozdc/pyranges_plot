@@ -1,3 +1,5 @@
+from pyranges.core.names import START_COL, END_COL
+
 from .core import coord2percent, percent2coord
 import plotly.graph_objects as go
 import pandas as pd
@@ -373,8 +375,8 @@ def plot_row(
         legend = bool(row["legend_tag"])
 
     # Exon start and stop
-    start = int(row["Start"])
-    stop = int(row["End"])
+    start = int(row[START_COL])
+    stop = int(row[END_COL])
     # convert to coordinates for rectangle
     x0, x1 = start, stop
     y0, y1 = (
@@ -409,7 +411,9 @@ def plot_row(
         # text == '{string}'
         else:
             row_dict = row.to_dict()
-            ann = text.format_map(row_dict)
+            print(row)
+            ann = text.format(**row_dict)
+            print(row)
 
         fig.add_annotation(
             dict(
@@ -470,8 +474,8 @@ def plot_introns(
 
     for i in range(len(sorted_exons) - 1):
         # define intron
-        start = sorted_exons["End"].iloc[i]
-        stop = sorted_exons["Start"].iloc[i + 1]
+        start = sorted_exons[END_COL].iloc[i]
+        stop = sorted_exons[START_COL].iloc[i + 1]
 
         # NOT introns off
         if ts_chrom.empty:

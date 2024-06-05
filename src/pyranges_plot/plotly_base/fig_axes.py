@@ -2,7 +2,10 @@ import plotly.subplots as sp
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
+from pyranges.core.names import CHROM_COL, START_COL, END_COL
+
 from pyranges_plot.core import cumdelting
+from pyranges_plot.names import PR_INDEX_COL
 
 
 def calculate_ticks(subdf, num_ticks=10):
@@ -100,7 +103,7 @@ def create_fig(
         # consider introns off
         if tick_pos_d:
             # get previous default ticks
-            chrom_subdf = subdf[subdf["Chromosome"] == chrom]
+            chrom_subdf = subdf[subdf[CHROM_COL] == chrom]
             original_ticks = list(calculate_ticks(chrom_subdf))
 
             jump = original_ticks[1] - original_ticks[0]
@@ -156,8 +159,8 @@ def create_fig(
         if not packed and not y_labels:
             y_ticks_val = [(i + 0.5) * v_space for i in range(int(y_max / v_space))]
             y_ticks_name_d = (
-                genesmd_df[genesmd_df["Chromosome"] == chrom]
-                .groupby("pr_ix", group_keys=False, observed=True)
+                genesmd_df[genesmd_df[CHROM_COL] == chrom]
+                .groupby(PR_INDEX_COL, group_keys=False, observed=True)
                 .groups
             )
             y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
@@ -225,12 +228,12 @@ def create_fig(
             rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(
                 periods=1, fill_value=0
             )
-            rects_df["Start"] -= rects_df["cumdelta_start"]
-            rects_df["End"] -= rects_df["cumdelta_end"]
+            rects_df[START_COL] -= rects_df["cumdelta_start"]
+            rects_df[END_COL] -= rects_df["cumdelta_end"]
 
             for a, b, c, d in zip(
-                rects_df["Start"],
-                rects_df["End"],
+                rects_df[START_COL],
+                rects_df[END_COL],
                 rects_df["cumdelta_start"],
                 rects_df["cumdelta_end"],
             ):

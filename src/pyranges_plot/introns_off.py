@@ -1,5 +1,8 @@
 import pyranges as pr
 import pandas as pd
+from pyranges.core.names import CHROM_COL, START_COL, END_COL
+
+from .names import PR_INDEX_COL
 
 
 # def get_introns(self, id_col: str) -> "pr.PyRanges":
@@ -42,17 +45,17 @@ def get_introns(p, id_cols) -> "pr.PyRanges":
     )
 
     # intron start is exon end shifted
-    introns["End"] = introns.groupby(id_cols, group_keys=False, observed=True)[
-        "End"
+    introns[END_COL] = introns.groupby(id_cols, group_keys=False, observed=True)[
+        END_COL
     ].shift()
 
     # remove first exon rows
-    introns.dropna(subset="End", inplace=True)
+    introns.dropna(subset=END_COL, inplace=True)
     introns.reset_index(inplace=True)
 
     # intron end is exon start
-    introns.rename(columns={"Start": "End", "End": "Start"}, inplace=True)
-    introns["Start"] = [int(i) for i in introns["Start"]]
+    introns.rename(columns={START_COL: END_COL, END_COL: START_COL}, inplace=True)
+    introns[START_COL] = [int(i) for i in introns[START_COL]]
 
     return introns
 
@@ -60,14 +63,14 @@ def get_introns(p, id_cols) -> "pr.PyRanges":
 def introns_resize(df, ts_data, id_col):
     """Calculate intron resizes and provide info for plotting"""
 
-    chrom = df["Chromosome"].iloc[0]
+    chrom = df[CHROM_COL].iloc[0]
     p = df
     thresh = df["shrink_threshold"].iloc[0]
 
     # Calculate shrinkable intron ranges
     # get flexible introns
     exons = p.copy()
-    introns = get_introns(p, ["pr_ix", id_col])
+    introns = get_introns(p, [PR_INDEX_COL, id_col])
     to_shrink = pr.PyRanges()
 
     if not introns.empty:
@@ -77,17 +80,17 @@ def introns_resize(df, ts_data, id_col):
         to_shrink = flex_introns.merge_overlaps(use_strand=False)  # unique ranges
         if not to_shrink.empty:
             to_shrink = to_shrink[
-                to_shrink["End"] - to_shrink["Start"] > thresh
+                to_shrink[END_COL] - to_shrink[START_COL] > thresh
             ]  # filtered
 
     # nohing to shrink
     if to_shrink.empty:
         ts_data[chrom] = pd.DataFrame(
-            columns=["Chromosome", "Start", "End", "Start_adj", "End_adj", "cumdelta"]
+            columns=[CHROM_COL, START_COL, END_COL, "Start_adj", "End_adj", "cumdelta"]
         )
         result = p
-        result["Start_adj"] = result["Start"]
-        result["End_adj"] = result["End"]
+        result["Start_adj"] = result[START_COL]
+        result["End_adj"] = result[END_COL]
         result["delta"] = [0] * len(result)
         result["cumdelta"] = [0] * len(result)
 
@@ -95,29 +98,29 @@ def introns_resize(df, ts_data, id_col):
 
     # get coordinate shift (delta) and cumulative coordinate shift (cumdelta)
     to_shrink["delta"] = (
-        to_shrink["End"] - to_shrink["Start"]
+        to_shrink[END_COL] - to_shrink[START_COL]
     ) - thresh  # calculate coord shift considering margins
-    assert to_shrink.sort_values("Start").equals(to_shrink), "PyRanges not sorted."
+    assert to_shrink.sort_values(START_COL).equals(to_shrink), "PyRanges not sorted."
     to_shrink["cumdelta"] = to_shrink["delta"].cumsum()
 
     # store adjusted coord to plot shrinked intron regions
-    to_shrink["Start_adj"] = to_shrink["Start"] - to_shrink.cumdelta.shift().fillna(0)
-    to_shrink["End_adj"] = to_shrink["End"] - to_shrink.cumdelta
+    to_shrink["Start_adj"] = to_shrink[START_COL] - to_shrink.cumdelta.shift().fillna(0)
+    to_shrink["End_adj"] = to_shrink[END_COL] - to_shrink.cumdelta
 
     # store to shrink data
     ts_data[chrom] = to_shrink
 
     # Calculate exons coordinate shift
     exons = pr.concat([exons, to_shrink])
-    exons.sort_values("Start", inplace=True)
+    exons.sort_values(START_COL, inplace=True)
     exons["cumdelta"] = exons["cumdelta"].ffill()
     exons = exons.fillna({"cumdelta": 0})
     # match exons with its cumdelta
     result = exons.dropna(subset=[id_col])
 
     # Adjust coordinates
-    result["Start_adj"] = result["Start"] - result["cumdelta"]
-    result["End_adj"] = result["End"] - result["cumdelta"]
+    result["Start_adj"] = result[START_COL] - result["cumdelta"]
+    result["End_adj"] = result[END_COL] - result["cumdelta"]
 
     # Provide result
     return result[list(p.columns) + ["Start_adj", "End_adj", "delta"]]
@@ -137,7 +140,8 @@ def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
 
         else:
             pos = [
-                [a, b] for a, b in zip(ts_data[chrom]["Start"], ts_data[chrom]["End"])
+                [a, b]
+                for a, b in zip(ts_data[chrom][START_COL], ts_data[chrom][END_COL])
             ]
             cdel = list(ts_data[chrom]["cumdelta"])
 

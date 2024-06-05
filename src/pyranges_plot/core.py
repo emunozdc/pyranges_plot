@@ -1,4 +1,6 @@
 import pandas as pd
+from pyranges.core.names import END_COL
+
 from .plot_features import (
     plot_features_dict,
     plot_features_dict_in_use,
@@ -8,37 +10,8 @@ from .plot_features import (
 
 
 # CORE FUNCTIONS
-engine = None
-
-
-def set_engine(name):
-    """
-    Defines the engine for the plots
-
-    Parameters
-    ----------
-    name: str
-        Indicates if Matplotlib ('plt', 'matplotlib') or Plotly ('ply', 'plotly') should be used.
-
-    Examples
-    --------
-    >>> import pyranges_plot as prp
-
-    >>> prp.set_engine('plt')
-
-    """
-
-    global engine
-    engine = name
-
-
-def get_engine():
-    """Shows the current defined engine."""
-
-    return engine
-
-
-id_col = None
+# id_col
+ID_COL = None
 
 
 def set_id_col(name):
@@ -59,17 +32,49 @@ def set_id_col(name):
 
     """
 
-    global id_col
-    id_col = name
+    global ID_COL
+    ID_COL = name
 
 
 def get_id_col():
     """Shows the current defined ID column (id_col)."""
 
-    return id_col
+    return ID_COL
 
 
-warnings = True
+# engine
+ENGINE = None
+
+
+def set_engine(name):
+    """
+    Defines the engine for the plots
+
+    Parameters
+    ----------
+    name: str
+        Indicates if Matplotlib ('plt', 'matplotlib') or Plotly ('ply', 'plotly') should be used.
+
+    Examples
+    --------
+    >>> import pyranges_plot as prp
+
+    >>> prp.set_engine('plt')
+
+    """
+
+    global ENGINE
+    ENGINE = name
+
+
+def get_engine():
+    """Shows the current defined engine."""
+
+    return ENGINE
+
+
+# warnings
+WARNINGS = True
 
 
 def set_warnings(option):
@@ -90,14 +95,14 @@ def set_warnings(option):
 
     """
 
-    global warnings
-    warnings = option
+    global WARNINGS
+    WARNINGS = option
 
 
 def get_warnings():
     """Returns the current warnings state."""
 
-    return warnings
+    return WARNINGS
 
 
 theme = None
@@ -420,7 +425,7 @@ def cumdelting(num_l, ts_data, chrom):
         cdel = 0
         # get proper cumdelta
         for ix, row in ts_data[chrom].iterrows():
-            if row["End"] <= num_l[i]:
+            if row[END_COL] <= num_l[i]:
                 cdel = row["cumdelta"]
             else:
                 break

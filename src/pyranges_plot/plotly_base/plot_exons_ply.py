@@ -2,9 +2,12 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import pandas as pd
 import numpy as np
+from pyranges.core.names import CHROM_COL, START_COL, END_COL, STRAND_COL
+
 from .core import initialize_dash_app
 from .fig_axes import create_fig
 from .data2plot import plot_introns, apply_gene_bridge
+from ..names import PR_INDEX_COL
 
 
 def plot_exons_ply(
@@ -75,7 +78,7 @@ def plot_exons_ply(
     )
 
     # Plot genes
-    subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
+    subdf.groupby([id_col, PR_INDEX_COL], group_keys=False, observed=True).apply(
         lambda subdf: gby_plot_exons(
             subdf,
             fig,
@@ -101,7 +104,7 @@ def plot_exons_ply(
             arrow_intron_threshold,
             v_space,
         )
-    )  # .reset_index(level="pr_ix")
+    )  # .reset_index(level=PR_INDEX_COL)
 
     # Adjust plot display
     fig.update_layout(
@@ -190,8 +193,8 @@ def gby_plot_exons(
     """Plot elements corresponding to the df rows of one gene."""
 
     # Gene parameters
-    chrom = df["Chromosome"].iloc[0]
-    pr_ix = df["pr_ix"].iloc[0]
+    chrom = df[CHROM_COL].iloc[0]
+    pr_ix = df[PR_INDEX_COL].iloc[0]
     genename = df[id_col].iloc[0]
     genesmd_df = genesmd_df.loc[genename]  # store data for the gene
     df["legend_tag"] = [genename] + [""] * (len(df) - 1)
@@ -199,7 +202,7 @@ def gby_plot_exons(
     # in case same gene in +1 pr
     if not isinstance(genesmd_df, pd.Series):
         genesmd_df = genesmd_df[
-            genesmd_df["pr_ix"] == pr_ix
+            genesmd_df[PR_INDEX_COL] == pr_ix
         ]  # in case same gene in +1 pr
         genesmd_df = pd.Series(genesmd_df.iloc[0])
     gene_ix = genesmd_df["ycoord"] + 0.5 * v_space
@@ -210,8 +213,8 @@ def gby_plot_exons(
 
     chrom_ix = chrmd_df_grouped.loc[chrom]["chrom_ix"]
 
-    if "Strand" in df.columns:
-        strand = df["Strand"].unique()[0]
+    if STRAND_COL in df.columns:
+        strand = df[STRAND_COL].unique()[0]
     else:
         strand = ""
 
@@ -223,7 +226,7 @@ def gby_plot_exons(
         geneinfo = f"({min(df.oriStart)}, {max(df.oriEnd)})<br>ID: {genename}"  # default without strand
 
     # add annotation for introns to plot
-    x0, x1 = min(df["Start"]), max(df["End"])
+    x0, x1 = min(df[START_COL]), max(df[END_COL])
     y0, y1 = gene_ix - exon_width / 160, gene_ix + exon_width / 160
 
     fig.add_trace(
@@ -243,7 +246,7 @@ def gby_plot_exons(
     )
 
     # Plot INTRON lines
-    sorted_exons = df[["Start", "End"]].sort_values(by="Start")
+    sorted_exons = df[[START_COL, END_COL]].sort_values(by=START_COL)
     if ts_data:
         ts_chrom = ts_data[chrom]
     else:

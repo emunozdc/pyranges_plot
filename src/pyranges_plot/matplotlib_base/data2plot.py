@@ -1,3 +1,5 @@
+from pyranges.core.names import START_COL, END_COL
+
 from .core import coord2percent, percent2coord, make_annotation
 from matplotlib.patches import Rectangle
 import pandas as pd
@@ -359,8 +361,8 @@ def plot_row(
         geneinfo += "\n" + showinfo.format(**showinfo_dict)
 
     # Exon start and stop
-    start = int(row["Start"])
-    stop = int(row["End"])
+    start = int(row[START_COL])
+    stop = int(row[END_COL])
 
     # Plot EXON as rectangle
     exon_rect = Rectangle(
@@ -441,8 +443,8 @@ def plot_introns(
 
     for i in range(len(sorted_exons) - 1):
         # define intron
-        start = sorted_exons["End"].iloc[i]
-        stop = sorted_exons["Start"].iloc[i + 1]
+        start = sorted_exons[END_COL].iloc[i]
+        stop = sorted_exons[START_COL].iloc[i + 1]
 
         # NOT introns off
         if ts_chrom.empty:

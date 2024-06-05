@@ -1,8 +1,8 @@
 import pandas as pd
 import pyranges as pr
 from .core import (
-    get_engine,
     get_id_col,
+    get_engine,
     print_options,
     get_options,
     get_warnings,
@@ -19,6 +19,14 @@ from .data_preparation import (
 from .introns_off import introns_resize, recalc_axis
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
 from .plotly_base.plot_exons_ply import plot_exons_ply
+from pyranges.core.names import (
+    CHROM_COL,
+    START_COL,
+    END_COL,
+)
+from .names import (
+    PR_INDEX_COL,
+)
 
 
 def plot(
@@ -144,12 +152,13 @@ def plot(
     >>> plot(data, engine='plt', id_col="transcript_id", color_col='Strand', packed=False, to_file='my_plot.pdf')
     """
 
+    # Treat input data as list
     if not isinstance(data, list):
         data = [data]
-    # for df_i in df:
 
     # Deal with export
     if to_file:
+        # given str file name
         if isinstance(to_file, str):
             ext = to_file[-4:]
             if ext not in [".pdf", ".png"]:
@@ -157,6 +166,7 @@ def plot(
                     "Please specify the desired format to export the file including either '.png' or '.pdf' as an extension."
                 )
             file_size = (1600, 800)
+        # given tuple (name, size)
         else:
             ext = to_file[0][-4:]
             if ext not in [".pdf", ".png"]:
@@ -165,15 +175,18 @@ def plot(
                 )
             file_size = to_file[1]
             to_file = to_file[0]
+    # not given to_file, store default size
     else:
         file_size = (1600, 800)
 
     # Deal with id column
     if id_col is None:
-        id_col = get_id_col()
+        ID_COL = get_id_col()
+    else:
+        ID_COL = id_col
 
     for df_item in data:
-        if id_col is not None and id_col not in df_item.columns:
+        if ID_COL is not None and ID_COL not in df_item.columns:
             raise Exception(
                 "Please define a correct name of the ID column using either set_id_col() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
             )
@@ -271,44 +284,44 @@ def plot(
         df_item = df_item.copy()
 
         # consider not known id_col, plot each interval individually
-        if id_col is None:
-            df_item["id_col"] = [str(i) for i in range(len(df_item))]
-            df_d[pr_ix], tot_ngenes = make_subset(df_item, "id_col", max_shown)
+        if ID_COL is None:
+            df_item["__id_col__"] = [str(i) for i in range(len(df_item))]
+            df_d[pr_ix], tot_ngenes = make_subset(df_item, "__id_col__", max_shown)
             tot_ngenes_l.append(tot_ngenes)
 
         # known id_col
         else:
-            df_d[pr_ix], tot_ngenes = make_subset(df_item, id_col, max_shown)
+            df_d[pr_ix], tot_ngenes = make_subset(df_item, ID_COL, max_shown)
             tot_ngenes_l.append(tot_ngenes)
 
-    # set not known id_col
-    if id_col is None:
-        id_col = "id_col"
+    # set not known id_col as assigned name
+    if ID_COL is None:
+        ID_COL = "__id_col__"
 
     # concat subset dataframes and create new column with input list index
     if not df_d:
         raise Exception("The provided PyRanges object/s are empty.")
-    subdf = pd.concat(df_d, names=["pr_ix"]).reset_index(
-        level="pr_ix"
+    subdf = pd.concat(df_d, names=[PR_INDEX_COL]).reset_index(
+        level=PR_INDEX_COL
     )  ### change to pr but doesn't work yet!!
 
     # Create genes metadata DataFrame
     if color_col is None:
-        color_col = id_col
+        color_col = ID_COL
     genesmd_df = get_genes_metadata(
-        subdf, id_col, color_col, packed, colormap, feat_dict["v_space"]
+        subdf, ID_COL, color_col, packed, colormap, feat_dict["v_space"]
     )
 
     # Create chromosome metadata DataFrame
     chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-        subdf, id_col, limits, genesmd_df, packed, feat_dict["v_space"]
+        subdf, ID_COL, limits, genesmd_df, packed, feat_dict["v_space"]
     )
 
     # Deal with introns off
     # adapt coordinates to shrinked
     ts_data = {}
-    subdf["oriStart"] = subdf["Start"]
-    subdf["oriEnd"] = subdf["End"]
+    subdf["oriStart"] = subdf[START_COL]
+    subdf["oriEnd"] = subdf[END_COL]
     tick_pos_d = {}
     ori_tick_pos_d = {}
 
@@ -318,20 +331,20 @@ def plot(
             subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
         elif isinstance(shrink_threshold, float):
             subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
-            subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
+            subdf = subdf.groupby(CHROM_COL, group_keys=False, observed=True).apply(
                 lambda x: compute_thresh(x, chrmd_df_grouped) if not x.empty else None
             )
 
-        subdf = subdf.groupby("Chromosome", group_keys=False, observed=True).apply(
-            lambda x: introns_resize(x, ts_data, id_col)  # if not x.empty else None
+        subdf = subdf.groupby(CHROM_COL, group_keys=False, observed=True).apply(
+            lambda x: introns_resize(x, ts_data, ID_COL)  # if not x.empty else None
         )  # empty rows when subset
-        subdf["Start"] = subdf["Start_adj"]
-        subdf["End"] = subdf["End_adj"]
+        subdf[START_COL] = subdf["Start_adj"]
+        subdf[END_COL] = subdf["End_adj"]
 
         # recompute limits
         chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
             subdf,
-            id_col,
+            ID_COL,
             limits,
             genesmd_df,
             packed,
@@ -349,10 +362,10 @@ def plot(
         subdf["cumdelta"] = [0] * len(subdf)
 
     # Sort data to plot chromosomes and pr objects in order
-    subdf.sort_values(["Chromosome", "pr_ix", id_col, "Start"], inplace=True)
-    chrmd_df.sort_values(["Chromosome", "pr_ix"], inplace=True)
+    subdf.sort_values([CHROM_COL, PR_INDEX_COL, ID_COL, START_COL], inplace=True)
+    chrmd_df.sort_values([CHROM_COL, PR_INDEX_COL], inplace=True)
     subdf["exon_ix"] = subdf.groupby(
-        ["Chromosome", "pr_ix", id_col], group_keys=False, observed=True
+        [CHROM_COL, PR_INDEX_COL, ID_COL], group_keys=False, observed=True
     ).cumcount()
 
     # Adjust vertical space
@@ -369,7 +382,7 @@ def plot(
             chrmd_df_grouped=chrmd_df_grouped,
             ts_data=ts_data,
             max_shown=max_shown,
-            id_col=id_col,
+            id_col=ID_COL,
             transcript_str=thick_cds,
             tooltip=tooltip,
             legend=legend,
@@ -393,7 +406,7 @@ def plot(
             chrmd_df_grouped=chrmd_df_grouped,
             ts_data=ts_data,
             max_shown=max_shown,
-            id_col=id_col,
+            id_col=ID_COL,
             transcript_str=thick_cds,
             tooltip=tooltip,
             legend=legend,
