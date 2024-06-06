@@ -199,9 +199,9 @@ def gby_plot_exons(
     # Make gene annotation
     # get the gene information to print on hover
     if strand:
-        geneinfo = f"[{strand}] ({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default with strand
+        geneinfo = f"[{strand}] ({min(df.__oriStart__)}, {max(df.__oriEnd__)})\nID: {genename}"  # default with strand
     else:
-        geneinfo = f"({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default without strand
+        geneinfo = f"({min(df.__oriStart__)}, {max(df.__oriEnd__)})\nID: {genename}"  # default without strand
 
     # Plot INTRON lines
     sorted_exons = df[[START_COL, END_COL]].sort_values(by=START_COL)

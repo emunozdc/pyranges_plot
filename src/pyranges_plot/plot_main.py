@@ -26,6 +26,13 @@ from pyranges.core.names import (
 )
 from .names import (
     PR_INDEX_COL,
+    ORISTART_COL,
+    ORIEND_COL,
+    SHRTHRES_COL,
+    ADJSTART_COL,
+    ADJEND_COL,
+    CUM_DELTA_COL,
+    EXON_IX_COL,
 )
 
 
@@ -320,17 +327,17 @@ def plot(
     # Deal with introns off
     # adapt coordinates to shrinked
     ts_data = {}
-    subdf["oriStart"] = subdf[START_COL]
-    subdf["oriEnd"] = subdf[END_COL]
+    subdf[ORISTART_COL] = subdf[START_COL]
+    subdf[ORIEND_COL] = subdf[END_COL]
     tick_pos_d = {}
     ori_tick_pos_d = {}
 
     if shrink:
         # compute threshold
         if isinstance(shrink_threshold, int):
-            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+            subdf[SHRTHRES_COL] = [shrink_threshold] * len(subdf)
         elif isinstance(shrink_threshold, float):
-            subdf["shrink_threshold"] = [shrink_threshold] * len(subdf)
+            subdf[SHRTHRES_COL] = [shrink_threshold] * len(subdf)
             subdf = subdf.groupby(CHROM_COL, group_keys=False, observed=True).apply(
                 lambda x: compute_thresh(x, chrmd_df_grouped) if not x.empty else None
             )
@@ -338,8 +345,8 @@ def plot(
         subdf = subdf.groupby(CHROM_COL, group_keys=False, observed=True).apply(
             lambda x: introns_resize(x, ts_data, ID_COL)  # if not x.empty else None
         )  # empty rows when subset
-        subdf[START_COL] = subdf["Start_adj"]
-        subdf[END_COL] = subdf["End_adj"]
+        subdf[START_COL] = subdf[ADJSTART_COL]
+        subdf[END_COL] = subdf[ADJEND_COL]
 
         # recompute limits
         chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
@@ -359,12 +366,12 @@ def plot(
             )
 
     else:
-        subdf["cumdelta"] = [0] * len(subdf)
+        subdf[CUM_DELTA_COL] = [0] * len(subdf)
 
     # Sort data to plot chromosomes and pr objects in order
     subdf.sort_values([CHROM_COL, PR_INDEX_COL, ID_COL, START_COL], inplace=True)
     chrmd_df.sort_values([CHROM_COL, PR_INDEX_COL], inplace=True)
-    subdf["exon_ix"] = subdf.groupby(
+    subdf[EXON_IX_COL] = subdf.groupby(
         [CHROM_COL, PR_INDEX_COL, ID_COL], group_keys=False, observed=True
     ).cumcount()
 

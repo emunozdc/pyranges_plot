@@ -2,7 +2,7 @@ import pyranges as pr
 import pandas as pd
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
-from .names import PR_INDEX_COL
+from .names import PR_INDEX_COL, SHRTHRES_COL
 
 
 # def get_introns(self, id_col: str) -> "pr.PyRanges":
@@ -65,7 +65,7 @@ def introns_resize(df, ts_data, id_col):
 
     chrom = df[CHROM_COL].iloc[0]
     p = df
-    thresh = df["shrink_threshold"].iloc[0]
+    thresh = df[SHRTHRES_COL].iloc[0]
 
     # Calculate shrinkable intron ranges
     # get flexible introns

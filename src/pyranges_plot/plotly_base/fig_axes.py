@@ -5,15 +5,15 @@ import pandas as pd
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
 from pyranges_plot.core import cumdelting
-from pyranges_plot.names import PR_INDEX_COL
+from pyranges_plot.names import PR_INDEX_COL, ORISTART_COL, ORIEND_COL
 
 
 def calculate_ticks(subdf, num_ticks=10):
     """Calculate tick values for a given data range."""
 
     # Calculate range and initial tick interval
-    data_min = subdf["oriStart"].min()
-    data_max = subdf["oriEnd"].max()
+    data_min = subdf[ORISTART_COL].min()
+    data_max = subdf[ORIEND_COL].max()
     data_range = data_max - data_min
     initial_interval = data_range / (num_ticks - 1)
 

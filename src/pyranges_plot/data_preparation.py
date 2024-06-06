@@ -8,7 +8,7 @@ import sys
 import plotly.colors as pc
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
-from .names import PR_INDEX_COL
+from .names import PR_INDEX_COL, SHRTHRES_COL
 from .core import cumdelting, get_engine, get_warnings
 from .matplotlib_base.core import plt_popup_warning
 
@@ -20,9 +20,7 @@ def compute_thresh(df, chrmd_df_grouped):
     chrom = df[CHROM_COL].iloc[0]
     chrmd = chrmd_df_grouped.loc[chrom]
     limit_range = chrmd["max"] - chrmd["min"]
-    df["shrink_threshold"] = [int(df["shrink_threshold"].iloc[0] * limit_range)] * len(
-        df
-    )
+    df[SHRTHRES_COL] = [int(df[SHRTHRES_COL].iloc[0] * limit_range)] * len(df)
 
     return df
 
@@ -241,7 +239,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
             .reset_index(level=PR_INDEX_COL)
         )
 
-    # Sort bu pr_ix
+    # Sort by pr_ix
     genesmd_df.sort_values(by=PR_INDEX_COL, inplace=True)
 
     genesmd_df["chrix"] = genesmd_df.groupby(
