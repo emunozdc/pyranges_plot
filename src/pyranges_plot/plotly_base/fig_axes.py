@@ -5,7 +5,7 @@ import pandas as pd
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
 from pyranges_plot.core import cumdelting
-from pyranges_plot.names import PR_INDEX_COL, ORISTART_COL, ORIEND_COL
+from pyranges_plot.names import PR_INDEX_COL, ORISTART_COL, ORIEND_COL, CUM_DELTA_COL
 
 
 def calculate_ticks(subdf, num_ticks=10):
@@ -224,8 +224,8 @@ def create_fig(
         # Add shrink rectangles
         if ts_data:
             rects_df = ts_data[chrom]
-            rects_df["cumdelta_end"] = rects_df["cumdelta"]
-            rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(
+            rects_df["cumdelta_end"] = rects_df[CUM_DELTA_COL]
+            rects_df["cumdelta_start"] = rects_df[CUM_DELTA_COL].shift(
                 periods=1, fill_value=0
             )
             rects_df[START_COL] -= rects_df["cumdelta_start"]

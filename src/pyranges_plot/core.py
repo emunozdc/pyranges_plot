@@ -1,6 +1,7 @@
 import pandas as pd
 from pyranges.core.names import END_COL
 
+from .names import CUM_DELTA_COL
 from .plot_features import (
     plot_features_dict,
     plot_features_dict_in_use,
@@ -426,7 +427,7 @@ def cumdelting(num_l, ts_data, chrom):
         # get proper cumdelta
         for ix, row in ts_data[chrom].iterrows():
             if row[END_COL] <= num_l[i]:
-                cdel = row["cumdelta"]
+                cdel = row[CUM_DELTA_COL]
             else:
                 break
         num_l[i] -= cdel

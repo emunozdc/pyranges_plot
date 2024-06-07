@@ -2,7 +2,14 @@ import pyranges as pr
 import pandas as pd
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
-from .names import PR_INDEX_COL, SHRTHRES_COL
+from .names import (
+    PR_INDEX_COL,
+    SHRTHRES_COL,
+    ADJSTART_COL,
+    ADJEND_COL,
+    CUM_DELTA_COL,
+    DELTA_COL,
+)
 
 
 # def get_introns(self, id_col: str) -> "pr.PyRanges":
@@ -86,26 +93,35 @@ def introns_resize(df, ts_data, id_col):
     # nohing to shrink
     if to_shrink.empty:
         ts_data[chrom] = pd.DataFrame(
-            columns=[CHROM_COL, START_COL, END_COL, "Start_adj", "End_adj", "cumdelta"]
+            columns=[
+                CHROM_COL,
+                START_COL,
+                END_COL,
+                ADJSTART_COL,
+                ADJEND_COL,
+                CUM_DELTA_COL,
+            ]
         )
         result = p
-        result["Start_adj"] = result[START_COL]
-        result["End_adj"] = result[END_COL]
-        result["delta"] = [0] * len(result)
-        result["cumdelta"] = [0] * len(result)
+        result[ADJSTART_COL] = result[START_COL]
+        result[ADJEND_COL] = result[END_COL]
+        result[DELTA_COL] = [0] * len(result)
+        result[CUM_DELTA_COL] = [0] * len(result)
 
         return result
 
     # get coordinate shift (delta) and cumulative coordinate shift (cumdelta)
-    to_shrink["delta"] = (
+    to_shrink[DELTA_COL] = (
         to_shrink[END_COL] - to_shrink[START_COL]
     ) - thresh  # calculate coord shift considering margins
     assert to_shrink.sort_values(START_COL).equals(to_shrink), "PyRanges not sorted."
-    to_shrink["cumdelta"] = to_shrink["delta"].cumsum()
+    to_shrink[CUM_DELTA_COL] = to_shrink[DELTA_COL].cumsum()
 
     # store adjusted coord to plot shrinked intron regions
-    to_shrink["Start_adj"] = to_shrink[START_COL] - to_shrink.cumdelta.shift().fillna(0)
-    to_shrink["End_adj"] = to_shrink[END_COL] - to_shrink.cumdelta
+    to_shrink[ADJSTART_COL] = to_shrink[
+        START_COL
+    ] - to_shrink.__cumdelta__.shift().fillna(0)
+    to_shrink[ADJEND_COL] = to_shrink[END_COL] - to_shrink.__cumdelta__
 
     # store to shrink data
     ts_data[chrom] = to_shrink
@@ -113,17 +129,17 @@ def introns_resize(df, ts_data, id_col):
     # Calculate exons coordinate shift
     exons = pr.concat([exons, to_shrink])
     exons.sort_values(START_COL, inplace=True)
-    exons["cumdelta"] = exons["cumdelta"].ffill()
-    exons = exons.fillna({"cumdelta": 0})
+    exons[CUM_DELTA_COL] = exons[CUM_DELTA_COL].ffill()
+    exons = exons.fillna({CUM_DELTA_COL: 0})
     # match exons with its cumdelta
     result = exons.dropna(subset=[id_col])
 
     # Adjust coordinates
-    result["Start_adj"] = result[START_COL] - result["cumdelta"]
-    result["End_adj"] = result[END_COL] - result["cumdelta"]
+    result[ADJSTART_COL] = result[START_COL] - result[CUM_DELTA_COL]
+    result[ADJEND_COL] = result[END_COL] - result[CUM_DELTA_COL]
 
     # Provide result
-    return result[list(p.columns) + ["Start_adj", "End_adj", "delta"]]
+    return result[list(p.columns) + [ADJSTART_COL, ADJEND_COL, DELTA_COL]]
 
 
 def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
@@ -143,7 +159,7 @@ def recalc_axis(ts_data, tick_pos_d, ori_tick_pos_d):
                 [a, b]
                 for a, b in zip(ts_data[chrom][START_COL], ts_data[chrom][END_COL])
             ]
-            cdel = list(ts_data[chrom]["cumdelta"])
+            cdel = list(ts_data[chrom][CUM_DELTA_COL])
 
             # update tick positions for shrinked regions and keep original values as names
             for i in range(len(pos)):

@@ -4,6 +4,8 @@ from .core import coord2percent, percent2coord
 import plotly.graph_objects as go
 import pandas as pd
 
+from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL
+
 
 def plot_direction(
     fig,
@@ -404,7 +406,7 @@ def plot_row(
     )
 
     # Add ID annotation if it is the first exon
-    if row["exon_ix"] == 0 and text:
+    if row[EXON_IX_COL] == 0 and text:
         # text == True
         if isinstance(text, bool):
             ann = genename
@@ -484,7 +486,7 @@ def plot_introns(
         # INTRONS OFF
         else:
             ts_intron = ts_chrom[
-                (ts_chrom["Start_adj"] >= start) & (ts_chrom["Start_adj"] < stop)
+                (ts_chrom[ADJSTART_COL] >= start) & (ts_chrom[ADJSTART_COL] < stop)
             ].reset_index()
 
         # Plot LINES binding exons
@@ -512,11 +514,11 @@ def plot_introns(
             for ix, row in ts_intron.iterrows():
                 # (1) Add previous fixed region if needed
                 # consider intron starts with fixed region
-                if not prev_tsend and row["Start_adj"] != start:
+                if not prev_tsend and row[ADJSTART_COL] != start:
                     prev_tsend = start
 
                 # create continuous line
-                x0, x1 = prev_tsend, row["Start_adj"]
+                x0, x1 = prev_tsend, row[ADJSTART_COL]
                 y0, y1 = gene_ix, gene_ix
                 intron_line = go.Scatter(
                     x=[x0, x1],
@@ -529,7 +531,7 @@ def plot_introns(
                 fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
                 # (2) Add to-shrink region
-                x0, x1 = row["Start_adj"], row["End_adj"]
+                x0, x1 = row[ADJSTART_COL], row[ADJEND_COL]
                 y0, y1 = gene_ix, gene_ix
                 intron_line = go.Scatter(
                     x=[x0, x1],
@@ -542,10 +544,10 @@ def plot_introns(
                 fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
                 # (3) Add final fixed region if needed
-                if (ix == len(ts_intron) - 1) and (row["End_adj"] != stop):
+                if (ix == len(ts_intron) - 1) and (row[ADJEND_COL] != stop):
                     # add last fixed region
                     # create continuous line
-                    x0, x1 = row["End_adj"], stop
+                    x0, x1 = row[ADJEND_COL], stop
                     y0, y1 = gene_ix, gene_ix
                     intron_line = go.Scatter(
                         x=[x0, x1],
@@ -558,7 +560,7 @@ def plot_introns(
                     fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
                 # store interval end for next iteration
-                prev_tsend = row["End_adj"]
+                prev_tsend = row[ADJEND_COL]
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
         intron_size = coord2percent(fig, chrom_ix + 1, start, stop)

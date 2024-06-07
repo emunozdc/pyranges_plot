@@ -7,7 +7,7 @@ from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
 from pyranges_plot.core import cumdelting
 from .core import make_annotation
-from ..names import PR_INDEX_COL
+from ..names import PR_INDEX_COL, CUM_DELTA_COL
 
 
 def ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
@@ -45,8 +45,8 @@ def ax_shrink_rects(
     """Add shrinked regions rectangles to the plot."""
 
     rects_df = ts_data[chrom].copy()
-    rects_df["cumdelta_end"] = rects_df["cumdelta"]
-    rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(periods=1, fill_value=0)
+    rects_df["cumdelta_end"] = rects_df[CUM_DELTA_COL]
+    rects_df["cumdelta_start"] = rects_df[CUM_DELTA_COL].shift(periods=1, fill_value=0)
     rects_df[START_COL] -= rects_df["cumdelta_start"]
     rects_df[END_COL] -= rects_df["cumdelta_end"]
 
