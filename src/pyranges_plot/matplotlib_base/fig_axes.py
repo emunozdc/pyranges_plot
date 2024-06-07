@@ -4,7 +4,7 @@ from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Rectangle
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
-
+from math import ceil
 from pyranges_plot.core import cumdelting
 from .core import make_annotation
 from ..names import PR_INDEX_COL, CUM_DELTA_COL
@@ -184,7 +184,7 @@ def create_fig(
         y_ticks_val = []
         y_ticks_name = []
         if not packed and not y_labels:
-            y_ticks_val = [(i + 0.5) * v_space for i in range(int(y_max / v_space))]
+            y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
             y_ticks_name_d = (
                 genesmd_df[genesmd_df[CHROM_COL] == chrom]
                 .groupby(PR_INDEX_COL, group_keys=False, observed=True)

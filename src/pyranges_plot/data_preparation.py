@@ -267,12 +267,19 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
             .groupby(CHROM_COL, group_keys=False, observed=True)
             .cumcount()
         )
-        genesmd_df = genesmd_df.assign(
-            upd_yc=genesmd_df.groupby(CHROM_COL, group_keys=False).apply(
+        print(
+            genesmd_df.groupby(CHROM_COL, group_keys=False).apply(
                 lambda x: x.groupby(PR_INDEX_COL).ngroup(ascending=False)
             )
         )
-        genesmd_df["ycoord"] += genesmd_df["upd_yc"]
+        print(genesmd_df)
+        if len(genesmd_df.index.get_level_values(PR_INDEX_COL).drop_duplicates()) > 1:
+            genesmd_df = genesmd_df.assign(
+                upd_yc=genesmd_df.groupby(CHROM_COL, group_keys=False).apply(
+                    lambda x: x.groupby(PR_INDEX_COL).ngroup(ascending=False)
+                )
+            )
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"]
         ### now create col to update according to prev pr height
         genesmd_df.reset_index(PR_INDEX_COL, inplace=True)
 
