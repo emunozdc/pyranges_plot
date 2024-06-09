@@ -1,15 +1,15 @@
 from .core import (
-    set_engine,
-    get_engine,
-    set_id_col,
-    get_id_col,
-    set_warnings,
-    get_warnings,
-    set_theme,
-    get_theme,
-    print_options,
-    set_options,
-    reset_options,
-)
-from .plot_main import plot
-from .pr_register_plot import register_plot
+    set_engine,  # noqa: F401
+    get_engine,  # noqa: F401
+    set_id_col,  # noqa: F401
+    get_id_col,  # noqa: F401
+    set_warnings,  # noqa: F401
+    get_warnings,  # noqa: F401
+    set_theme,  # noqa: F401
+    get_theme,  # noqa: F401
+    print_options,  # noqa: F401
+    set_options,  # noqa: F401
+    reset_options,  # noqa: F401
+)  # noqa: F401
+from .plot_main import plot  # noqa: F401
+from .pr_register_plot import register_plot  # noqa: F401

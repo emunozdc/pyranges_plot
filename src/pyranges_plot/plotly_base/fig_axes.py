@@ -106,8 +106,6 @@ def create_fig(
             chrom_subdf = subdf[subdf[CHROM_COL] == chrom]
             original_ticks = list(calculate_ticks(chrom_subdf))
 
-            jump = original_ticks[1] - original_ticks[0]
-
             # find previous ticks that should be conserved
             to_add_val = []
             # there is data to shrink

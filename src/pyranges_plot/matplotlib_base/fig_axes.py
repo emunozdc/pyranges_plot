@@ -135,8 +135,6 @@ def create_fig(
                 int(tick.get_text().replace("−", "-")) for tick in ax.get_xticklabels()
             ][1:]
 
-            jump = original_ticks[1] - original_ticks[0]
-
             # find previous ticks that should be conserved
             to_add_val = []
             # there is data to shrink

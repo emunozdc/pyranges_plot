@@ -141,13 +141,13 @@ def plot_exons_ply(
             )  # [tot_ngenes_l, 91124, 91321])
         elif (
             "_blackwarning!" in genesmd_df.columns
-            and not "_iterwarning!" in genesmd_df.columns
+            and "_iterwarning!" not in genesmd_df.columns
         ):
             fig.data[0].customdata = np.array(
                 [0, 91124, 0]
             )  # [tot_ngenes_l, 91124, 0])
         elif (
-            not "_blackwarning!" in genesmd_df.columns
+            "_blackwarning!" not in genesmd_df.columns
             and "_iterwarning!" in genesmd_df.columns
         ):
             fig.data[0].customdata = np.array(

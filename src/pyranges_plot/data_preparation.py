@@ -78,8 +78,6 @@ def genesmd_packed(genesmd_df):
 def update_y(genesmd_df):
     """xxx"""
 
-    min_pr_ix = genesmd_df[PR_INDEX_COL].min()
-
     # Consider pr dividing lines spot
     genesmd_df["update_y_prix"] = genesmd_df.groupby(PR_INDEX_COL).ngroup(
         ascending=False

@@ -1,5 +1,5 @@
 import pandas as pd
-import pyranges as pr
+#import pyranges as pr
 from .core import (
     get_id_col,
     get_engine,

@@ -5,7 +5,6 @@ from .names import CUM_DELTA_COL
 from .plot_features import (
     plot_features_dict,
     plot_features_dict_in_use,
-    theme_dark,
     builtin_themes,
 )
 
