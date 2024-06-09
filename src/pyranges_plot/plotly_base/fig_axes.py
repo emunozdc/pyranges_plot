@@ -179,17 +179,24 @@ def create_fig(
             for j, pr_line_y in enumerate(pr_line_y_l):
                 if pr_line_y != 0:
                     # draw line
-                    fig.add_trace(
-                        go.Scatter(
-                            x=[x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
-                            y=[pr_line_y + 0.5 * v_space, pr_line_y + 0.5 * v_space],
-                            mode="lines",
-                            line=dict(color=plot_border, width=1, dash="solid"),
-                            hoverinfo="skip",
-                        ),
+                    fig.add_hline(
+                        y=pr_line_y + 0.5 * v_space,
+                        line=dict(color="black", width=1, dash="solid"),
                         row=i + 1,
                         col=1,
                     )
+
+                    # fig.add_trace(
+                    #     go.Scatter(
+                    #         x=[x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
+                    #         y=[pr_line_y + 0.5 * v_space, pr_line_y + 0.5 * v_space],
+                    #         mode="lines",
+                    #         line=dict(color=plot_border, width=1, dash="solid"),
+                    #         hoverinfo="skip",
+                    #     ),
+                    #     row=i + 1,
+                    #     col=1,
+                    # )
 
                     # add y_label in the middle of the subplot if needed
                     if y_labels:

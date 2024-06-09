@@ -413,9 +413,7 @@ def plot_row(
         # text == '{string}'
         else:
             row_dict = row.to_dict()
-            print(row)
             ann = text.format(**row_dict)
-            print(row)
 
         fig.add_annotation(
             dict(
