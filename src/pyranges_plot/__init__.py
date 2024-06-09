@@ -10,6 +10,6 @@ from .core import (
     print_options,  # noqa: F401
     set_options,  # noqa: F401
     reset_options,  # noqa: F401
-)  # noqa: F401
+)
 from .plot_main import plot  # noqa: F401
 from .pr_register_plot import register_plot  # noqa: F401
