@@ -30,12 +30,8 @@ def make_subset(df, id_col, max_shown):
     """Reduce the number of genes to work with."""
 
     # create a column indexing all the genes in the df
-    genesix_l = [i for i in enumerate(df[id_col].drop_duplicates())]
-    genesix_d = {key: value for value, key in genesix_l}
-    df["gene_index"] = df[id_col].map(
-        genesix_d
-    )  # create a column indexing all the genes in the df
-    tot_ngenes = max(genesix_l)[0]
+    df["gene_index"] = df.groupby(id_col, group_keys=False).ngroup()
+    tot_ngenes = max(df["gene_index"])
 
     # select maximum number of genes
     if max(df.gene_index) + 1 <= max_shown:
@@ -217,22 +213,26 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
     # Define the aggregation functions for each column
     agg_funcs = {
         col: "first"
-        for col in df.columns
+        for col in ["Chromosome"] + id_col
         if col not in [START_COL, END_COL, PR_INDEX_COL]
     }
     agg_funcs[START_COL] = "min"
     agg_funcs[END_COL] = "max"
-    if color_col == CHROM_COL:
+    # workaround for Chromosome in color_col list
+    if CHROM_COL in color_col:
         genesmd_df = (
-            df.groupby([id_col, PR_INDEX_COL], group_keys=False, observed=True)
+            df.groupby(id_col + [PR_INDEX_COL], group_keys=False, observed=True)
             .agg(agg_funcs)
             .reset_index(level=PR_INDEX_COL)
         )
         genesmd_df["chromosome"] = genesmd_df[CHROM_COL]
-        color_col = "chromosome"
+        for i in range(len(color_col)):
+            if color_col[i] == CHROM_COL:
+                color_col[i] = "chromosome"
+
     else:
         genesmd_df = (
-            df.groupby([id_col, PR_INDEX_COL], group_keys=False, observed=True)
+            df.groupby(id_col + [PR_INDEX_COL], group_keys=False, observed=True)
             .agg(agg_funcs)
             .reset_index(level=PR_INDEX_COL)
         )
@@ -243,7 +243,9 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
     genesmd_df["chrix"] = genesmd_df.groupby(
         CHROM_COL, group_keys=False, observed=True
     ).ngroup()
-    genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
+
+    genesmd_df["color_tag"] = list(zip(*[genesmd_df[c] for c in color_col]))
+    # genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
     genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
         ["chrix", PR_INDEX_COL], group_keys=False, observed=True
     ).cumcount()
@@ -285,10 +287,6 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
 
     # column with rectangle objects with same color as gene
     genesmd_df["legend_item"] = genesmd_df["color"].apply(create_legend_rect)
-
-    # Update vertical space
-    ##genesmd_df["ycoord_1base"] = genesmd_df["ycoord"]*v_space
-    ##genesmd_df["ycoord"] = genesmd_df["ycoord"] * v_space
 
     return genesmd_df
 
@@ -375,16 +373,18 @@ def get_chromosome_metadata(
     """Create chromosome metadata df."""
 
     # Start df
-    chrmd_df = (
-        df.groupby([CHROM_COL, PR_INDEX_COL], observed=True).agg(
-            {START_COL: "min", END_COL: "max", id_col: "nunique"}
-        )
-        # .reset_index(level=PR_INDEX_COL)
+    agg_funcs = {
+        START_COL: "min",
+        END_COL: "max",
+        "__id_col_2count__": "nunique",
+    }
+
+    chrmd_df = df.groupby([CHROM_COL, PR_INDEX_COL], observed=True).agg(agg_funcs)
+    chrmd_df.rename(
+        columns={START_COL: "min", END_COL: "max", "__id_col_2count__": "n_genes"},
+        inplace=True,
     )
 
-    chrmd_df.rename(
-        columns={id_col: "n_genes", START_COL: "min", END_COL: "max"}, inplace=True
-    )
     # Adjust limits in case +1 pr
     if len(df[PR_INDEX_COL].drop_duplicates()) > 1:
         chrmd_df["min"] = chrmd_df.groupby(CHROM_COL, group_keys=False, observed=True)[

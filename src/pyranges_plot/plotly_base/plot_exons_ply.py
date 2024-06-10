@@ -78,7 +78,7 @@ def plot_exons_ply(
     )
 
     # Plot genes
-    subdf.groupby([id_col, PR_INDEX_COL], group_keys=False, observed=True).apply(
+    subdf.groupby(id_col + [PR_INDEX_COL], group_keys=False, observed=True).apply(
         lambda subdf: gby_plot_exons(
             subdf,
             fig,
@@ -195,18 +195,16 @@ def gby_plot_exons(
     # Gene parameters
     chrom = df[CHROM_COL].iloc[0]
     pr_ix = df[PR_INDEX_COL].iloc[0]
-    genename = df[id_col].iloc[0]
-    genesmd_df = genesmd_df.loc[genename]  # store data for the gene
+    genename = df["__id_col_2count__"].iloc[0]
+    genemd = genesmd_df.loc[genename]  # store data for the gene
     df["legend_tag"] = [genename] + [""] * (len(df) - 1)
 
     # in case same gene in +1 pr
-    if not isinstance(genesmd_df, pd.Series):
-        genesmd_df = genesmd_df[
-            genesmd_df[PR_INDEX_COL] == pr_ix
-        ]  # in case same gene in +1 pr
-        genesmd_df = pd.Series(genesmd_df.iloc[0])
-    gene_ix = genesmd_df["ycoord"] + 0.5 * v_space
-    exon_color = genesmd_df["color"]
+    if not isinstance(genemd, pd.Series):
+        genemd = genemd[genemd[PR_INDEX_COL] == pr_ix]  # in case same gene in +1 pr
+        genemd = pd.Series(genemd.iloc[0])
+    gene_ix = genemd["ycoord"] + 0.5 * v_space
+    exon_color = genemd["color"]
 
     if exon_border is None:
         exon_border = exon_color
@@ -291,6 +289,6 @@ def gby_plot_exons(
         arrow_color,
         arrow_line_width,
         dir_flag,
-        genesmd_df,
+        genemd,
         id_col,
     )

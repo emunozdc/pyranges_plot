@@ -192,12 +192,16 @@ def plot(
         ID_COL = get_id_col()
     else:
         ID_COL = id_col
+    # treat as list
+    if isinstance(ID_COL, str):
+        ID_COL = [ID_COL]
 
     for df_item in data:
-        if ID_COL is not None and ID_COL not in df_item.columns:
-            raise Exception(
-                "Please define a correct name of the ID column using either set_id_col() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
-            )
+        for id_str in ID_COL:
+            if id_str is not None and id_str not in df_item.columns:
+                raise Exception(
+                    "Please define a correct name of the ID column using either set_id_col() function or plot_generic parameter as plot_generic(..., id_col = 'your_id_col')"
+                )
 
     # Deal with transcript structure
     if thick_cds:
@@ -304,7 +308,7 @@ def plot(
 
     # set not known id_col as assigned name
     if ID_COL is None:
-        ID_COL = "__id_col__"
+        ID_COL = ["__id_col__"]
 
     # concat subset dataframes and create new column with input list index
     if not df_d:
@@ -313,9 +317,16 @@ def plot(
         level=PR_INDEX_COL
     )  ### change to pr but doesn't work yet!!
 
+    # group id_cols in one column to count genes in chrmd
+    subdf["__id_col_2count__"] = list(zip(*[subdf[c] for c in ID_COL]))
+
     # Create genes metadata DataFrame
+    # color_col as list
     if color_col is None:
         color_col = ID_COL
+    elif isinstance(color_col, str):
+        color_col = [color_col]
+
     genesmd_df = get_genes_metadata(
         subdf, ID_COL, color_col, packed, colormap, feat_dict["v_space"]
     )
@@ -370,11 +381,12 @@ def plot(
         subdf[CUM_DELTA_COL] = [0] * len(subdf)
 
     # Sort data to plot chromosomes and pr objects in order
-    subdf.sort_values([CHROM_COL, PR_INDEX_COL, ID_COL, START_COL], inplace=True)
+    subdf.sort_values([CHROM_COL, PR_INDEX_COL] + ID_COL + [START_COL], inplace=True)
     chrmd_df.sort_values([CHROM_COL, PR_INDEX_COL], inplace=True)
     subdf[EXON_IX_COL] = subdf.groupby(
-        [CHROM_COL, PR_INDEX_COL, ID_COL], group_keys=False, observed=True
+        [CHROM_COL, PR_INDEX_COL] + ID_COL, group_keys=False, observed=True
     ).cumcount()
+    genesmd_df.sort_index(inplace=True)
 
     # Adjust vertical space
     genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]

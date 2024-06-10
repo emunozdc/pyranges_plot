@@ -55,7 +55,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 arrow_top = go.Scatter(
@@ -64,7 +64,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
@@ -77,7 +77,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 arrow_top = go.Scatter(
@@ -86,7 +86,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
@@ -182,7 +182,7 @@ def apply_gene_bridge(
                     line=dict(color=exon_color),
                     text=geneinfo,
                     hoverinfo="text",
-                    name=genename,
+                    name=str(genename),
                     showlegend=legend,
                 ),
                 row=chrom_ix + 1,
@@ -192,7 +192,7 @@ def apply_gene_bridge(
             if text:
                 # text == True
                 if isinstance(text, bool):
-                    ann = genename
+                    ann = str(genename)
                 # text == '{string}'
                 else:
                     row_dict = df.iloc[0].to_dict()  # use first row
@@ -228,7 +228,7 @@ def apply_gene_bridge(
                     line=dict(color=exon_color),
                     text=geneinfo,
                     hoverinfo="text",
-                    name=genename,
+                    name=str(genename),
                     showlegend=legend,
                 ),
                 row=chrom_ix + 1,
@@ -398,7 +398,7 @@ def plot_row(
             text=geneinfo,
             # hovertext=geneinfo,
             hoverinfo="text",
-            name=row["legend_tag"],
+            name=str(row["legend_tag"]),
             showlegend=legend,
         ),
         row=chrom_ix + 1,
@@ -409,7 +409,7 @@ def plot_row(
     if row[EXON_IX_COL] == 0 and text:
         # text == True
         if isinstance(text, bool):
-            ann = genename
+            ann = str(genename)
         # text == '{string}'
         else:
             row_dict = row.to_dict()
