@@ -16,6 +16,7 @@ from .data_preparation import (
     get_genes_metadata,
     get_chromosome_metadata,
     compute_thresh,
+    compute_tpad,
 )
 from .introns_off import introns_resize, recalc_axis
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
@@ -34,6 +35,7 @@ from .names import (
     ADJEND_COL,
     CUM_DELTA_COL,
     EXON_IX_COL,
+    TEXT_PAD_COL,
 )
 
 
@@ -267,7 +269,7 @@ def plot(
         "exon_width": float(getvalue("exon_width")),
         "transcript_utr_width": 0.3 * float(getvalue("exon_width")),
         "text_size": float(getvalue("text_size")),
-        "text_pad": float(getvalue("text_pad")),
+        "text_pad": getvalue("text_pad"),
         "v_space": float(getvalue("v_space")),
         "plotly_port": getvalue("plotly_port"),
         "arrow_line_width": float(getvalue("arrow_line_width")),
@@ -391,6 +393,16 @@ def plot(
     # Adjust vertical space
     genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
     chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
+
+    # Deal with text_pad
+    text_pad = feat_dict["text_pad"]
+    if isinstance(text_pad, int):
+        subdf[TEXT_PAD_COL] = [text_pad] * len(subdf)
+    elif isinstance(text_pad, float):
+        subdf[TEXT_PAD_COL] = [text_pad] * len(subdf)
+        subdf = subdf.groupby(CHROM_COL, group_keys=False, observed=True).apply(
+            lambda x: compute_tpad(x, chrmd_df_grouped) if not x.empty else None
+        )
 
     # print("genesmd")
     # print(genesmd_df)

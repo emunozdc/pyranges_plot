@@ -45,7 +45,7 @@ def plot_exons_ply(
     exon_width = feat_dict["exon_width"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     text_size = feat_dict["text_size"]
-    text_pad = feat_dict["text_pad"]
+    # text_pad = feat_dict["text_pad"]
     v_space = feat_dict["v_space"]
     plotly_port = feat_dict["plotly_port"]
     arrow_line_width = feat_dict["arrow_line_width"]
@@ -92,7 +92,6 @@ def plot_exons_ply(
             transcript_str,
             text,
             text_size,
-            text_pad,
             exon_width,
             exon_border,
             transcript_utr_width,
@@ -178,7 +177,6 @@ def gby_plot_exons(
     transcript_str,
     text,
     text_size,
-    text_pad,
     exon_width,
     exon_border,
     transcript_utr_width,
@@ -271,7 +269,6 @@ def gby_plot_exons(
         transcript_str,
         text,
         text_size,
-        text_pad,
         df,
         fig,
         strand,

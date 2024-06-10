@@ -23,7 +23,7 @@ plot_features_dict = {
     "text_size": (10, "Fontsize of the text annotation beside the intervals.", " "),
     "text_pad": (
         1,
-        "Space in number of bases where the id annotation is placed beside the interval.",
+        "Space where the id annotation is placed beside the interval. When text_pad is float, it represents the percentage of the plot space, while an int pad represents number of positions or base pairs.",
         " ",
     ),
     "v_space": (0.7, "Vertical distance between exons in different y heights.", " "),

@@ -4,7 +4,7 @@ from .core import coord2percent, percent2coord, make_annotation
 from matplotlib.patches import Rectangle
 import pandas as pd
 
-from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL
+from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL, TEXT_PAD_COL
 
 
 def plot_direction(
@@ -88,7 +88,6 @@ def apply_gene_bridge(
     transcript_str,
     text,
     text_size,
-    text_pad,
     df,
     fig,
     ax,
@@ -135,7 +134,6 @@ def apply_gene_bridge(
                 transcript_str,
                 text,
                 text_size,
-                text_pad,
                 genesmd_df,
                 id_col,
             ),
@@ -179,6 +177,7 @@ def apply_gene_bridge(
             ax.add_patch(end_utr)
             # add ID annotation for utr
             if text:
+                text_pad = df[TEXT_PAD_COL].iloc[0]
                 # text == True
                 if isinstance(text, bool):
                     ann = genename
@@ -239,7 +238,6 @@ def apply_gene_bridge(
                     transcript_str,
                     text,
                     text_size,
-                    text_pad,
                     genesmd_df,
                     id_col,
                 ),
@@ -274,7 +272,6 @@ def apply_gene_bridge(
                     transcript_str,
                     text,
                     text_size,
-                    text_pad,
                     genesmd_df,
                     id_col,
                 ),
@@ -308,7 +305,6 @@ def apply_gene_bridge(
                     transcript_str,
                     text,
                     text_size,
-                    text_pad,
                     genesmd_df,
                     id_col,
                 ),
@@ -341,7 +337,6 @@ def plot_row(
     transcript_str,
     text,
     text_size,
-    text_pad,
     genesmd_df,
     id_col,
 ):
@@ -380,6 +375,7 @@ def plot_row(
 
     # Add ID annotation if it is the first exon
     if row[EXON_IX_COL] == 0 and text:
+        text_pad = row[TEXT_PAD_COL]
         # text == True
         if isinstance(text, bool):
             ann = genename

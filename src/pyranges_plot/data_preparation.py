@@ -8,7 +8,7 @@ import sys
 import plotly.colors as pc
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
-from .names import PR_INDEX_COL, SHRTHRES_COL
+from .names import PR_INDEX_COL, SHRTHRES_COL, TEXT_PAD_COL
 from .core import cumdelting, get_engine, get_warnings
 from .matplotlib_base.core import plt_popup_warning
 
@@ -21,6 +21,18 @@ def compute_thresh(df, chrmd_df_grouped):
     chrmd = chrmd_df_grouped.loc[chrom]
     limit_range = chrmd["max"] - chrmd["min"]
     df[SHRTHRES_COL] = [int(df[SHRTHRES_COL].iloc[0] * limit_range)] * len(df)
+
+    return df
+
+
+############ COMPUTE TEXT PAD SIZE
+def compute_tpad(df, chrmd_df_grouped):
+    """Get text pad size from limits"""
+
+    chrom = df[CHROM_COL].iloc[0]
+    chrmd = chrmd_df_grouped.loc[chrom]
+    limit_range = chrmd["max"] - chrmd["min"]
+    df[TEXT_PAD_COL] = [int(df[TEXT_PAD_COL].iloc[0] * limit_range)] * len(df)
 
     return df
 
