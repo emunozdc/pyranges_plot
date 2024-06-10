@@ -77,7 +77,7 @@ def introns_resize(df, ts_data, id_col):
     # Calculate shrinkable intron ranges
     # get flexible introns
     exons = p.copy()
-    introns = get_introns(p, [PR_INDEX_COL, id_col])
+    introns = get_introns(p, [PR_INDEX_COL] + id_col)
     to_shrink = pr.PyRanges()
 
     if not introns.empty:
@@ -132,7 +132,7 @@ def introns_resize(df, ts_data, id_col):
     exons[CUM_DELTA_COL] = exons[CUM_DELTA_COL].ffill()
     exons = exons.fillna({CUM_DELTA_COL: 0})
     # match exons with its cumdelta
-    result = exons.dropna(subset=[id_col])
+    result = exons.dropna(subset=id_col)
 
     # Adjust coordinates
     result[ADJSTART_COL] = result[START_COL] - result[CUM_DELTA_COL]
