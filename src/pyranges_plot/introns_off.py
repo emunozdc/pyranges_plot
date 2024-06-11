@@ -58,7 +58,7 @@ def get_introns(p, id_cols) -> "pr.PyRanges":
 
     # remove first exon rows
     introns.dropna(subset=END_COL, inplace=True)
-    introns.reset_index(inplace=True)
+    # introns.reset_index(inplace=True)
 
     # intron end is exon start
     introns.rename(columns={START_COL: END_COL, END_COL: START_COL}, inplace=True)
@@ -77,7 +77,14 @@ def introns_resize(df, ts_data, id_col):
     # Calculate shrinkable intron ranges
     # get flexible introns
     exons = p.copy()
-    introns = get_introns(p, [PR_INDEX_COL] + id_col)
+    # introns = get_introns(p, [PR_INDEX_COL] + id_col)
+    introns = (
+        p.groupby(PR_INDEX_COL, group_keys=True)
+        .apply(lambda x: x.complement(id_col, use_strand=False))
+        .reset_index(level=PR_INDEX_COL)
+    )
+    introns.reset_index(drop=True, inplace=True)  # reset duplicate labels in index
+
     to_shrink = pr.PyRanges()
 
     if not introns.empty:
