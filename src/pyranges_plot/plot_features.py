@@ -22,7 +22,7 @@ plot_features_dict = {
     "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
     "text_size": (10, "Fontsize of the text annotation beside the intervals.", " "),
     "text_pad": (
-        1,
+        0.005,
         "Space where the id annotation is placed beside the interval. When text_pad is float, it represents the percentage of the plot space, while an int pad represents number of positions or base pairs.",
         " ",
     ),
