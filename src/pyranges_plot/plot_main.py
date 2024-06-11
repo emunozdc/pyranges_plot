@@ -319,7 +319,10 @@ def plot(
     )  ### change to pr but doesn't work yet!!
 
     # group id_cols in one column to count genes in chrmd
-    subdf["__id_col_2count__"] = list(zip(*[subdf[c] for c in ID_COL]))
+    if len(ID_COL) > 1:
+        subdf["__id_col_2count__"] = list(zip(*[subdf[c] for c in ID_COL]))
+    else:
+        subdf["__id_col_2count__"] = subdf[ID_COL[0]]
 
     # Create genes metadata DataFrame
     # color_col as list
