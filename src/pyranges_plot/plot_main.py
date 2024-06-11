@@ -1,4 +1,5 @@
 import pandas as pd
+from matplotlib.patches import Rectangle
 
 # import pyranges as pr
 from .core import (
@@ -242,10 +243,8 @@ def plot(
     oldfeat_dict = get_options("values")
 
     # check option modifications in params
-    if theme is None:  # not specified in params
+    if theme is None:  # not specified in params, check if it was set
         theme = get_theme()
-        if theme is None:  # not specified with set_theme
-            theme = "light"
     set_theme(theme)
 
     feat_dict = {
@@ -419,7 +418,15 @@ def plot(
     # print("data used for plotting")
     # print(subdf)
 
-    if engine == "plt" or engine == "matplotlib":
+    if engine in ["plt", "matplotlib"]:
+        # Create legend items list
+        if legend:
+            legend_item_l = list(
+                genesmd_df["color"].apply(lambda x: Rectangle((0, 0), 1, 1, color=x))
+            )
+        else:
+            legend_item_l = []
+
         plot_exons_plt(
             subdf=subdf,
             tot_ngenes_l=tot_ngenes_l,
@@ -428,6 +435,7 @@ def plot(
             chrmd_df=chrmd_df,
             chrmd_df_grouped=chrmd_df_grouped,
             ts_data=ts_data,
+            legend_item_l=legend_item_l,
             max_shown=max_shown,
             id_col=ID_COL,
             transcript_str=thick_cds,

@@ -3,7 +3,6 @@ from intervaltree import IntervalTree
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pyranges as pr
-from matplotlib.patches import Rectangle
 import sys
 import plotly.colors as pc
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
@@ -303,13 +302,6 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
 
     # Assign color to each gene
     genesmd_df = genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
-
-    # Add legend info
-    def create_legend_rect(color):
-        return Rectangle((0, 0), 1, 1, color=color)
-
-    # column with rectangle objects with same color as gene
-    genesmd_df["legend_item"] = genesmd_df["color"].apply(create_legend_rect)
 
     return genesmd_df
 

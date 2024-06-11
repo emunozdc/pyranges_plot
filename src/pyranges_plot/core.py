@@ -114,7 +114,7 @@ def set_theme(name):
 
     Parameters
     ----------
-    name: {str, dict}
+    name: {str, dict, None}
         Name of the predefined theme or dictionary with defined options to be set as new default.
         Currently available themes are "dark" and "light".
 
@@ -129,6 +129,9 @@ def set_theme(name):
 
     global theme
     theme = name
+
+    if name is None:
+        return
 
     if isinstance(theme, str):
         if theme not in builtin_themes.keys():

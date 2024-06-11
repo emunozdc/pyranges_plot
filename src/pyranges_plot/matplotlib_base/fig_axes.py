@@ -83,6 +83,7 @@ def create_fig(
     chrmd_df_grouped,
     genesmd_df,
     ts_data,
+    legend_item_l,
     title_chr,
     title_dict_plt,
     plot_background,
@@ -245,9 +246,10 @@ def create_fig(
         ax.tick_params(colors=plot_border, which="both")
 
     plt.subplots_adjust(hspace=0.7)
+
     # Create legend
     if legend:
-        handles = genesmd_df["legend_item"].tolist()
+        handles = legend_item_l
         labels = genesmd_df.index.tolist()
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
