@@ -224,7 +224,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
     # Define the aggregation functions for each column
     agg_funcs = {
         col: "first"
-        for col in ["Chromosome"] + id_col
+        for col in ["Chromosome"] + id_col + color_col
         if col not in [START_COL, END_COL, PR_INDEX_COL]
     }
     agg_funcs[START_COL] = "min"
