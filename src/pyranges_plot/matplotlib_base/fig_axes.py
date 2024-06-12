@@ -190,7 +190,7 @@ def create_fig(
                 .groups
             )
             y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
-            y_ticks_name = [list(id)[::-1] + [""] for id in y_ticks_name_d.values()]
+            y_ticks_name = [list(id) + [""] for id in y_ticks_name_d.values()]
             y_ticks_name = [item for sublist in y_ticks_name for item in sublist][:-1]
 
         # Draw lines separating pr objects
