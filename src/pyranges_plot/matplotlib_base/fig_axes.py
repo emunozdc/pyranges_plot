@@ -249,9 +249,7 @@ def create_fig(
 
     # Create legend
     if legend:
-        print(legend_item_d)
         labels, handles = zip(*legend_item_d.items())
-        print(handles, labels)
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
     return fig, axes

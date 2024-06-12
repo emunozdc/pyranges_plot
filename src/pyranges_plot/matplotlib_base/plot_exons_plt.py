@@ -182,11 +182,9 @@ def gby_plot_exons(
         genemd = genemd[genemd[PR_INDEX_COL] == pr_ix]  # in case same gene in +1 pr
         genemd = pd.Series(genemd.iloc[0])
     gene_ix = genemd["ycoord"] + 0.5 * v_space
-    # color of border or first interval will be used as intron color and utr color for simplicity
-    exon_color = df[BORDER_COLOR_COL].iloc[0]
-
+    # color of border of first interval will be used as intron color and utr color for simplicity
     if exon_border is None:
-        exon_border = exon_color
+        exon_border = df[BORDER_COLOR_COL].iloc[0]
 
     ax = axes[chr_ix]
     if STRAND_COL in df.columns:
@@ -217,7 +215,7 @@ def gby_plot_exons(
         geneinfo,
         tag_bkg,
         gene_ix,
-        exon_color,
+        exon_border,
         strand,
         arrow_intron_threshold,
         exon_width,
@@ -237,7 +235,7 @@ def gby_plot_exons(
         ax,
         strand,
         gene_ix,
-        exon_color,
+        exon_border,  # this works as "exon_color" used for utr (not interval)
         exon_border,
         tag_bkg,
         plot_border,

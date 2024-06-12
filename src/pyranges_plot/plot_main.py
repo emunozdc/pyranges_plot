@@ -17,7 +17,8 @@ from .data_preparation import (
     get_genes_metadata,
     get_chromosome_metadata,
     compute_thresh,
-    compute_tpad, subdf_assigncolor,
+    compute_tpad,
+    subdf_assigncolor,
 )
 from .introns_off import introns_resize, recalc_axis
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
@@ -36,7 +37,9 @@ from .names import (
     ADJEND_COL,
     CUM_DELTA_COL,
     EXON_IX_COL,
-    TEXT_PAD_COL, COLOR_TAG_COL, COLOR_INFO,
+    TEXT_PAD_COL,
+    COLOR_TAG_COL,
+    COLOR_INFO,
 )
 
 
@@ -427,7 +430,11 @@ def plot(
     if engine in ["plt", "matplotlib"]:
         # Create legend items list
         if legend:
-            legend_item_d = subdf.groupby(COLOR_TAG_COL)[COLOR_INFO].apply(lambda x:  Rectangle((0, 0), 1, 1, color=list(x)[0])).to_dict()
+            legend_item_d = (
+                subdf.groupby(COLOR_TAG_COL)[COLOR_INFO]
+                .apply(lambda x: Rectangle((0, 0), 1, 1, color=list(x)[0]))
+                .to_dict()
+            )
         else:
             legend_item_d = {}
 

@@ -7,7 +7,14 @@ import sys
 import plotly.colors as pc
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
-from .names import PR_INDEX_COL, SHRTHRES_COL, TEXT_PAD_COL, COLOR_INFO, COLOR_TAG_COL, BORDER_COLOR_COL
+from .names import (
+    PR_INDEX_COL,
+    SHRTHRES_COL,
+    TEXT_PAD_COL,
+    COLOR_INFO,
+    COLOR_TAG_COL,
+    BORDER_COLOR_COL,
+)
 from .core import cumdelting, get_engine, get_warnings
 from .matplotlib_base.core import plt_popup_warning
 
@@ -150,7 +157,10 @@ def subdf_assigncolor(subdf, colormap, color_col, exon_border):
     """Add color information to data."""
 
     # Create COLOR_COL column
-    subdf[COLOR_TAG_COL] = list(zip(*[subdf[c] for c in color_col]))
+    if len(color_col) > 1:
+        subdf[COLOR_TAG_COL] = list(zip(*[subdf[c] for c in color_col]))
+    else:
+        subdf[COLOR_TAG_COL] = subdf[color_col[0]]
 
     # Assign colors to
     color_tags = subdf[COLOR_TAG_COL].drop_duplicates()
@@ -163,7 +173,9 @@ def subdf_assigncolor(subdf, colormap, color_col, exon_border):
         elif is_plycolormap(colormap):
             colormap = get_plycolormap(colormap)
         else:
-            raise Exception("The provided string does not match any plt or plotly colormap.")
+            raise Exception(
+                "The provided string does not match any plt or plotly colormap."
+            )
 
     # 1-plt colormap to list
     if isinstance(colormap, mcolors.ListedColormap):
@@ -186,7 +198,7 @@ def subdf_assigncolor(subdf, colormap, color_col, exon_border):
         # make plotly rgb colors compatible with plt
         if colormap[0][:3] == "rgb":
             numb_list = [
-                rgb[rgb.find("(") + 1: rgb.find(")")].split(",") for rgb in colormap
+                rgb[rgb.find("(") + 1 : rgb.find(")")].split(",") for rgb in colormap
             ]
             colormap = [
                 "#{:02x}{:02x}{:02x}".format(int(r), int(g), int(b))
@@ -261,7 +273,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
         CHROM_COL, group_keys=False, observed=True
     ).ngroup()
 
-    #genesmd_df["color_tag"] = list(zip(*[genesmd_df[c] for c in color_col]))
+    # genesmd_df["color_tag"] = list(zip(*[genesmd_df[c] for c in color_col]))
     # genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
     genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
         ["chrix", PR_INDEX_COL], group_keys=False, observed=True
@@ -307,7 +319,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
         genesmd_df.reset_index(PR_INDEX_COL, inplace=True)
 
     # Assign color to each gene
-    #genesmd_df = genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
+    # genesmd_df = genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
 
     return genesmd_df
 

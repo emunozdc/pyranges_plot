@@ -4,7 +4,14 @@ from .core import coord2percent, percent2coord, make_annotation
 from matplotlib.patches import Rectangle
 import pandas as pd
 
-from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL, TEXT_PAD_COL, COLOR_INFO
+from ..names import (
+    ADJSTART_COL,
+    ADJEND_COL,
+    EXON_IX_COL,
+    TEXT_PAD_COL,
+    COLOR_INFO,
+    BORDER_COLOR_COL,
+)
 
 
 def plot_direction(
@@ -117,7 +124,6 @@ def apply_gene_bridge(
                 ax,
                 strand,
                 gene_ix,
-                exon_border,
                 tag_background,
                 plot_border,
                 genename,
@@ -212,7 +218,6 @@ def apply_gene_bridge(
                     ax,
                     strand,
                     gene_ix,
-                    exon_border,
                     tag_background,
                     plot_border,
                     genename,
@@ -242,7 +247,6 @@ def apply_gene_bridge(
                     ax,
                     strand,
                     gene_ix,
-                    exon_border,
                     tag_background,
                     plot_border,
                     genename,
@@ -271,7 +275,6 @@ def apply_gene_bridge(
                     ax,
                     strand,
                     gene_ix,
-                    exon_border,
                     tag_background,
                     plot_border,
                     genename,
@@ -299,7 +302,6 @@ def plot_row(
     ax,
     strand,
     gene_ix,
-    exon_border,
     tag_background,
     plot_border,
     genename,
@@ -332,6 +334,7 @@ def plot_row(
     start = int(row[START_COL])
     stop = int(row[END_COL])
     exon_color = row[COLOR_INFO]
+    exon_border = row[BORDER_COLOR_COL]
 
     # Plot EXON as rectangle
     exon_rect = Rectangle(

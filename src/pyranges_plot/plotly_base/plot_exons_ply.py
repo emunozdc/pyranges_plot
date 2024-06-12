@@ -7,7 +7,7 @@ from pyranges.core.names import CHROM_COL, START_COL, END_COL, STRAND_COL
 from .core import initialize_dash_app
 from .fig_axes import create_fig
 from .data2plot import plot_introns, apply_gene_bridge
-from ..names import PR_INDEX_COL, COLOR_INFO, COLOR_TAG_COL
+from ..names import PR_INDEX_COL, COLOR_INFO, COLOR_TAG_COL, BORDER_COLOR_COL
 
 
 def plot_exons_ply(
@@ -195,7 +195,9 @@ def gby_plot_exons(
     pr_ix = df[PR_INDEX_COL].iloc[0]
     genename = df["__id_col_2count__"].iloc[0]
     genemd = genesmd_df.loc[genename]  # store data for the gene
-    df["legend_tag"] = [1] + [0] * (len(df) - 1) # only one legend entry/linked intervals
+    df["legend_tag"] = [1] + [0] * (
+        len(df) - 1
+    )  # only one legend entry/linked intervals
 
     # in case same gene in +1 pr
     if not isinstance(genemd, pd.Series):
@@ -203,10 +205,8 @@ def gby_plot_exons(
         genemd = pd.Series(genemd.iloc[0])
     gene_ix = genemd["ycoord"] + 0.5 * v_space
     # color of first interval will be used as intron color and utr color for simplicity
-    exon_color = df[COLOR_INFO].iloc[0]
-
     if exon_border is None:
-        exon_border = exon_color
+        exon_border = df[BORDER_COLOR_COL].iloc[0]
 
     chrom_ix = chrmd_df_grouped.loc[chrom]["chrom_ix"]
 
@@ -233,7 +233,7 @@ def gby_plot_exons(
             fill="toself",
             fillcolor=plot_background,
             mode="lines",
-            line=dict(color=exon_color, width=0),
+            line=dict(color=exon_border, width=0),
             hoverinfo="text",
             text=geneinfo,
             showlegend=False,
@@ -254,7 +254,7 @@ def gby_plot_exons(
         ts_chrom,
         fig,
         gene_ix,
-        exon_color,
+        exon_border,
         chrom_ix,
         strand,
         genename,
@@ -275,7 +275,7 @@ def gby_plot_exons(
         strand,
         genename,
         gene_ix,
-        exon_color,
+        exon_border,  # this works as "exon_color" used for utr (not interval)
         exon_border,
         chrom_ix,
         geneinfo,
@@ -287,6 +287,4 @@ def gby_plot_exons(
         arrow_color,
         arrow_line_width,
         dir_flag,
-        genemd,
-        id_col,
     )

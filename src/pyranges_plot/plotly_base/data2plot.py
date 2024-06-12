@@ -4,7 +4,15 @@ from .core import coord2percent, percent2coord
 import plotly.graph_objects as go
 import pandas as pd
 
-from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL, TEXT_PAD_COL, COLOR_INFO, COLOR_TAG_COL
+from ..names import (
+    ADJSTART_COL,
+    ADJEND_COL,
+    EXON_IX_COL,
+    TEXT_PAD_COL,
+    COLOR_INFO,
+    COLOR_TAG_COL,
+    BORDER_COLOR_COL,
+)
 
 
 def plot_direction(
@@ -115,8 +123,6 @@ def apply_gene_bridge(
     arrow_color,
     arrow_line_width,
     dir_flag,
-    genesmd_df,
-    id_col,
 ):
     """Evaluate data and provide plot_row with right parameters."""
 
@@ -129,7 +135,7 @@ def apply_gene_bridge(
                 strand,
                 genename,
                 gene_ix,
-                exon_border,
+                # exon_border,
                 chrom_ix,
                 showinfo,
                 exon_width,
@@ -138,11 +144,8 @@ def apply_gene_bridge(
                 arrow_color,
                 arrow_line_width,
                 dir_flag,
-                transcript_str,
                 text,
                 text_size,
-                genesmd_df,
-                id_col,
             ),
             axis=1,
         )
@@ -242,7 +245,7 @@ def apply_gene_bridge(
                     strand,
                     genename,
                     gene_ix,
-                    exon_border,
+                    # exon_border,
                     chrom_ix,
                     showinfo,
                     exon_width,
@@ -251,11 +254,8 @@ def apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    transcript_str,
                     text,
                     text_size,
-                    genesmd_df,
-                    id_col,
                 ),
                 axis=1,
             )
@@ -272,7 +272,7 @@ def apply_gene_bridge(
                     strand,
                     genename,
                     gene_ix,
-                    exon_border,
+                    # exon_border,
                     chrom_ix,
                     showinfo,
                     exon_width,
@@ -281,11 +281,8 @@ def apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    transcript_str,
                     text,
                     text_size,
-                    genesmd_df,
-                    id_col,
                 ),
                 axis=1,
             )
@@ -303,7 +300,7 @@ def apply_gene_bridge(
                     strand,
                     genename,
                     gene_ix,
-                    exon_border,
+                    # exon_border,
                     chrom_ix,
                     showinfo,
                     transcript_utr_width,
@@ -312,11 +309,8 @@ def apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    transcript_str,
                     text,
                     text_size,
-                    genesmd_df,
-                    id_col,
                 ),
                 axis=1,
             )
@@ -332,7 +326,6 @@ def plot_row(
     strand,
     genename,
     gene_ix,
-    exon_border,
     chrom_ix,
     showinfo,
     exon_width,
@@ -341,11 +334,8 @@ def plot_row(
     arrow_color,
     arrow_line_width,
     dir_flag,
-    transcript_str,
     text,
     text_size,
-    genesmd_df,
-    id_col,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -370,6 +360,7 @@ def plot_row(
     start = int(row[START_COL])
     stop = int(row[END_COL])
     exon_color = row[COLOR_INFO]
+    exon_border = row[BORDER_COLOR_COL]
     # convert to coordinates for rectangle
     x0, x1 = start, stop
     y0, y1 = (
