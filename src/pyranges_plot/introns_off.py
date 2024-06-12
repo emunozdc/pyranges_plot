@@ -78,11 +78,7 @@ def introns_resize(df, ts_data, id_col):
     # get flexible introns
     exons = p.copy()
     # introns = get_introns(p, [PR_INDEX_COL] + id_col)
-    introns = (
-        p.groupby(PR_INDEX_COL, group_keys=True)
-        .apply(lambda x: x.complement(id_col, use_strand=False))
-        .reset_index(level=PR_INDEX_COL)
-    )
+    introns = p.complement(use_strand=False)
     introns.reset_index(drop=True, inplace=True)  # reset duplicate labels in index
 
     to_shrink = pr.PyRanges()
