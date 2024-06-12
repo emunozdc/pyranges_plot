@@ -7,7 +7,7 @@ import sys
 import plotly.colors as pc
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
-from .names import PR_INDEX_COL, SHRTHRES_COL, TEXT_PAD_COL
+from .names import PR_INDEX_COL, SHRTHRES_COL, TEXT_PAD_COL, COLOR_INFO, COLOR_TAG_COL, BORDER_COLOR_COL
 from .core import cumdelting, get_engine, get_warnings
 from .matplotlib_base.core import plt_popup_warning
 
@@ -146,23 +146,24 @@ def get_plycolormap(colormap_string):
         return getattr(pc.qualitative, colormap_string)
 
 
-def genesmd_assigncolor(genesmd_df, colormap):
-    """Match color with gene"""
+def subdf_assigncolor(subdf, colormap, color_col, exon_border):
+    """Add color information to data."""
 
-    color_tags = genesmd_df.color_tag.drop_duplicates()
+    # Create COLOR_COL column
+    subdf[COLOR_TAG_COL] = list(zip(*[subdf[c] for c in color_col]))
+
+    # Assign colors to
+    color_tags = subdf[COLOR_TAG_COL].drop_duplicates()
     n_color_tags = len(color_tags)
 
     # 0-string to colormap object if possible
     if isinstance(colormap, str):
-        try:
-            if is_pltcolormap(colormap):
-                colormap = plt.get_cmap(colormap)
-            elif is_plycolormap(colormap):
-                colormap = get_plycolormap(colormap)
-            else:
-                sys.exit(1)
-        except SystemExit as e:
-            print("The provided string does not match any plt or plotly colormap.", e)
+        if is_pltcolormap(colormap):
+            colormap = plt.get_cmap(colormap)
+        elif is_plycolormap(colormap):
+            colormap = get_plycolormap(colormap)
+        else:
+            raise Exception("The provided string does not match any plt or plotly colormap.")
 
     # 1-plt colormap to list
     if isinstance(colormap, mcolors.ListedColormap):
@@ -179,13 +180,13 @@ def genesmd_assigncolor(genesmd_df, colormap):
                     "The genes are colored by iterating over the given color list."
                 )
             elif engine in ["ply", "plotly"] and warnings:
-                genesmd_df["_iterwarning!"] = [1] * len(genesmd_df)
+                subdf["_iterwarning!"] = [1] * len(subdf)
         else:
             colormap = colormap[:n_color_tags]
         # make plotly rgb colors compatible with plt
         if colormap[0][:3] == "rgb":
             numb_list = [
-                rgb[rgb.find("(") + 1 : rgb.find(")")].split(",") for rgb in colormap
+                rgb[rgb.find("(") + 1: rgb.find(")")].split(",") for rgb in colormap
             ]
             colormap = [
                 "#{:02x}{:02x}{:02x}".format(int(r), int(g), int(b))
@@ -199,11 +200,11 @@ def genesmd_assigncolor(genesmd_df, colormap):
 
     # 3- Use dict to assign color to gene
     if isinstance(colormap, dict):
-        genesmd_df["color_tag"] = genesmd_df["color_tag"].astype(str)
-        genesmd_df["color"] = genesmd_df["color_tag"].map(colormap)
+        subdf[COLOR_TAG_COL] = subdf[COLOR_TAG_COL].astype(str)
+        subdf[COLOR_INFO] = subdf[COLOR_TAG_COL].map(colormap)
 
         # add black genes warning if needed
-        if genesmd_df["color"].isna().any():
+        if subdf[COLOR_INFO].isna().any():
             engine = get_engine()
             warnings = get_warnings()
             if engine in ["plt", "matplotlib"] and warnings:
@@ -211,10 +212,15 @@ def genesmd_assigncolor(genesmd_df, colormap):
                     "Some genes do not have a color assigned so they are colored in black."
                 )
             elif engine in ["ply", "plotly"] and warnings:
-                genesmd_df["_blackwarning!"] = [1] * len(genesmd_df)
-            genesmd_df["color"].fillna("black", inplace=True)  # black for not specified
+                subdf["_blackwarning!"] = [1] * len(subdf)
+            subdf[COLOR_INFO].fillna("black", inplace=True)  # black for not specified
 
-    return genesmd_df
+    if exon_border:
+        subdf[BORDER_COLOR_COL] = [exon_border] * len(subdf)
+    else:
+        subdf[BORDER_COLOR_COL] = subdf[COLOR_INFO]
+
+    return subdf
 
 
 def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
@@ -255,7 +261,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
         CHROM_COL, group_keys=False, observed=True
     ).ngroup()
 
-    genesmd_df["color_tag"] = list(zip(*[genesmd_df[c] for c in color_col]))
+    #genesmd_df["color_tag"] = list(zip(*[genesmd_df[c] for c in color_col]))
     # genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
     genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
         ["chrix", PR_INDEX_COL], group_keys=False, observed=True
@@ -301,7 +307,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
         genesmd_df.reset_index(PR_INDEX_COL, inplace=True)
 
     # Assign color to each gene
-    genesmd_df = genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
+    #genesmd_df = genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
 
     return genesmd_df
 

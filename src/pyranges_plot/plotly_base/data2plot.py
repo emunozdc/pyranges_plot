@@ -4,7 +4,7 @@ from .core import coord2percent, percent2coord
 import plotly.graph_objects as go
 import pandas as pd
 
-from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL, TEXT_PAD_COL
+from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL, TEXT_PAD_COL, COLOR_INFO, COLOR_TAG_COL
 
 
 def plot_direction(
@@ -129,7 +129,6 @@ def apply_gene_bridge(
                 strand,
                 genename,
                 gene_ix,
-                exon_color,
                 exon_border,
                 chrom_ix,
                 showinfo,
@@ -177,10 +176,10 @@ def apply_gene_bridge(
                     fill="toself",
                     fillcolor=exon_color,
                     mode="lines",
-                    line=dict(color=exon_color),
+                    line=dict(color=exon_border),
                     text=geneinfo,
                     hoverinfo="text",
-                    name=str(genename),
+                    name=str(df[COLOR_TAG_COL].iloc[0]),
                     showlegend=legend,
                 ),
                 row=chrom_ix + 1,
@@ -224,10 +223,10 @@ def apply_gene_bridge(
                     fill="toself",
                     fillcolor=exon_color,
                     mode="lines",
-                    line=dict(color=exon_color),
+                    line=dict(color=exon_border),
                     text=geneinfo,
                     hoverinfo="text",
-                    name=str(genename),
+                    name=str(df[COLOR_TAG_COL].iloc[-1]),
                     showlegend=legend,
                 ),
                 row=chrom_ix + 1,
@@ -243,7 +242,6 @@ def apply_gene_bridge(
                     strand,
                     genename,
                     gene_ix,
-                    exon_color,
                     exon_border,
                     chrom_ix,
                     showinfo,
@@ -274,7 +272,6 @@ def apply_gene_bridge(
                     strand,
                     genename,
                     gene_ix,
-                    exon_color,
                     exon_border,
                     chrom_ix,
                     showinfo,
@@ -306,7 +303,6 @@ def apply_gene_bridge(
                     strand,
                     genename,
                     gene_ix,
-                    exon_color,
                     exon_border,
                     chrom_ix,
                     showinfo,
@@ -336,7 +332,6 @@ def plot_row(
     strand,
     genename,
     gene_ix,
-    exon_color,
     exon_border,
     chrom_ix,
     showinfo,
@@ -371,9 +366,10 @@ def plot_row(
     if legend:
         legend = bool(row["legend_tag"])
 
-    # Exon start and stop
+    # Exon start, stop and color
     start = int(row[START_COL])
     stop = int(row[END_COL])
+    exon_color = row[COLOR_INFO]
     # convert to coordinates for rectangle
     x0, x1 = start, stop
     y0, y1 = (
@@ -393,7 +389,7 @@ def plot_row(
             text=geneinfo,
             # hovertext=geneinfo,
             hoverinfo="text",
-            name=str(row["legend_tag"]),
+            name=str(row[COLOR_TAG_COL]),
             showlegend=legend,
         ),
         row=chrom_ix + 1,

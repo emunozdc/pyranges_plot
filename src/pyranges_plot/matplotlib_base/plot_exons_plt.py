@@ -8,7 +8,7 @@ from .data2plot import (
     apply_gene_bridge,
     plot_introns,
 )
-from ..names import PR_INDEX_COL
+from ..names import PR_INDEX_COL, COLOR_INFO, BORDER_COLOR_COL
 
 arrow_style = "round"
 
@@ -21,7 +21,7 @@ def plot_exons_plt(
     chrmd_df,
     chrmd_df_grouped,
     ts_data,
-    legend_item_l,
+    legend_item_d,
     id_col,
     max_shown=25,
     transcript_str=False,
@@ -72,7 +72,7 @@ def plot_exons_plt(
         chrmd_df_grouped,
         genesmd_df,
         ts_data,
-        legend_item_l,
+        legend_item_d,
         title_chr,
         title_dict_plt,
         plot_bkg,
@@ -182,7 +182,8 @@ def gby_plot_exons(
         genemd = genemd[genemd[PR_INDEX_COL] == pr_ix]  # in case same gene in +1 pr
         genemd = pd.Series(genemd.iloc[0])
     gene_ix = genemd["ycoord"] + 0.5 * v_space
-    exon_color = genemd["color"]
+    # color of border or first interval will be used as intron color and utr color for simplicity
+    exon_color = df[BORDER_COLOR_COL].iloc[0]
 
     if exon_border is None:
         exon_border = exon_color
@@ -249,6 +250,4 @@ def gby_plot_exons(
         arrow_style,
         arrow_line_width,
         dir_flag,
-        genemd,
-        id_col,
     )

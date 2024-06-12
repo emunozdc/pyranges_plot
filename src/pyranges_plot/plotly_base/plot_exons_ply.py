@@ -7,7 +7,7 @@ from pyranges.core.names import CHROM_COL, START_COL, END_COL, STRAND_COL
 from .core import initialize_dash_app
 from .fig_axes import create_fig
 from .data2plot import plot_introns, apply_gene_bridge
-from ..names import PR_INDEX_COL
+from ..names import PR_INDEX_COL, COLOR_INFO, COLOR_TAG_COL
 
 
 def plot_exons_ply(
@@ -195,14 +195,15 @@ def gby_plot_exons(
     pr_ix = df[PR_INDEX_COL].iloc[0]
     genename = df["__id_col_2count__"].iloc[0]
     genemd = genesmd_df.loc[genename]  # store data for the gene
-    df["legend_tag"] = [genename] + [""] * (len(df) - 1)
+    df["legend_tag"] = [1] + [0] * (len(df) - 1) # only one legend entry/linked intervals
 
     # in case same gene in +1 pr
     if not isinstance(genemd, pd.Series):
         genemd = genemd[genemd[PR_INDEX_COL] == pr_ix]  # in case same gene in +1 pr
         genemd = pd.Series(genemd.iloc[0])
     gene_ix = genemd["ycoord"] + 0.5 * v_space
-    exon_color = genemd["color"]
+    # color of first interval will be used as intron color and utr color for simplicity
+    exon_color = df[COLOR_INFO].iloc[0]
 
     if exon_border is None:
         exon_border = exon_color

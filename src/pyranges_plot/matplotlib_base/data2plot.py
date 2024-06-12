@@ -4,7 +4,7 @@ from .core import coord2percent, percent2coord, make_annotation
 from matplotlib.patches import Rectangle
 import pandas as pd
 
-from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL, TEXT_PAD_COL
+from ..names import ADJSTART_COL, ADJEND_COL, EXON_IX_COL, TEXT_PAD_COL, COLOR_INFO
 
 
 def plot_direction(
@@ -106,8 +106,6 @@ def apply_gene_bridge(
     arrow_style,
     arrow_width,
     dir_flag,
-    genesmd_df,
-    id_col,
 ):
     """Evaluate data and provide plot_row with right parameters."""
     # NOT transcript strucutre
@@ -119,7 +117,6 @@ def apply_gene_bridge(
                 ax,
                 strand,
                 gene_ix,
-                exon_color,
                 exon_border,
                 tag_background,
                 plot_border,
@@ -131,11 +128,8 @@ def apply_gene_bridge(
                 arrow_style,
                 arrow_width,
                 dir_flag,
-                transcript_str,
                 text,
                 text_size,
-                genesmd_df,
-                id_col,
             ),
             axis=1,
         )
@@ -161,7 +155,7 @@ def apply_gene_bridge(
                 (tr_start, gene_ix - transcript_utr_width / 2),
                 cds_start - tr_start,
                 transcript_utr_width,
-                edgecolor=exon_color,
+                edgecolor=exon_border,
                 facecolor=exon_color,
                 fill=True,
             )
@@ -169,7 +163,7 @@ def apply_gene_bridge(
                 (cds_end, gene_ix - transcript_utr_width / 2),
                 tr_end - cds_end,
                 transcript_utr_width,
-                edgecolor=exon_color,
+                edgecolor=exon_border,
                 facecolor=exon_color,
                 fill=True,
             )
@@ -206,11 +200,6 @@ def apply_gene_bridge(
                     f"({cds_end}, {tr_end})\nID: {genename}"  # default without strand
                 )
 
-            # customized
-            # showinfo_dict = row.to_dict()  # first element of gene rows
-            # if tooltip:
-            #     geneinfo += "\n" + tooltip.format(**showinfo_dict)
-
             make_annotation(start_utr, fig, ax, geneinfo_start, tag_background)
             make_annotation(end_utr, fig, ax, geneinfo_end, tag_background)
 
@@ -223,7 +212,6 @@ def apply_gene_bridge(
                     ax,
                     strand,
                     gene_ix,
-                    exon_color,
                     exon_border,
                     tag_background,
                     plot_border,
@@ -235,11 +223,8 @@ def apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
-                    transcript_str,
                     text,
                     text_size,
-                    genesmd_df,
-                    id_col,
                 ),
                 axis=1,
             )
@@ -257,7 +242,6 @@ def apply_gene_bridge(
                     ax,
                     strand,
                     gene_ix,
-                    exon_color,
                     exon_border,
                     tag_background,
                     plot_border,
@@ -269,11 +253,8 @@ def apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
-                    transcript_str,
                     text,
                     text_size,
-                    genesmd_df,
-                    id_col,
                 ),
                 axis=1,
             )
@@ -290,7 +271,6 @@ def apply_gene_bridge(
                     ax,
                     strand,
                     gene_ix,
-                    exon_color,
                     exon_border,
                     tag_background,
                     plot_border,
@@ -302,11 +282,8 @@ def apply_gene_bridge(
                     arrow_style,
                     arrow_width,
                     dir_flag,
-                    transcript_str,
                     text,
                     text_size,
-                    genesmd_df,
-                    id_col,
                 ),
                 axis=1,
             )
@@ -322,7 +299,6 @@ def plot_row(
     ax,
     strand,
     gene_ix,
-    exon_color,
     exon_border,
     tag_background,
     plot_border,
@@ -334,11 +310,8 @@ def plot_row(
     arrow_style,
     arrow_width,
     dir_flag,
-    transcript_str,
     text,
     text_size,
-    genesmd_df,
-    id_col,
 ):
     """Plot elements corresponding to one row of one gene."""
 
@@ -355,9 +328,10 @@ def plot_row(
     if showinfo:
         geneinfo += "\n" + showinfo.format(**showinfo_dict)
 
-    # Exon start and stop
+    # Exon start, stop and color
     start = int(row[START_COL])
     stop = int(row[END_COL])
+    exon_color = row[COLOR_INFO]
 
     # Plot EXON as rectangle
     exon_rect = Rectangle(

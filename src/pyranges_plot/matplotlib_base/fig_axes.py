@@ -83,7 +83,7 @@ def create_fig(
     chrmd_df_grouped,
     genesmd_df,
     ts_data,
-    legend_item_l,
+    legend_item_d,
     title_chr,
     title_dict_plt,
     plot_background,
@@ -249,8 +249,9 @@ def create_fig(
 
     # Create legend
     if legend:
-        handles = legend_item_l
-        labels = genesmd_df.index.tolist()
+        print(legend_item_d)
+        labels, handles = zip(*legend_item_d.items())
+        print(handles, labels)
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
     return fig, axes

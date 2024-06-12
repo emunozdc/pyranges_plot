@@ -17,7 +17,7 @@ from .data_preparation import (
     get_genes_metadata,
     get_chromosome_metadata,
     compute_thresh,
-    compute_tpad,
+    compute_tpad, subdf_assigncolor,
 )
 from .introns_off import introns_resize, recalc_axis
 from .matplotlib_base.plot_exons_plt import plot_exons_plt
@@ -36,7 +36,7 @@ from .names import (
     ADJEND_COL,
     CUM_DELTA_COL,
     EXON_IX_COL,
-    TEXT_PAD_COL,
+    TEXT_PAD_COL, COLOR_TAG_COL, COLOR_INFO,
 )
 
 
@@ -324,13 +324,16 @@ def plot(
     else:
         subdf["__id_col_2count__"] = subdf[ID_COL[0]]
 
-    # Create genes metadata DataFrame
+    # Store color information in data
     # color_col as list
     if color_col is None:
         color_col = ID_COL
     elif isinstance(color_col, str):
         color_col = [color_col]
 
+    subdf = subdf_assigncolor(subdf, colormap, color_col, feat_dict["exon_border"])
+
+    # Create genes metadata DataFrame
     genesmd_df = get_genes_metadata(
         subdf, ID_COL, color_col, packed, colormap, feat_dict["v_space"]
     )
@@ -424,11 +427,9 @@ def plot(
     if engine in ["plt", "matplotlib"]:
         # Create legend items list
         if legend:
-            legend_item_l = list(
-                genesmd_df["color"].apply(lambda x: Rectangle((0, 0), 1, 1, color=x))
-            )
+            legend_item_d = subdf.groupby(COLOR_TAG_COL)[COLOR_INFO].apply(lambda x:  Rectangle((0, 0), 1, 1, color=list(x)[0])).to_dict()
         else:
-            legend_item_l = []
+            legend_item_d = {}
 
         plot_exons_plt(
             subdf=subdf,
@@ -438,7 +439,7 @@ def plot(
             chrmd_df=chrmd_df,
             chrmd_df_grouped=chrmd_df_grouped,
             ts_data=ts_data,
-            legend_item_l=legend_item_l,
+            legend_item_d=legend_item_d,
             max_shown=max_shown,
             id_col=ID_COL,
             transcript_str=thick_cds,

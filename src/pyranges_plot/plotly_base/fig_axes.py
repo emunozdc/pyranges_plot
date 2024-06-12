@@ -244,6 +244,7 @@ def create_fig(
                         hoverinfo="text",
                         opacity=shrinked_alpha,
                         line_width=0,
+                        showlegend=False,
                     ),
                     row=i + 1,
                     col=1,
