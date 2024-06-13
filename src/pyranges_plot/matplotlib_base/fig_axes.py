@@ -98,7 +98,6 @@ def create_fig(
     fig_bkg,
     shrinked_bkg,
     shrinked_alpha,
-    v_space,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -178,12 +177,13 @@ def create_fig(
         # set y axis limits
         y_min = 0
         y_max = chrmd_df_grouped.loc[chrom]["y_height"]
-        ax.set_ylim(y_min - 0.5 * v_space, y_max + 0.5 * v_space)
+        ax.set_ylim(y_min - 0.5, y_max + 0.5)
         # gene name as y labels if not packed and not y_labels
         y_ticks_val = []
         y_ticks_name = []
         if not packed and not y_labels:
-            y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
+            # y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
+            y_ticks_val = [i + 0.5 for i in range(y_max)]
             y_ticks_name_d = (
                 genesmd_df[genesmd_df[CHROM_COL] == chrom]
                 .groupby(PR_INDEX_COL, group_keys=False, observed=True)
@@ -206,7 +206,7 @@ def create_fig(
                 if pr_line_y != 0:
                     ax.plot(
                         [x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
-                        [pr_line_y + 0.5 * v_space, pr_line_y + 0.5 * v_space],
+                        [pr_line_y + 0.5, pr_line_y + 0.5],
                         color=plot_border,
                         linewidth=1,
                         zorder=1,
@@ -216,11 +216,7 @@ def create_fig(
                     if y_labels:
                         if pr_line_y_l[j + 1] != 0:
                             y_ticks_val.append(
-                                (
-                                    (pr_line_y + 0.5 * v_space)
-                                    + (pr_line_y_l[j + 1] + 0.5 * v_space)
-                                )
-                                / 2
+                                ((pr_line_y + 0.5) + (pr_line_y_l[j + 1] + 0.5)) / 2
                             )
                         else:
                             y_ticks_val.append((pr_line_y) / 2)

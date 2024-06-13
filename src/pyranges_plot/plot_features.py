@@ -19,14 +19,13 @@ plot_features_dict = {
     "title_color": ("black", "Color of the plots' titles.", " "),
     "grid_color": ("lightgrey", "Color of x coordinates grid lines.", " "),
     "exon_border": (None, "Color of the interval's rectangle border.", " "),
-    "exon_width": (0.4, "Height of the exon rectangle in the plot.", " "),
+    "exon_height": (0.6, "Height of the exon rectangle in the plot.", " "),
     "text_size": (10, "Fontsize of the text annotation beside the intervals.", " "),
     "text_pad": (
         0.005,
         "Space where the id annotation is placed beside the interval. When text_pad is float, it represents the percentage of the plot space, while an int pad represents number of positions or base pairs.",
         " ",
     ),
-    "v_space": (0.7, "Vertical distance between exons in different y heights.", " "),
     "shrink_threshold": (
         0.01,
         "Minimum length of an intron in order for it to be shrinked while using the introns_off feature. When threshold is float, it represents the percentage of the plot space, while an int threshold represents number of positions or base pairs.",

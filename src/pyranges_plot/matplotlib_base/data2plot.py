@@ -23,7 +23,7 @@ def plot_direction(
     stop,
     incl,
     gene_ix,
-    exon_width,
+    exon_height,
     arrow_color,
     arrow_style,
     arrow_width,
@@ -39,19 +39,19 @@ def plot_direction(
             ##diagonal_line = OX arrow extension(item middle point +- incl), OY arrow extension (item middle point + half of exon width)
             top_plus = (
                 [(start + stop) / 2 + incl, (start + stop) / 2 - incl],
-                [gene_ix, gene_ix + exon_width / 2 - 0.01],
+                [gene_ix, gene_ix + exon_height / 2 - 0.01],
             )
             bot_plus = (
                 [(start + stop) / 2 - incl, (start + stop) / 2 + incl],
-                [gene_ix - exon_width / 2 + 0.01, gene_ix],
+                [gene_ix - exon_height / 2 + 0.01, gene_ix],
             )
             top_minus = (
                 [(start + stop) / 2 + incl, (start + stop) / 2 - incl],
-                [gene_ix - exon_width / 2 + 0.01, gene_ix],
+                [gene_ix - exon_height / 2 + 0.01, gene_ix],
             )
             bot_minus = (
                 [(start + stop) / 2 - incl, (start + stop) / 2 + incl],
-                [gene_ix, gene_ix + exon_width / 2 - 0.01],
+                [gene_ix, gene_ix + exon_height / 2 - 0.01],
             )
 
             if strand == "+":
@@ -106,7 +106,7 @@ def apply_gene_bridge(
     plot_border,
     genename,
     showinfo,
-    exon_width,
+    exon_height,
     transcript_utr_width,
     arrow_size_min,
     arrow_color,
@@ -128,7 +128,7 @@ def apply_gene_bridge(
                 plot_border,
                 genename,
                 showinfo,
-                exon_width,
+                exon_height,
                 arrow_size_min,
                 arrow_color,
                 arrow_style,
@@ -222,7 +222,7 @@ def apply_gene_bridge(
                     plot_border,
                     genename,
                     showinfo,
-                    exon_width,
+                    exon_height,
                     arrow_size_min,
                     arrow_color,
                     arrow_style,
@@ -279,7 +279,7 @@ def apply_gene_bridge(
                     plot_border,
                     genename,
                     showinfo,
-                    exon_width,
+                    exon_height,
                     arrow_size_min,
                     arrow_color,
                     arrow_style,
@@ -306,7 +306,7 @@ def plot_row(
     plot_border,
     genename,
     showinfo,
-    exon_width,
+    exon_height,
     arrow_size_min,
     arrow_color,
     arrow_style,
@@ -338,9 +338,9 @@ def plot_row(
 
     # Plot EXON as rectangle
     exon_rect = Rectangle(
-        (start, gene_ix - exon_width / 2),
+        (start, gene_ix - exon_height / 2),
         stop - start,
-        exon_width,
+        exon_height,
         edgecolor=exon_border,
         facecolor=exon_color,
         fill=True,
@@ -386,7 +386,7 @@ def plot_row(
             stop,
             incl,
             gene_ix,
-            exon_width,
+            exon_height,
             arrow_color,
             arrow_style,
             arrow_width,
@@ -404,7 +404,7 @@ def plot_introns(
     exon_color,
     strand,
     intron_threshold,
-    exon_width,
+    exon_height,
     arrow_color,
     arrow_style,
     arrow_width,
@@ -511,7 +511,7 @@ def plot_introns(
                 stop,
                 incl,
                 gene_ix,
-                exon_width,
+                exon_height,
                 arrow_color,
                 arrow_style,
                 arrow_width,

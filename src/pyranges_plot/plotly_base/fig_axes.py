@@ -57,13 +57,10 @@ def create_fig(
     grid_color,
     packed,
     y_labels,
-    plot_background,
-    plot_border,
     tick_pos_d,
     ori_tick_pos_d,
     shrinked_bkg,
     shrinked_alpha,
-    v_space,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -155,7 +152,8 @@ def create_fig(
 
         # gene names in y axis
         if not packed and not y_labels:
-            y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
+            # y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
+            y_ticks_val = [i + 0.5 for i in range(y_mac)]
             y_ticks_name_d = (
                 genesmd_df[genesmd_df[CHROM_COL] == chrom]
                 .groupby(PR_INDEX_COL, group_keys=False, observed=True)
@@ -178,21 +176,17 @@ def create_fig(
                 if pr_line_y != 0:
                     # draw line
                     fig.add_hline(
-                        y=pr_line_y + 0.5 * v_space,
+                        y=pr_line_y + 0.5,
                         line=dict(color="black", width=1, dash="solid"),
                         row=i + 1,
                         col=1,
                     )
 
-                    # add y_label in the middle of the subplot if needed
+                    # add y_label in the middle of the subplot y axis if needed
                     if y_labels:
                         if pr_line_y_l[j + 1] != 0:
                             y_ticks_val.append(
-                                (
-                                    (pr_line_y + 0.5 * v_space)
-                                    + (pr_line_y_l[j + 1] + 0.5 * v_space)
-                                )
-                                / 2
+                                ((pr_line_y + 0.5) + (pr_line_y_l[j + 1] + 0.5)) / 2
                             )
                         else:
                             y_ticks_val.append((pr_line_y) / 2)
@@ -205,7 +199,7 @@ def create_fig(
                 y_ticks_name = [str(y_labels)]
 
         fig.update_yaxes(
-            range=[y_min - 0.5 * v_space, y_max + 0.5 * v_space],
+            range=[y_min - 0.5, y_max + 0.5],
             fixedrange=True,
             tickvals=y_ticks_val,
             ticktext=y_ticks_name,

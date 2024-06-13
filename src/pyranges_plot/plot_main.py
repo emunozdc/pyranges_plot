@@ -268,11 +268,10 @@ def plot(
         },
         "grid_color": getvalue("grid_color"),
         "exon_border": getvalue("exon_border"),
-        "exon_width": float(getvalue("exon_width")),
-        "transcript_utr_width": 0.3 * float(getvalue("exon_width")),
+        "exon_height": float(getvalue("exon_height")),
+        "transcript_utr_width": 0.3 * float(getvalue("exon_height")),
         "text_size": float(getvalue("text_size")),
         "text_pad": getvalue("text_pad"),
-        "v_space": float(getvalue("v_space")),
         "plotly_port": getvalue("plotly_port"),
         "arrow_line_width": float(getvalue("arrow_line_width")),
         "arrow_color": getvalue("arrow_color"),
@@ -337,13 +336,11 @@ def plot(
     subdf = subdf_assigncolor(subdf, colormap, color_col, feat_dict["exon_border"])
 
     # Create genes metadata DataFrame
-    genesmd_df = get_genes_metadata(
-        subdf, ID_COL, color_col, packed, colormap, feat_dict["v_space"]
-    )
+    genesmd_df = get_genes_metadata(subdf, ID_COL, color_col, packed)
 
     # Create chromosome metadata DataFrame
     chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-        subdf, ID_COL, limits, genesmd_df, packed, feat_dict["v_space"]
+        subdf, limits, genesmd_df, packed
     )
 
     # Deal with introns off
@@ -373,11 +370,9 @@ def plot(
         # recompute limits
         chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
             subdf,
-            ID_COL,
             limits,
             genesmd_df,
             packed,
-            feat_dict["v_space"],
             ts_data=ts_data,
         )
 
@@ -397,10 +392,6 @@ def plot(
         [CHROM_COL, PR_INDEX_COL] + ID_COL, group_keys=False, observed=True
     ).cumcount()
     genesmd_df.sort_index(inplace=True)
-
-    # Adjust vertical space
-    genesmd_df["ycoord"] = genesmd_df["ycoord"] * feat_dict["v_space"]
-    chrmd_df["pr_line"] = chrmd_df["pr_line"] * feat_dict["v_space"]
 
     # Deal with text_pad
     text_pad = feat_dict["text_pad"]

@@ -47,10 +47,9 @@ def plot_exons_plt(
     title_dict_plt = feat_dict["title_dict_plt"]
     grid_color = feat_dict["grid_color"]
     exon_border = feat_dict["exon_border"]
-    exon_width = feat_dict["exon_width"]
+    exon_height = feat_dict["exon_height"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     text_size = feat_dict["text_size"]
-    v_space = feat_dict["v_space"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
     arrow_size_min = feat_dict["arrow_size_min"]
@@ -87,7 +86,6 @@ def plot_exons_plt(
         fig_bkg,
         shrinked_bkg,
         shrinked_alpha,
-        v_space,
     )
 
     # Plot genes
@@ -107,7 +105,7 @@ def plot_exons_plt(
             transcript_str,
             text,
             text_size,
-            exon_width,
+            exon_height,
             exon_border,
             transcript_utr_width,
             arrow_intron_threshold,
@@ -115,7 +113,6 @@ def plot_exons_plt(
             arrow_color,
             arrow_size_min,
             arrow_size,
-            v_space,
         )
     )
 
@@ -157,7 +154,7 @@ def gby_plot_exons(
     transcript_str,
     text,
     text_size,
-    exon_width,
+    exon_height,
     exon_border,
     transcript_utr_width,
     arrow_intron_threshold,
@@ -165,7 +162,6 @@ def gby_plot_exons(
     arrow_color,
     arrow_size_min,
     arrow_size,
-    v_space,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -181,7 +177,7 @@ def gby_plot_exons(
     if not isinstance(genemd, pd.Series):
         genemd = genemd[genemd[PR_INDEX_COL] == pr_ix]  # in case same gene in +1 pr
         genemd = pd.Series(genemd.iloc[0])
-    gene_ix = genemd["ycoord"] + 0.5 * v_space
+    gene_ix = genemd["ycoord"] + 0.5
     # color of border of first interval will be used as intron color and utr color for simplicity
     if exon_border is None:
         exon_border = df[BORDER_COLOR_COL].iloc[0]
@@ -218,7 +214,7 @@ def gby_plot_exons(
         exon_border,
         strand,
         arrow_intron_threshold,
-        exon_width,
+        exon_height,
         arrow_color,
         arrow_style,
         arrow_line_width,
@@ -241,7 +237,7 @@ def gby_plot_exons(
         plot_border,
         genename,
         showinfo,
-        exon_width,
+        exon_height,
         transcript_utr_width,
         arrow_size_min,
         arrow_color,

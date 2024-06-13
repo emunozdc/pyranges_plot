@@ -123,7 +123,7 @@ def set_theme(name):
     >>> import pyranges_plot as prp
 
     >>> prp.set_theme("dark")
-    >>> prp.set_theme({"title_color": "goldenrod", "exon_width": 0.8})
+    >>> prp.set_theme({"title_color": "goldenrod", "exon_height": 0.8})
 
     """
 
@@ -375,10 +375,9 @@ def print_options(return_keys=False):
         intragen_feat_df = feat_df[
             feat_df.index.isin(
                 [
-                    "exon_width",
+                    "exon_height",
                     "text_size",
                     "text_pad",
-                    "v_space",
                     "arrow_line_width",
                     "arrow_color",
                     "arrow_size",

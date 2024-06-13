@@ -42,11 +42,10 @@ def plot_exons_ply(
     title_dict_ply = feat_dict["title_dict_ply"]
     grid_color = feat_dict["grid_color"]
     exon_border = feat_dict["exon_border"]
-    exon_width = feat_dict["exon_width"]
+    exon_height = feat_dict["exon_height"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
     text_size = feat_dict["text_size"]
     # text_pad = feat_dict["text_pad"]
-    v_space = feat_dict["v_space"]
     plotly_port = feat_dict["plotly_port"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
@@ -68,13 +67,10 @@ def plot_exons_ply(
         grid_color,
         packed,
         y_labels,
-        plot_bkg,
-        plot_border,
         tick_pos_d,
         ori_tick_pos_d,
         shrinked_bkg,
         shrinked_alpha,
-        v_space,
     )
 
     # Plot genes
@@ -82,17 +78,15 @@ def plot_exons_ply(
         lambda subdf: gby_plot_exons(
             subdf,
             fig,
-            chrmd_df,
             chrmd_df_grouped,
             genesmd_df,
             ts_data,
-            id_col,
             tooltip,
             legend,
             transcript_str,
             text,
             text_size,
-            exon_width,
+            exon_height,
             exon_border,
             transcript_utr_width,
             plot_bkg,
@@ -101,7 +95,6 @@ def plot_exons_ply(
             arrow_size_min,
             arrow_size,
             arrow_intron_threshold,
-            v_space,
         )
     )  # .reset_index(level=PR_INDEX_COL)
 
@@ -167,17 +160,15 @@ def plot_exons_ply(
 def gby_plot_exons(
     df,
     fig,
-    chrmd_df,
     chrmd_df_grouped,
     genesmd_df,
     ts_data,
-    id_col,
     showinfo,
     legend,
     transcript_str,
     text,
     text_size,
-    exon_width,
+    exon_height,
     exon_border,
     transcript_utr_width,
     plot_background,
@@ -186,7 +177,6 @@ def gby_plot_exons(
     arrow_size_min,
     arrow_size,
     arrow_intron_threshold,
-    v_space,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
@@ -203,7 +193,7 @@ def gby_plot_exons(
     if not isinstance(genemd, pd.Series):
         genemd = genemd[genemd[PR_INDEX_COL] == pr_ix]  # in case same gene in +1 pr
         genemd = pd.Series(genemd.iloc[0])
-    gene_ix = genemd["ycoord"] + 0.5 * v_space
+    gene_ix = genemd["ycoord"] + 0.5
     # color of first interval will be used as intron color and utr color for simplicity
     if exon_border is None:
         exon_border = df[BORDER_COLOR_COL].iloc[0]
@@ -224,7 +214,7 @@ def gby_plot_exons(
 
     # add annotation for introns to plot
     x0, x1 = min(df[START_COL]), max(df[END_COL])
-    y0, y1 = gene_ix - exon_width / 160, gene_ix + exon_width / 160
+    y0, y1 = gene_ix - exon_height / 160, gene_ix + exon_height / 160
 
     fig.add_trace(
         go.Scatter(
@@ -259,7 +249,7 @@ def gby_plot_exons(
         strand,
         genename,
         arrow_intron_threshold,
-        exon_width,
+        exon_height,
         arrow_color,
         arrow_line_width,
         arrow_size,
@@ -280,7 +270,7 @@ def gby_plot_exons(
         chrom_ix,
         geneinfo,
         showinfo,
-        exon_width,
+        exon_height,
         transcript_utr_width,
         legend,
         arrow_size_min,

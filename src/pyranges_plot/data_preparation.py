@@ -235,7 +235,7 @@ def subdf_assigncolor(subdf, colormap, color_col, exon_border):
     return subdf
 
 
-def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
+def get_genes_metadata(df, id_col, color_col, packed):
     """Create genes metadata df."""
 
     # Start df with chromosome and the column defining color
@@ -400,9 +400,7 @@ def fill_min_max(row, ts_data):
     return row
 
 
-def get_chromosome_metadata(
-    df, id_col, limits, genesmd_df, packed, v_space, ts_data=None
-):
+def get_chromosome_metadata(df, limits, genesmd_df, packed, ts_data=None):
     """Create chromosome metadata df."""
 
     # Start df
@@ -451,10 +449,9 @@ def get_chromosome_metadata(
             genesmd_df.groupby([CHROM_COL], group_keys=False, observed=True)[
                 "ycoord"
             ].max()
-            * v_space
         )
         chrmd_df_grouped.rename(columns={"ycoord": "y_height"}, inplace=True)
-        chrmd_df_grouped["y_height"] += 1 * v_space  # count from 1
+        chrmd_df_grouped["y_height"] += 1  # count from 1
 
     else:
         y_height_df = chrmd_df.groupby(CHROM_COL, observed=True)["n_genes"].sum()
@@ -462,7 +459,6 @@ def get_chromosome_metadata(
         chrmd_df_grouped.rename(columns={"n_genes": "y_height"}, inplace=True)
         chrmd_df_grouped["y_height"] += chrmd_df_grouped["n_pr_ix"]
         chrmd_df_grouped["y_height"] -= 1
-        chrmd_df_grouped["y_height"] = chrmd_df_grouped["y_height"] * v_space
 
     # Obtain the positions of lines separating pr objects
     chrmd_df = chrmd_df.join(
@@ -476,7 +472,6 @@ def get_chromosome_metadata(
         -1, fill_value=-1
     )
     chrmd_df["pr_line"] += 1
-    ##chrmd_df["pr_line"] = chrmd_df["pr_line"]*v_space
 
     # Set chrom_ix to get the right association to the plot index
     chrmd_df_grouped["chrom_ix"] = chrmd_df_grouped.groupby(
