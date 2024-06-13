@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pyranges.core.names import CHROM_COL, START_COL, END_COL, STRAND_COL
 
-from .core import plt_popup_warning
+from .core import plt_popup_warning, coord2percent
 from .fig_axes import create_fig
 from .data2plot import (
     apply_gene_bridge,
@@ -205,6 +205,11 @@ def gby_plot_exons(
         ts_chrom = ts_data[chrom]
     else:
         ts_chrom = pd.DataFrame()
+
+    if isinstance(arrow_intron_threshold, int):
+        arrow_intron_threshold = coord2percent(ax, 0, arrow_intron_threshold)
+    if isinstance(arrow_size, int):
+        arrow_size = coord2percent(ax, 0, arrow_size)
 
     dir_flag = plot_introns(
         sorted_exons,

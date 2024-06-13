@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pyranges.core.names import CHROM_COL, START_COL, END_COL, STRAND_COL
 
-from .core import initialize_dash_app
+from .core import initialize_dash_app, coord2percent
 from .fig_axes import create_fig
 from .data2plot import plot_introns, apply_gene_bridge
 from ..names import PR_INDEX_COL, BORDER_COLOR_COL
@@ -240,6 +240,13 @@ def gby_plot_exons(
         ts_chrom = ts_data[chrom]
     else:
         ts_chrom = pd.DataFrame()
+
+    if isinstance(arrow_intron_threshold, int):
+        arrow_intron_threshold = coord2percent(
+            fig, chrom_ix + 1, 0, arrow_intron_threshold
+        )
+    if isinstance(arrow_size, int):
+        arrow_size = coord2percent(fig, chrom_ix + 1, 0, arrow_size)
 
     dir_flag = plot_introns(
         sorted_exons,
