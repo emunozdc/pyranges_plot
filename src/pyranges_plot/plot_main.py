@@ -270,6 +270,7 @@ def plot(
         "exon_border": getvalue("exon_border"),
         "exon_height": float(getvalue("exon_height")),
         "transcript_utr_width": 0.3 * float(getvalue("exon_height")),
+        "v_spacer": getvalue("v_spacer"),
         "text_size": float(getvalue("text_size")),
         "text_pad": getvalue("text_pad"),
         "plotly_port": getvalue("plotly_port"),
@@ -336,11 +337,23 @@ def plot(
     subdf = subdf_assigncolor(subdf, colormap, color_col, feat_dict["exon_border"])
 
     # Create genes metadata DataFrame
-    genesmd_df = get_genes_metadata(subdf, ID_COL, color_col, packed)
+    genesmd_df = get_genes_metadata(
+        subdf,
+        ID_COL,
+        color_col,
+        packed,
+        feat_dict["exon_height"],
+        feat_dict["v_spacer"],
+    )
 
     # Create chromosome metadata DataFrame
     chrmd_df, chrmd_df_grouped = get_chromosome_metadata(
-        subdf, limits, genesmd_df, packed
+        subdf,
+        limits,
+        genesmd_df,
+        packed,
+        feat_dict["v_spacer"],
+        feat_dict["exon_height"],
     )
 
     # Deal with introns off
@@ -373,6 +386,8 @@ def plot(
             limits,
             genesmd_df,
             packed,
+            feat_dict["v_spacer"],
+            feat_dict["exon_height"],
             ts_data=ts_data,
         )
 

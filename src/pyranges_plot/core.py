@@ -376,6 +376,7 @@ def print_options(return_keys=False):
             feat_df.index.isin(
                 [
                     "exon_height",
+                    "v_spacer",
                     "text_size",
                     "text_pad",
                     "arrow_line_width",

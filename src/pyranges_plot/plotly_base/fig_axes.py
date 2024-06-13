@@ -60,6 +60,8 @@ def create_fig(
     ori_tick_pos_d,
     shrinked_bkg,
     shrinked_alpha,
+    v_spacer,
+    exon_height,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -144,30 +146,31 @@ def create_fig(
             )
 
         # set y axis limits
-        y_min = 0
+        y_min = 0.5 - exon_height / 2
         y_max = chrmd_df_grouped.loc[chrom]["y_height"]
         y_ticks_val = []
         y_ticks_name = []
 
         # gene names in y axis
         if not packed and not y_labels:
-            # y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
-            y_ticks_val = [i + 0.5 for i in range(y_max)]
+            y_ticks_val = (
+                genesmd_df[genesmd_df["Chromosome"] == chrom]["ycoord"] + 0.5
+            ).to_list()
             y_ticks_name_d = (
                 genesmd_df[genesmd_df[CHROM_COL] == chrom]
                 .groupby(PR_INDEX_COL, group_keys=False, observed=True)
                 .groups
             )
             y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
-            y_ticks_name = [list(id) + [""] for id in y_ticks_name_d.values()]
-            y_ticks_name = [item for sublist in y_ticks_name for item in sublist][:-1]
+            y_ticks_name = [list(id) for id in y_ticks_name_d.values()]
+            y_ticks_name = [item for sublist in y_ticks_name for item in sublist]
 
         # Draw lines separating pr objects if +1
         if chrmd_df["pr_line"].drop_duplicates().max() != 0:
             pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
             if isinstance(pr_line_y_l, int):
                 pr_line_y_l = [pr_line_y_l]
-            pr_line_y_l = [y_max] + pr_line_y_l
+            pr_line_y_l = [y_max + v_spacer] + pr_line_y_l
             present_pr_l = chrmd_df_grouped.loc[chrom]["present_pr"]
 
             # separate items with horizontal lines
@@ -175,7 +178,7 @@ def create_fig(
                 if pr_line_y != 0:
                     # draw line
                     fig.add_hline(
-                        y=pr_line_y + 0.5,
+                        y=pr_line_y,
                         line=dict(color="black", width=1, dash="solid"),
                         row=i + 1,
                         col=1,
@@ -184,9 +187,7 @@ def create_fig(
                     # add y_label in the middle of the subplot y axis if needed
                     if y_labels:
                         if pr_line_y_l[j + 1] != 0:
-                            y_ticks_val.append(
-                                ((pr_line_y + 0.5) + (pr_line_y_l[j + 1] + 0.5)) / 2
-                            )
+                            y_ticks_val.append(((pr_line_y) + (pr_line_y_l[j + 1])) / 2)
                         else:
                             y_ticks_val.append((pr_line_y) / 2)
                         y_ticks_name.append(y_labels[int(present_pr_l[j])])
@@ -198,7 +199,7 @@ def create_fig(
                 y_ticks_name = [str(y_labels)]
 
         fig.update_yaxes(
-            range=[y_min - 0.5, y_max + 0.5],
+            range=[y_min - v_spacer, y_max + v_spacer],
             fixedrange=True,
             tickvals=y_ticks_val,
             ticktext=y_ticks_name,

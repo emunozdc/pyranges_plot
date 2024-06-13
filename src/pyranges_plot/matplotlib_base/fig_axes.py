@@ -97,6 +97,8 @@ def create_fig(
     fig_bkg,
     shrinked_bkg,
     shrinked_alpha,
+    v_spacer,
+    exon_height,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -114,9 +116,6 @@ def create_fig(
     axes = []
     for i in range(len(titles)):
         chrom = chrmd_df_grouped.index[i]
-        # chrmd = chrmd_df.loc[chrom]
-        # if isinstance(chrmd, pd.DataFrame):
-        #     chrmd = chrmd.iloc[0]
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
@@ -174,30 +173,31 @@ def create_fig(
             ax.set_xticklabels(x_ticks_name)
 
         # set y axis limits
-        y_min = 0
+        y_min = 0.5 - exon_height / 2
         y_max = chrmd_df_grouped.loc[chrom]["y_height"]
-        ax.set_ylim(y_min - 0.5, y_max + 0.5)
+        ax.set_ylim(y_min - v_spacer, y_max + v_spacer)
         # gene name as y labels if not packed and not y_labels
         y_ticks_val = []
         y_ticks_name = []
         if not packed and not y_labels:
-            # y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
-            y_ticks_val = [i + 0.5 for i in range(y_max)]
+            y_ticks_val = (
+                genesmd_df[genesmd_df["Chromosome"] == chrom]["ycoord"] + 0.5
+            ).to_list()
             y_ticks_name_d = (
                 genesmd_df[genesmd_df[CHROM_COL] == chrom]
                 .groupby(PR_INDEX_COL, group_keys=False, observed=True)
                 .groups
             )
             y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
-            y_ticks_name = [list(id) + [""] for id in y_ticks_name_d.values()]
-            y_ticks_name = [item for sublist in y_ticks_name for item in sublist][:-1]
+            y_ticks_name = [list(id) for id in y_ticks_name_d.values()]
+            y_ticks_name = [item for sublist in y_ticks_name for item in sublist]
 
         # Draw lines separating pr objects
         if chrmd_df["pr_line"].drop_duplicates().max() != 0:
             pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
             if isinstance(pr_line_y_l, int):
                 pr_line_y_l = [pr_line_y_l]
-            pr_line_y_l = [y_max] + pr_line_y_l
+            pr_line_y_l = [y_max + v_spacer] + pr_line_y_l
             present_pr_l = chrmd_df_grouped.loc[chrom]["present_pr"]
 
             # separate items with horizontal lines
@@ -205,7 +205,7 @@ def create_fig(
                 if pr_line_y != 0:
                     ax.plot(
                         [x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
-                        [pr_line_y + 0.5, pr_line_y + 0.5],
+                        [pr_line_y, pr_line_y],
                         color=plot_border,
                         linewidth=1,
                         zorder=1,
@@ -214,9 +214,7 @@ def create_fig(
                     # add y_label in the middle of the subplot if needed
                     if y_labels:
                         if pr_line_y_l[j + 1] != 0:
-                            y_ticks_val.append(
-                                ((pr_line_y + 0.5) + (pr_line_y_l[j + 1] + 0.5)) / 2
-                            )
+                            y_ticks_val.append(((pr_line_y) + (pr_line_y_l[j + 1])) / 2)
                         else:
                             y_ticks_val.append((pr_line_y) / 2)
                         y_ticks_name.append(y_labels[int(present_pr_l[j])])

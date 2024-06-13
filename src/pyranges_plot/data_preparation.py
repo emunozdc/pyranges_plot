@@ -88,26 +88,26 @@ def genesmd_packed(genesmd_df):
     return genesmd_df
 
 
-def update_y(genesmd_df):
+def update_y(genesmd_df, exon_height, v_spacer):
     """xxx"""
 
     # Consider pr dividing lines spot
     genesmd_df["update_y_prix"] = genesmd_df.groupby(PR_INDEX_COL).ngroup(
         ascending=False
-    )
+    ) * (exon_height + v_spacer * 2)
 
-    # Consider the height of the previous pr to update y coords
-    y_prev_df = (
-        genesmd_df.groupby(PR_INDEX_COL)["ycoord"]
-        .max()
-        .shift(-1, fill_value=-1)
-        .apply(lambda x: x + 1)
-        .loc[::-1]
-        .cumsum()[::-1]
-    )
-    y_prev_df.name = "update_y_prev"
-    genesmd_df = genesmd_df.join(y_prev_df, on=PR_INDEX_COL)
-    genesmd_df["ycoord"] += genesmd_df["update_y_prix"] + genesmd_df["update_y_prev"]
+    # Consider the height of the previous pr to update y coords (no need anymore) (apparently)
+    # y_prev_df = (
+    #     genesmd_df.groupby(PR_INDEX_COL)["ycoord"]
+    #     .max()
+    #     .shift(-1, fill_value= - (exon_height + v_spacer * 2))
+    #     .apply(lambda x: x + (exon_height + v_spacer * 2))
+    #     .loc[::-1]
+    #     .cumsum()[::-1]
+    # )
+    # y_prev_df.name = "update_y_prev"
+    # genesmd_df = genesmd_df.join(y_prev_df, on=PR_INDEX_COL)
+    genesmd_df["ycoord"] += genesmd_df["update_y_prix"]  # + genesmd_df["update_y_prev"]
 
     return genesmd_df
 
@@ -234,7 +234,7 @@ def subdf_assigncolor(subdf, colormap, color_col, exon_border):
     return subdf
 
 
-def get_genes_metadata(df, id_col, color_col, packed):
+def get_genes_metadata(df, id_col, color_col, packed, exon_height, v_spacer):
     """Create genes metadata df."""
 
     # Start df with chromosome and the column defining color
@@ -272,8 +272,6 @@ def get_genes_metadata(df, id_col, color_col, packed):
         CHROM_COL, group_keys=False, observed=True
     ).ngroup()
 
-    # genesmd_df["color_tag"] = list(zip(*[genesmd_df[c] for c in color_col]))
-    # genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
     genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
         ["chrix", PR_INDEX_COL], group_keys=False, observed=True
     ).cumcount()
@@ -284,7 +282,9 @@ def get_genes_metadata(df, id_col, color_col, packed):
         genesmd_df = genesmd_df.groupby(
             ["chrix", PR_INDEX_COL], group_keys=False, observed=True
         ).apply(genesmd_packed)  # add packed ycoord column
-        genesmd_df = genesmd_df.groupby(CHROM_COL).apply(update_y)
+        genesmd_df = genesmd_df.groupby(CHROM_COL).apply(
+            lambda x: update_y(x, exon_height, v_spacer)
+        )
         genesmd_df.reset_index(level=CHROM_COL, drop=True, inplace=True)
 
     else:
@@ -304,7 +304,10 @@ def get_genes_metadata(df, id_col, color_col, packed):
                     ascending=False
                 )
             )
-            genesmd_df["ycoord"] += genesmd_df["upd_yc"]
+
+            # increase proper spacing to place pr_line
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (-1)
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (exon_height + 2 * v_spacer)
 
         # +1 chromosome and +1 pr
         elif len(genesmd_df.index.get_level_values(PR_INDEX_COL).drop_duplicates()) > 1:
@@ -313,7 +316,9 @@ def get_genes_metadata(df, id_col, color_col, packed):
                     lambda x: x.groupby(PR_INDEX_COL).ngroup(ascending=False)
                 )
             )
-            genesmd_df["ycoord"] += genesmd_df["upd_yc"]
+            # increase proper spacing to place pr_line
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (-1)
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (exon_height + 2 * v_spacer)
 
         genesmd_df.reset_index(PR_INDEX_COL, inplace=True)
 
@@ -399,7 +404,9 @@ def fill_min_max(row, ts_data):
     return row
 
 
-def get_chromosome_metadata(df, limits, genesmd_df, packed, ts_data=None):
+def get_chromosome_metadata(
+    df, limits, genesmd_df, packed, v_spacer, exon_height, ts_data=None
+):
     """Create chromosome metadata df."""
 
     # Start df
@@ -443,21 +450,13 @@ def get_chromosome_metadata(df, limits, genesmd_df, packed, ts_data=None):
     chrmd_df_grouped.columns = ["min", "max", "min_max", "n_pr_ix", "present_pr"]
 
     # Store plot y height
-    if packed:
-        chrmd_df_grouped = chrmd_df_grouped.join(
-            genesmd_df.groupby([CHROM_COL], group_keys=False, observed=True)[
-                "ycoord"
-            ].max()
-        )
-        chrmd_df_grouped.rename(columns={"ycoord": "y_height"}, inplace=True)
-        chrmd_df_grouped["y_height"] += 1  # count from 1
-
-    else:
-        y_height_df = chrmd_df.groupby(CHROM_COL, observed=True)["n_genes"].sum()
-        chrmd_df_grouped = chrmd_df_grouped.join(y_height_df, on=CHROM_COL)
-        chrmd_df_grouped.rename(columns={"n_genes": "y_height"}, inplace=True)
-        chrmd_df_grouped["y_height"] += chrmd_df_grouped["n_pr_ix"]
-        chrmd_df_grouped["y_height"] -= 1
+    chrmd_df_grouped = chrmd_df_grouped.join(
+        genesmd_df.groupby([CHROM_COL], group_keys=False, observed=True)["ycoord"].max()
+    )
+    chrmd_df_grouped.rename(columns={"ycoord": "y_height"}, inplace=True)
+    chrmd_df_grouped["y_height"] += (
+        0.5 + exon_height / 2
+    )  # the middle of the rectangle is +.5 of ycoord
 
     # Obtain the positions of lines separating pr objects
     chrmd_df = chrmd_df.join(
@@ -466,11 +465,13 @@ def get_chromosome_metadata(df, limits, genesmd_df, packed, ts_data=None):
         ].max()
     )
     chrmd_df.rename(columns={"ycoord": "pr_line"}, inplace=True)
-
     chrmd_df["pr_line"] = chrmd_df.groupby(CHROM_COL)["pr_line"].shift(
-        -1, fill_value=-1
+        -1, fill_value=-(0.5 + exon_height / 2 + v_spacer)
     )
-    chrmd_df["pr_line"] += 1
+
+    chrmd_df["pr_line"] += (
+        0.5 + exon_height / 2 + v_spacer
+    )  # midle of rectangle is +.5 of ycoord
 
     # Set chrom_ix to get the right association to the plot index
     chrmd_df_grouped["chrom_ix"] = chrmd_df_grouped.groupby(

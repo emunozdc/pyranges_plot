@@ -49,6 +49,7 @@ def plot_exons_plt(
     exon_border = feat_dict["exon_border"]
     exon_height = feat_dict["exon_height"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
+    v_spacer = feat_dict["v_spacer"]
     text_size = feat_dict["text_size"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
@@ -86,6 +87,8 @@ def plot_exons_plt(
         fig_bkg,
         shrinked_bkg,
         shrinked_alpha,
+        v_spacer,
+        exon_height,
     )
 
     # Plot genes
