@@ -3,7 +3,6 @@ import pandas as pd
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 
 from .names import (
-    PR_INDEX_COL,
     SHRTHRES_COL,
     ADJSTART_COL,
     ADJEND_COL,

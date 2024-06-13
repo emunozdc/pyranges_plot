@@ -8,7 +8,7 @@ from .data2plot import (
     apply_gene_bridge,
     plot_introns,
 )
-from ..names import PR_INDEX_COL, COLOR_INFO, BORDER_COLOR_COL
+from ..names import PR_INDEX_COL, BORDER_COLOR_COL
 
 arrow_style = "round"
 

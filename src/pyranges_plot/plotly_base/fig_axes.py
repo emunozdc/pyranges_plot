@@ -3,7 +3,6 @@ import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
-from math import ceil
 from pyranges_plot.core import cumdelting
 from pyranges_plot.names import PR_INDEX_COL, ORISTART_COL, ORIEND_COL, CUM_DELTA_COL
 
@@ -153,7 +152,7 @@ def create_fig(
         # gene names in y axis
         if not packed and not y_labels:
             # y_ticks_val = [(i + 0.5) * v_space for i in range(ceil(y_max / v_space))]
-            y_ticks_val = [i + 0.5 for i in range(y_mac)]
+            y_ticks_val = [i + 0.5 for i in range(y_max)]
             y_ticks_name_d = (
                 genesmd_df[genesmd_df[CHROM_COL] == chrom]
                 .groupby(PR_INDEX_COL, group_keys=False, observed=True)

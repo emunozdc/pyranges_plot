@@ -3,7 +3,6 @@ from intervaltree import IntervalTree
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pyranges as pr
-import sys
 import plotly.colors as pc
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
 

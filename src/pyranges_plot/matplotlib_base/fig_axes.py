@@ -4,7 +4,6 @@ from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Rectangle
 from pyranges.core.names import CHROM_COL, START_COL, END_COL
-from math import ceil
 from pyranges_plot.core import cumdelting
 from .core import make_annotation
 from ..names import PR_INDEX_COL, CUM_DELTA_COL

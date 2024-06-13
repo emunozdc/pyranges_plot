@@ -7,7 +7,7 @@ from pyranges.core.names import CHROM_COL, START_COL, END_COL, STRAND_COL
 from .core import initialize_dash_app
 from .fig_axes import create_fig
 from .data2plot import plot_introns, apply_gene_bridge
-from ..names import PR_INDEX_COL, COLOR_INFO, COLOR_TAG_COL, BORDER_COLOR_COL
+from ..names import PR_INDEX_COL, BORDER_COLOR_COL
 
 
 def plot_exons_ply(
