@@ -1,4 +1,5 @@
-import pyranges as pr, pyranges_plot as prp
+import pyranges as pr
+import pyranges_plot as prp
 
 # Load data
 g = pr.PyRanges(

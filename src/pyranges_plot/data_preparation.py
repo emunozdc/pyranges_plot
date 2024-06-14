@@ -3,23 +3,41 @@ from intervaltree import IntervalTree
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pyranges as pr
-from matplotlib.patches import Rectangle
-import sys
 import plotly.colors as pc
-from .core import get_engine, get_warnings, cumdelting
-from .matplotlib_base._core import plt_popup_warning
+from pyranges.core.names import CHROM_COL, START_COL, END_COL
+
+from .names import (
+    PR_INDEX_COL,
+    SHRTHRES_COL,
+    TEXT_PAD_COL,
+    COLOR_INFO,
+    COLOR_TAG_COL,
+    BORDER_COLOR_COL,
+)
+from .core import cumdelting, get_engine, get_warnings
+from .matplotlib_base.core import plt_popup_warning
 
 
 ############ COMPUTE INTRONS OFF THRESHOLD
 def compute_thresh(df, chrmd_df_grouped):
     """Get shrink threshold from limits"""
 
-    chrom = df["Chromosome"].iloc[0]
+    chrom = df[CHROM_COL].iloc[0]
     chrmd = chrmd_df_grouped.loc[chrom]
     limit_range = chrmd["max"] - chrmd["min"]
-    df["shrink_threshold"] = [int(df["shrink_threshold"].iloc[0] * limit_range)] * len(
-        df
-    )
+    df[SHRTHRES_COL] = [int(df[SHRTHRES_COL].iloc[0] * limit_range)] * len(df)
+
+    return df
+
+
+############ COMPUTE TEXT PAD SIZE
+def compute_tpad(df, chrmd_df_grouped):
+    """Get text pad size from limits"""
+
+    chrom = df[CHROM_COL].iloc[0]
+    chrmd = chrmd_df_grouped.loc[chrom]
+    limit_range = chrmd["max"] - chrmd["min"]
+    df[TEXT_PAD_COL] = [int(df[TEXT_PAD_COL].iloc[0] * limit_range)] * len(df)
 
     return df
 
@@ -29,12 +47,8 @@ def make_subset(df, id_col, max_shown):
     """Reduce the number of genes to work with."""
 
     # create a column indexing all the genes in the df
-    genesix_l = [i for i in enumerate(df[id_col].drop_duplicates())]
-    genesix_d = {key: value for value, key in genesix_l}
-    df["gene_index"] = df[id_col].map(
-        genesix_d
-    )  # create a column indexing all the genes in the df
-    tot_ngenes = max(genesix_l)[0]
+    df["gene_index"] = df.groupby(id_col, group_keys=False).ngroup()
+    tot_ngenes = max(df["gene_index"])
 
     # select maximum number of genes
     if max(df.gene_index) + 1 <= max_shown:
@@ -52,7 +66,7 @@ def make_subset(df, id_col, max_shown):
 
 
 ###packed
-def _genesmd_packed(genesmd_df):
+def genesmd_packed(genesmd_df):
     """xxx"""
 
     # Initialize IntervalTree and used y-coordinates list
@@ -60,7 +74,7 @@ def _genesmd_packed(genesmd_df):
 
     def find_tree(row):
         for tree in trees:
-            if not tree.overlaps(row["Start"], row["End"]):
+            if not tree.overlaps(row[START_COL], row[END_COL]):
                 return tree
         trees.append(IntervalTree())
         return trees[-1]
@@ -68,32 +82,32 @@ def _genesmd_packed(genesmd_df):
     # Assign y-coordinates
     for idx, row in genesmd_df.iterrows():
         tree = find_tree(row)
-        tree.addi(row["Start"], row["End"], idx)
+        tree.addi(row[START_COL], row[END_COL], idx)
         genesmd_df.at[idx, "ycoord"] = trees.index(tree)
 
     return genesmd_df
 
 
-def _update_y(genesmd_df):
+def update_y(genesmd_df, exon_height, v_spacer):
     """xxx"""
 
-    min_pr_ix = genesmd_df["pr_ix"].min()
-
     # Consider pr dividing lines spot
-    genesmd_df["update_y_prix"] = genesmd_df.groupby("pr_ix").ngroup(ascending=False)
+    genesmd_df["update_y_prix"] = genesmd_df.groupby(PR_INDEX_COL).ngroup(
+        ascending=False
+    ) * (exon_height + v_spacer * 2)
 
-    # Consider the height of the previous pr to update y coords
-    y_prev_df = (
-        genesmd_df.groupby("pr_ix")["ycoord"]
-        .max()
-        .shift(-1, fill_value=-1)
-        .apply(lambda x: x + 1)
-        .loc[::-1]
-        .cumsum()[::-1]
-    )
-    y_prev_df.name = "update_y_prev"
-    genesmd_df = genesmd_df.join(y_prev_df, on="pr_ix")
-    genesmd_df["ycoord"] += genesmd_df["update_y_prix"] + genesmd_df["update_y_prev"]
+    # Consider the height of the previous pr to update y coords (no need anymore) (apparently)
+    # y_prev_df = (
+    #     genesmd_df.groupby(PR_INDEX_COL)["ycoord"]
+    #     .max()
+    #     .shift(-1, fill_value= - (exon_height + v_spacer * 2))
+    #     .apply(lambda x: x + (exon_height + v_spacer * 2))
+    #     .loc[::-1]
+    #     .cumsum()[::-1]
+    # )
+    # y_prev_df.name = "update_y_prev"
+    # genesmd_df = genesmd_df.join(y_prev_df, on=PR_INDEX_COL)
+    genesmd_df["ycoord"] += genesmd_df["update_y_prix"]  # + genesmd_df["update_y_prev"]
 
     return genesmd_df
 
@@ -138,23 +152,29 @@ def get_plycolormap(colormap_string):
         return getattr(pc.qualitative, colormap_string)
 
 
-def _genesmd_assigncolor(genesmd_df, colormap):
-    """Match color with gene"""
+def subdf_assigncolor(subdf, colormap, color_col, exon_border):
+    """Add color information to data."""
 
-    color_tags = genesmd_df.color_tag.drop_duplicates()
+    # Create COLOR_COL column
+    if len(color_col) > 1:
+        subdf[COLOR_TAG_COL] = list(zip(*[subdf[c] for c in color_col]))
+    else:
+        subdf[COLOR_TAG_COL] = subdf[color_col[0]]
+
+    # Assign colors to
+    color_tags = subdf[COLOR_TAG_COL].drop_duplicates()
     n_color_tags = len(color_tags)
 
     # 0-string to colormap object if possible
     if isinstance(colormap, str):
-        try:
-            if is_pltcolormap(colormap):
-                colormap = plt.get_cmap(colormap)
-            elif is_plycolormap(colormap):
-                colormap = get_plycolormap(colormap)
-            else:
-                sys.exit(1)
-        except SystemExit as e:
-            print("The provided string does not match any plt or plotly colormap.", e)
+        if is_pltcolormap(colormap):
+            colormap = plt.get_cmap(colormap)
+        elif is_plycolormap(colormap):
+            colormap = get_plycolormap(colormap)
+        else:
+            raise Exception(
+                "The provided string does not match any plt or plotly colormap."
+            )
 
     # 1-plt colormap to list
     if isinstance(colormap, mcolors.ListedColormap):
@@ -171,7 +191,7 @@ def _genesmd_assigncolor(genesmd_df, colormap):
                     "The genes are colored by iterating over the given color list."
                 )
             elif engine in ["ply", "plotly"] and warnings:
-                genesmd_df["_iterwarning!"] = [1] * len(genesmd_df)
+                subdf["_iterwarning!"] = [1] * len(subdf)
         else:
             colormap = colormap[:n_color_tags]
         # make plotly rgb colors compatible with plt
@@ -191,11 +211,11 @@ def _genesmd_assigncolor(genesmd_df, colormap):
 
     # 3- Use dict to assign color to gene
     if isinstance(colormap, dict):
-        genesmd_df["color_tag"] = genesmd_df["color_tag"].astype(str)
-        genesmd_df["color"] = genesmd_df["color_tag"].map(colormap)
+        subdf[COLOR_TAG_COL] = subdf[COLOR_TAG_COL].astype(str)
+        subdf[COLOR_INFO] = subdf[COLOR_TAG_COL].map(colormap)
 
         # add black genes warning if needed
-        if genesmd_df["color"].isna().any():
+        if subdf[COLOR_INFO].isna().any():
             engine = get_engine()
             warnings = get_warnings()
             if engine in ["plt", "matplotlib"] and warnings:
@@ -203,86 +223,107 @@ def _genesmd_assigncolor(genesmd_df, colormap):
                     "Some genes do not have a color assigned so they are colored in black."
                 )
             elif engine in ["ply", "plotly"] and warnings:
-                genesmd_df["_blackwarning!"] = [1] * len(genesmd_df)
-            genesmd_df["color"].fillna("black", inplace=True)  # black for not specified
+                subdf["_blackwarning!"] = [1] * len(subdf)
+            subdf[COLOR_INFO].fillna("black", inplace=True)  # black for not specified
 
-    return genesmd_df
+    if exon_border:
+        subdf[BORDER_COLOR_COL] = [exon_border] * len(subdf)
+    else:
+        subdf[BORDER_COLOR_COL] = subdf[COLOR_INFO]
+
+    return subdf
 
 
-def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
+def get_genes_metadata(df, id_col, color_col, packed, exon_height, v_spacer):
     """Create genes metadata df."""
 
     # Start df with chromosome and the column defining color
-    if color_col == "Chromosome":
-        genesmd_df = df.groupby([id_col, "pr_ix"], group_keys=False, observed=True).agg(
-            {"Chromosome": "first", "Start": "min", "End": "max"}
+    # Define the aggregation functions for each column
+    agg_funcs = {
+        col: "first"
+        for col in ["Chromosome"] + id_col + color_col
+        if col not in [START_COL, END_COL, PR_INDEX_COL]
+    }
+    agg_funcs[START_COL] = "min"
+    agg_funcs[END_COL] = "max"
+    # workaround for Chromosome in color_col list
+    if CHROM_COL in color_col:
+        genesmd_df = (
+            df.groupby(id_col + [PR_INDEX_COL], group_keys=False, observed=True)
+            .agg(agg_funcs)
+            .reset_index(level=PR_INDEX_COL)
         )
-        genesmd_df["chromosome"] = genesmd_df["Chromosome"]
-        color_col = "chromosome"
+        genesmd_df["chromosome"] = genesmd_df[CHROM_COL]
+        for i in range(len(color_col)):
+            if color_col[i] == CHROM_COL:
+                color_col[i] = "chromosome"
+
     else:
         genesmd_df = (
-            df.groupby([id_col, "pr_ix"], group_keys=False, observed=True)
-            .agg(
-                {
-                    "Chromosome": "first",
-                    "Start": "min",
-                    "End": "max",
-                    color_col: "first",
-                }
-            )
-            .reset_index(level=1)
+            df.groupby(id_col + [PR_INDEX_COL], group_keys=False, observed=True)
+            .agg(agg_funcs)
+            .reset_index(level=PR_INDEX_COL)
         )
 
-    # Sort bu pr_ix
-    genesmd_df.sort_values(by="pr_ix", inplace=True)
+    # Sort by pr_ix
+    genesmd_df.sort_values(by=PR_INDEX_COL, inplace=True)
 
     genesmd_df["chrix"] = genesmd_df.groupby(
-        "Chromosome", group_keys=False, observed=True
+        CHROM_COL, group_keys=False, observed=True
     ).ngroup()
-    genesmd_df.rename(columns={color_col: "color_tag"}, inplace=True)
+
     genesmd_df["gene_ix_xchrom"] = genesmd_df.groupby(
-        ["chrix", "pr_ix"], group_keys=False, observed=True
+        ["chrix", PR_INDEX_COL], group_keys=False, observed=True
     ).cumcount()
 
     # Assign y-coordinate to genes
     if packed:
         genesmd_df["ycoord"] = -1
         genesmd_df = genesmd_df.groupby(
-            ["chrix", "pr_ix"], group_keys=False, observed=True
-        ).apply(_genesmd_packed)  # add packed ycoord column
-        genesmd_df = genesmd_df.groupby("Chromosome").apply(_update_y)
-        genesmd_df.reset_index(level="Chromosome", drop=True, inplace=True)
+            ["chrix", PR_INDEX_COL], group_keys=False, observed=True
+        ).apply(genesmd_packed)  # add packed ycoord column
+        genesmd_df = genesmd_df.groupby(CHROM_COL).apply(
+            lambda x: update_y(x, exon_height, v_spacer)
+        )
+        genesmd_df.reset_index(level=CHROM_COL, drop=True, inplace=True)
 
     else:
         # one gene in each height
-        genesmd_df.set_index("pr_ix", inplace=True, append=True)
+        genesmd_df.set_index(PR_INDEX_COL, inplace=True, append=True)
         genesmd_df["ycoord"] = (
-            genesmd_df.sort_values(by="pr_ix", ascending=False)
-            .groupby("Chromosome", group_keys=False, observed=True)
+            genesmd_df.sort_values(by=PR_INDEX_COL, ascending=False)
+            .groupby(CHROM_COL, group_keys=False, observed=True)
             .cumcount()
         )
-        genesmd_df = genesmd_df.assign(
-            upd_yc=genesmd_df.groupby("Chromosome", group_keys=False).apply(
-                lambda x: x.groupby("pr_ix").ngroup(ascending=False)
+
+        # now create col to update according to prev pr height if needed
+        # only one chromosome (no matter how many pr)
+        if len(genesmd_df[CHROM_COL].drop_duplicates()) == 1:
+            genesmd_df = genesmd_df.assign(
+                upd_yc=genesmd_df.groupby([PR_INDEX_COL], group_keys=False).ngroup(
+                    ascending=False
+                )
             )
-        )
-        genesmd_df["ycoord"] += genesmd_df["upd_yc"]
-        ### now create col to update according to prev pr height
-        genesmd_df.reset_index("pr_ix", inplace=True)
+
+            # increase proper spacing to place pr_line
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (-1)
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (exon_height + 2 * v_spacer)
+
+        # +1 chromosome and +1 pr
+        elif len(genesmd_df.index.get_level_values(PR_INDEX_COL).drop_duplicates()) > 1:
+            genesmd_df = genesmd_df.assign(
+                upd_yc=genesmd_df.groupby(CHROM_COL, group_keys=False).apply(
+                    lambda x: x.groupby(PR_INDEX_COL).ngroup(ascending=False)
+                )
+            )
+            # increase proper spacing to place pr_line
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (-1)
+            genesmd_df["ycoord"] += genesmd_df["upd_yc"] * (exon_height + 2 * v_spacer)
+
+        genesmd_df.reset_index(PR_INDEX_COL, inplace=True)
 
     # Assign color to each gene
-    genesmd_df = _genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
-
-    # Add legend info
-    def create_legend_rect(color):
-        return Rectangle((0, 0), 1, 1, color=color)
-
-    # column with rectangle objects with same color as gene
-    genesmd_df["legend_item"] = genesmd_df["color"].apply(create_legend_rect)
-
-    # Update vertical space
-    ##genesmd_df["ycoord_1base"] = genesmd_df["ycoord"]*v_space
-    ##genesmd_df["ycoord"] = genesmd_df["ycoord"] * v_space
+    # genesmd_df = genesmd_assigncolor(genesmd_df, colormap)  # adds a column 'color'
 
     return genesmd_df
 
@@ -291,7 +332,7 @@ def get_genes_metadata(df, id_col, color_col, packed, colormap, v_space):
 
 
 ##limits
-def _chrmd_limits(chrmd_df, limits):
+def chrmd_limits(chrmd_df, limits):
     """Compute 'min_max' column for chromosome metadata"""
 
     # 1- create min_max column containing (plot min, plot max)
@@ -305,12 +346,12 @@ def _chrmd_limits(chrmd_df, limits):
         chrmd_df["min_max"] = [limits] * len(chrmd_df)
 
     # pyranges object
-    elif type(limits) is pr.pyranges_main.PyRanges:
+    elif type(limits) is pr.PyRanges:
         # create dict to map limits
         limits_df = limits.df
         limits_chrmd_df = limits_df.groupby(
-            "Chromosome", group_keys=False, observed=True
-        ).agg({"Start": "min", "End": "max"})
+            CHROM_COL, group_keys=False, observed=True
+        ).agg({START_COL: "min", END_COL: "max"})
         limits_chrmd_dict = limits_chrmd_df.to_dict(orient="index")
 
         # function to get matching values from limits_chrmd_df
@@ -319,8 +360,8 @@ def _chrmd_limits(chrmd_df, limits):
             limits = limits_chrmd_dict.get(chromosome)
             if limits:
                 return (
-                    limits["Start"],
-                    limits["End"],
+                    limits[START_COL],
+                    limits[END_COL],
                 )  # chromosome in both sets of data
             else:
                 return (np.nan, np.nan)  # chromosome does not match
@@ -335,7 +376,7 @@ def _chrmd_limits(chrmd_df, limits):
         ]  # fills with None the chromosomes not specified
 
 
-def _fill_min_max(row, ts_data):
+def fill_min_max(row, ts_data):
     """Complete min_max column for chromosome metadata if needed."""
 
     minmax_t = row["min_max"]
@@ -364,77 +405,77 @@ def _fill_min_max(row, ts_data):
 
 
 def get_chromosome_metadata(
-    df, id_col, limits, genesmd_df, packed, v_space, ts_data=None
+    df, limits, genesmd_df, packed, v_spacer, exon_height, ts_data=None
 ):
     """Create chromosome metadata df."""
 
     # Start df
-    chrmd_df = (
-        df.groupby(["Chromosome", "pr_ix"], observed=True).agg(
-            {"Start": "min", "End": "max", id_col: "nunique"}
-        )
-        # .reset_index(level="pr_ix")
+    agg_funcs = {
+        START_COL: "min",
+        END_COL: "max",
+        "__id_col_2count__": "nunique",
+    }
+
+    chrmd_df = df.groupby([CHROM_COL, PR_INDEX_COL], observed=True).agg(agg_funcs)
+    chrmd_df.rename(
+        columns={START_COL: "min", END_COL: "max", "__id_col_2count__": "n_genes"},
+        inplace=True,
     )
 
-    chrmd_df.rename(
-        columns={id_col: "n_genes", "Start": "min", "End": "max"}, inplace=True
-    )
     # Adjust limits in case +1 pr
-    if len(df["pr_ix"].drop_duplicates()) > 1:
-        chrmd_df["min"] = chrmd_df.groupby(
-            "Chromosome", group_keys=False, observed=True
-        )["min"].transform("min")
-        chrmd_df["max"] = chrmd_df.groupby(
-            "Chromosome", group_keys=False, observed=True
-        )["max"].transform("max")
+    if len(df[PR_INDEX_COL].drop_duplicates()) > 1:
+        chrmd_df["min"] = chrmd_df.groupby(CHROM_COL, group_keys=False, observed=True)[
+            "min"
+        ].transform("min")
+        chrmd_df["max"] = chrmd_df.groupby(CHROM_COL, group_keys=False, observed=True)[
+            "max"
+        ].transform("max")
 
     # Add limits
-    _chrmd_limits(chrmd_df, limits)  # unknown limits are nan
-    chrmd_df = chrmd_df.apply(lambda x: _fill_min_max(x, ts_data), axis=1)
+    chrmd_limits(chrmd_df, limits)  # unknown limits are nan
+    chrmd_df = chrmd_df.apply(lambda x: fill_min_max(x, ts_data), axis=1)
 
     chrmd_df_grouped = (
-        chrmd_df.reset_index(level="pr_ix")
-        .groupby("Chromosome", group_keys=False, observed=True)
-        .agg({"min": "first", "max": "first", "min_max": "first", "pr_ix": "size"})
+        chrmd_df.reset_index(level=PR_INDEX_COL)
+        .groupby(CHROM_COL, group_keys=False, observed=True)
+        .agg(
+            {
+                "min": "first",
+                "max": "first",
+                "min_max": "first",
+                PR_INDEX_COL: ["size", list],
+            }
+        )
     )
-    chrmd_df_grouped.rename(columns={"pr_ix": "n_pr_ix"}, inplace=True)
+    chrmd_df_grouped.columns = ["min", "max", "min_max", "n_pr_ix", "present_pr"]
 
     # Store plot y height
-    if packed:
-        chrmd_df_grouped = chrmd_df_grouped.join(
-            genesmd_df.groupby(["Chromosome"], group_keys=False, observed=True)[
-                "ycoord"
-            ].max()
-            * v_space
-        )
-        chrmd_df_grouped.rename(columns={"ycoord": "y_height"}, inplace=True)
-        chrmd_df_grouped["y_height"] += 1 * v_space  # count from 1
-
-    else:
-        y_height_df = chrmd_df.groupby("Chromosome", observed=True)["n_genes"].sum()
-        chrmd_df_grouped = chrmd_df_grouped.join(y_height_df, on="Chromosome")
-        chrmd_df_grouped.rename(columns={"n_genes": "y_height"}, inplace=True)
-        chrmd_df_grouped["y_height"] += chrmd_df_grouped["n_pr_ix"]
-        chrmd_df_grouped["y_height"] -= 1
-        chrmd_df_grouped["y_height"] = chrmd_df_grouped["y_height"] * v_space
+    chrmd_df_grouped = chrmd_df_grouped.join(
+        genesmd_df.groupby([CHROM_COL], group_keys=False, observed=True)["ycoord"].max()
+    )
+    chrmd_df_grouped.rename(columns={"ycoord": "y_height"}, inplace=True)
+    chrmd_df_grouped["y_height"] += (
+        0.5 + exon_height / 2
+    )  # the middle of the rectangle is +.5 of ycoord
 
     # Obtain the positions of lines separating pr objects
     chrmd_df = chrmd_df.join(
-        genesmd_df.groupby(["Chromosome", "pr_ix"], group_keys=False, observed=True)[
+        genesmd_df.groupby([CHROM_COL, PR_INDEX_COL], group_keys=False, observed=True)[
             "ycoord"
         ].max()
     )
     chrmd_df.rename(columns={"ycoord": "pr_line"}, inplace=True)
-
-    chrmd_df["pr_line"] = chrmd_df.groupby("Chromosome")["pr_line"].shift(
-        -1, fill_value=-1
+    chrmd_df["pr_line"] = chrmd_df.groupby(CHROM_COL)["pr_line"].shift(
+        -1, fill_value=-(0.5 + exon_height / 2 + v_spacer)
     )
-    chrmd_df["pr_line"] += 1
-    ##chrmd_df["pr_line"] = chrmd_df["pr_line"]*v_space
+
+    chrmd_df["pr_line"] += (
+        0.5 + exon_height / 2 + v_spacer
+    )  # midle of rectangle is +.5 of ycoord
 
     # Set chrom_ix to get the right association to the plot index
     chrmd_df_grouped["chrom_ix"] = chrmd_df_grouped.groupby(
-        "Chromosome", group_keys=False, observed=True
+        CHROM_COL, group_keys=False, observed=True
     ).ngroup()
 
     return chrmd_df, chrmd_df_grouped

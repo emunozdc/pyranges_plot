@@ -1,6 +1,18 @@
-from ._core import coord2percent, percent2coord
+from pyranges.core.names import START_COL, END_COL
+
+from .core import coord2percent, percent2coord
 import plotly.graph_objects as go
 import pandas as pd
+
+from ..names import (
+    ADJSTART_COL,
+    ADJEND_COL,
+    EXON_IX_COL,
+    TEXT_PAD_COL,
+    COLOR_INFO,
+    COLOR_TAG_COL,
+    BORDER_COLOR_COL,
+)
 
 
 def plot_direction(
@@ -14,7 +26,7 @@ def plot_direction(
     incl,
     gene_ix,
     chrom_ix,
-    exon_width,
+    exon_height,
     arrow_color,
     arrow_line_width,
 ):
@@ -29,19 +41,19 @@ def plot_direction(
             ##diagonal_line = OX arrow extension(item middle point +- incl), OY arrow extension (item middle point + half of exon width)
             top_plus = (
                 [(start + stop) / 2 + incl, (start + stop) / 2 - incl],
-                [gene_ix, gene_ix + exon_width / 2 - 0.01],
+                [gene_ix, gene_ix + exon_height / 2 - 0.01],
             )
             bot_plus = (
                 [(start + stop) / 2 - incl, (start + stop) / 2 + incl],
-                [gene_ix - exon_width / 2 + 0.01, gene_ix],
+                [gene_ix - exon_height / 2 + 0.01, gene_ix],
             )
             top_minus = (
                 [(start + stop) / 2 + incl, (start + stop) / 2 - incl],
-                [gene_ix - exon_width / 2 + 0.01, gene_ix],
+                [gene_ix - exon_height / 2 + 0.01, gene_ix],
             )
             bot_minus = (
                 [(start + stop) / 2 - incl, (start + stop) / 2 + incl],
-                [gene_ix, gene_ix + exon_width / 2 - 0.01],
+                [gene_ix, gene_ix + exon_height / 2 - 0.01],
             )
 
             if strand == "+":
@@ -51,7 +63,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 arrow_top = go.Scatter(
@@ -60,7 +72,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
@@ -73,7 +85,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 arrow_top = go.Scatter(
@@ -82,7 +94,7 @@ def plot_direction(
                     mode="lines",
                     line=go.scatter.Line(color=arrow_color, width=arrow_line_width),
                     showlegend=False,
-                    name=genename,
+                    name=str(genename),
                     hoverinfo="skip",
                 )
                 fig.add_trace(arrow_bot, row=chrom_ix + 1, col=1)
@@ -90,11 +102,10 @@ def plot_direction(
     return dir_flag
 
 
-def _apply_gene_bridge(
+def apply_gene_bridge(
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_size,
     df,
     fig,
     strand,
@@ -105,40 +116,36 @@ def _apply_gene_bridge(
     chrom_ix,
     geneinfo,
     showinfo,
-    exon_width,
+    exon_height,
     transcript_utr_width,
     legend,
     arrow_size_min,
     arrow_color,
     arrow_line_width,
     dir_flag,
-    arrow_size,
 ):
-    """Evaluate data and provide _plot_row with right parameters."""
+    """Evaluate data and provide plot_row with right parameters."""
 
     # NOT transcript strucutre
     if not transcript_str:
         df.apply(
-            _plot_row,
+            plot_row,
             args=(
                 fig,
                 strand,
                 genename,
                 gene_ix,
-                exon_color,
-                exon_border,
+                # exon_border,
                 chrom_ix,
                 showinfo,
-                exon_width,
+                exon_height,
                 legend,
                 arrow_size_min,
                 arrow_color,
                 arrow_line_width,
                 dir_flag,
-                transcript_str,
-                id_ann,
-                id_ann_pad,
-                id_ann_slice,
+                text,
+                text_size,
             ),
             axis=1,
         )
@@ -172,28 +179,38 @@ def _apply_gene_bridge(
                     fill="toself",
                     fillcolor=exon_color,
                     mode="lines",
-                    line=dict(color=exon_color),
+                    line=dict(color=exon_border),
                     text=geneinfo,
                     hoverinfo="text",
-                    name=genename,
+                    name=str(df[COLOR_TAG_COL].iloc[0]),
                     showlegend=legend,
                 ),
                 row=chrom_ix + 1,
                 col=1,
             )
             # add ID annotaion before start utr
-            if id_ann:
+            if text:
+                text_pad = df[TEXT_PAD_COL].iloc[0]
+                # text == True
+                if isinstance(text, bool):
+                    ann = str(genename)
+                # text == '{string}'
+                else:
+                    row_dict = df.iloc[0].to_dict()  # use first row
+                    ann = text.format_map(row_dict)
+
                 fig.add_annotation(
                     dict(
-                        x=x0 - id_ann_pad,
+                        x=x0 - text_pad,
                         y=(y0 + y1) / 2,
                         showarrow=False,
-                        text=eval(f"genename{id_ann_slice}"),
+                        text=ann,
                         textangle=0,
                         xanchor="right",
                     ),
                     row=chrom_ix + 1,
                     col=1,
+                    font={"size": text_size},
                 )
 
             # create end utr
@@ -209,10 +226,10 @@ def _apply_gene_bridge(
                     fill="toself",
                     fillcolor=exon_color,
                     mode="lines",
-                    line=dict(color=exon_color),
+                    line=dict(color=exon_border),
                     text=geneinfo,
                     hoverinfo="text",
-                    name=genename,
+                    name=str(df[COLOR_TAG_COL].iloc[-1]),
                     showlegend=legend,
                 ),
                 row=chrom_ix + 1,
@@ -222,26 +239,23 @@ def _apply_gene_bridge(
             # keep CDS data and plot it
             df = df.groupby("Feature", group_keys=False, observed=True).get_group("CDS")
             df.apply(
-                _plot_row,
+                plot_row,
                 args=(
                     fig,
                     strand,
                     genename,
                     gene_ix,
-                    exon_color,
-                    exon_border,
+                    # exon_border,
                     chrom_ix,
                     showinfo,
-                    exon_width,
+                    exon_height,
                     legend,
                     arrow_size_min,
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_size,
                 ),
                 axis=1,
             )
@@ -252,26 +266,23 @@ def _apply_gene_bridge(
             and not df.Feature.str.contains("exon").any()
         ):
             df.apply(
-                _plot_row,
+                plot_row,
                 args=(
                     fig,
                     strand,
                     genename,
                     gene_ix,
-                    exon_color,
-                    exon_border,
+                    # exon_border,
                     chrom_ix,
                     showinfo,
-                    exon_width,
+                    exon_height,
                     legend,
                     arrow_size_min,
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_size,
                 ),
                 axis=1,
             )
@@ -283,14 +294,13 @@ def _apply_gene_bridge(
         ):
             # plot just as utr
             df.apply(
-                _plot_row,
+                plot_row,
                 args=(
                     fig,
                     strand,
                     genename,
                     gene_ix,
-                    exon_color,
-                    exon_border,
+                    # exon_border,
                     chrom_ix,
                     showinfo,
                     transcript_utr_width,
@@ -299,10 +309,8 @@ def _apply_gene_bridge(
                     arrow_color,
                     arrow_line_width,
                     dir_flag,
-                    transcript_str,
-                    id_ann,
-                    id_ann_pad,
-                    id_ann_slice,
+                    text,
+                    text_size,
                 ),
                 axis=1,
             )
@@ -312,35 +320,31 @@ def _apply_gene_bridge(
             return
 
 
-def _plot_row(
+def plot_row(
     row,
     fig,
     strand,
     genename,
     gene_ix,
-    exon_color,
-    exon_border,
     chrom_ix,
     showinfo,
-    exon_width,
+    exon_height,
     legend,
     arrow_size_min,
     arrow_color,
     arrow_line_width,
     dir_flag,
-    transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
+    text,
+    text_size,
 ):
     """Plot elements corresponding to one row of one gene."""
 
     # Get the gene information to print on hover
     # default
     if strand:
-        geneinfo = f"[{strand}] ({row.oriStart}, {row.oriEnd})<br>ID: {genename}"  # default with strand
+        geneinfo = f"[{strand}] ({row.__oriStart__}, {row.__oriEnd__})<br>ID: {genename}"  # default with strand
     else:
-        geneinfo = f"({row.oriStart}, {row.oriEnd})<br>ID: {genename}"  # default without strand
+        geneinfo = f"({row.__oriStart__}, {row.__oriEnd__})<br>ID: {genename}"  # default without strand
 
     # customized
     showinfo_dict = row.to_dict()  # first element of gene rows
@@ -352,14 +356,16 @@ def _plot_row(
     if legend:
         legend = bool(row["legend_tag"])
 
-    # Exon start and stop
-    start = int(row["Start"])
-    stop = int(row["End"])
+    # Exon start, stop and color
+    start = int(row[START_COL])
+    stop = int(row[END_COL])
+    exon_color = row[COLOR_INFO]
+    exon_border = row[BORDER_COLOR_COL]
     # convert to coordinates for rectangle
     x0, x1 = start, stop
     y0, y1 = (
-        gene_ix - exon_width / 2,
-        gene_ix + exon_width / 2,
+        gene_ix - exon_height / 2,
+        gene_ix + exon_height / 2,
     )  ##gene middle point -+ half of exon size
 
     # Plot EXON as rectangle
@@ -374,7 +380,7 @@ def _plot_row(
             text=geneinfo,
             # hovertext=geneinfo,
             hoverinfo="text",
-            name=row["legend_tag"],
+            name=str(row[COLOR_TAG_COL]),
             showlegend=legend,
         ),
         row=chrom_ix + 1,
@@ -382,18 +388,28 @@ def _plot_row(
     )
 
     # Add ID annotation if it is the first exon
-    if row["exon_ix"] == 0 and id_ann:
+    if row[EXON_IX_COL] == 0 and text:
+        text_pad = row[TEXT_PAD_COL]
+        # text == True
+        if isinstance(text, bool):
+            ann = str(genename)
+        # text == '{string}'
+        else:
+            row_dict = row.to_dict()
+            ann = text.format(**row_dict)
+
         fig.add_annotation(
             dict(
-                x=x0 - id_ann_pad,
+                x=x0 - text_pad,
                 y=(y0 + y1) / 2,
                 showarrow=False,
-                text=eval(f"genename{id_ann_slice}"),
+                text=ann,
                 textangle=0,
                 xanchor="right",
             ),
             row=chrom_ix + 1,
             col=1,
+            font={"size": text_size},
         )
 
     # Plot DIRECTION ARROW in EXON
@@ -414,7 +430,7 @@ def _plot_row(
             incl,
             gene_ix,
             chrom_ix,
-            exon_width,
+            exon_height,
             arrow_color,
             arrow_line_width,
         )
@@ -430,7 +446,7 @@ def plot_introns(
     strand,
     genename,
     intron_threshold,
-    exon_width,
+    exon_height,
     arrow_color,
     arrow_line_width,
     arrow_size,
@@ -441,8 +457,8 @@ def plot_introns(
 
     for i in range(len(sorted_exons) - 1):
         # define intron
-        start = sorted_exons["End"].iloc[i]
-        stop = sorted_exons["Start"].iloc[i + 1]
+        start = sorted_exons[END_COL].iloc[i]
+        stop = sorted_exons[START_COL].iloc[i + 1]
 
         # NOT introns off
         if ts_chrom.empty:
@@ -451,7 +467,7 @@ def plot_introns(
         # INTRONS OFF
         else:
             ts_intron = ts_chrom[
-                (ts_chrom["Start_adj"] >= start) & (ts_chrom["Start_adj"] < stop)
+                (ts_chrom[ADJSTART_COL] >= start) & (ts_chrom[ADJSTART_COL] < stop)
             ].reset_index()
 
         # Plot LINES binding exons
@@ -479,11 +495,11 @@ def plot_introns(
             for ix, row in ts_intron.iterrows():
                 # (1) Add previous fixed region if needed
                 # consider intron starts with fixed region
-                if not prev_tsend and row["Start_adj"] != start:
+                if not prev_tsend and row[ADJSTART_COL] != start:
                     prev_tsend = start
 
                 # create continuous line
-                x0, x1 = prev_tsend, row["Start_adj"]
+                x0, x1 = prev_tsend, row[ADJSTART_COL]
                 y0, y1 = gene_ix, gene_ix
                 intron_line = go.Scatter(
                     x=[x0, x1],
@@ -496,7 +512,7 @@ def plot_introns(
                 fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
                 # (2) Add to-shrink region
-                x0, x1 = row["Start_adj"], row["End_adj"]
+                x0, x1 = row[ADJSTART_COL], row[ADJEND_COL]
                 y0, y1 = gene_ix, gene_ix
                 intron_line = go.Scatter(
                     x=[x0, x1],
@@ -509,10 +525,10 @@ def plot_introns(
                 fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
                 # (3) Add final fixed region if needed
-                if (ix == len(ts_intron) - 1) and (row["End_adj"] != stop):
+                if (ix == len(ts_intron) - 1) and (row[ADJEND_COL] != stop):
                     # add last fixed region
                     # create continuous line
-                    x0, x1 = row["End_adj"], stop
+                    x0, x1 = row[ADJEND_COL], stop
                     y0, y1 = gene_ix, gene_ix
                     intron_line = go.Scatter(
                         x=[x0, x1],
@@ -525,7 +541,7 @@ def plot_introns(
                     fig.add_trace(intron_line, row=chrom_ix + 1, col=1)
 
                 # store interval end for next iteration
-                prev_tsend = row["End_adj"]
+                prev_tsend = row[ADJEND_COL]
 
         # Plot DIRECTION ARROW in INTRONS if strand is known
         intron_size = coord2percent(fig, chrom_ix + 1, start, stop)
@@ -545,7 +561,7 @@ def plot_introns(
                 incl,
                 gene_ix,
                 chrom_ix,
-                exon_width,
+                exon_height,
                 arrow_color,
                 arrow_line_width,
             )

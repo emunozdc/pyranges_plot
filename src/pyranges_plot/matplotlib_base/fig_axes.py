@@ -3,12 +3,13 @@ import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Rectangle
+from pyranges.core.names import CHROM_COL, START_COL, END_COL
 from pyranges_plot.core import cumdelting
-import pandas as pd
-from ._core import make_annotation
+from .core import make_annotation
+from ..names import PR_INDEX_COL, CUM_DELTA_COL
 
 
-def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
+def ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
     """Set plot features."""
 
     if title:
@@ -21,7 +22,7 @@ def _ax_display(ax, title, chrom, t_dict, plot_back, plot_border):
     ax.yaxis.set_tick_params(left=False)
 
 
-def _ax_limits(ax, x_min, x_max, x_rang, grid_color):
+def ax_limits(ax, x_min, x_max, x_rang, grid_color):
     """Adapt plots coordinates."""
 
     ax.set_xlim(
@@ -37,20 +38,20 @@ def _ax_limits(ax, x_min, x_max, x_rang, grid_color):
     )  # only integer ticks for bases
 
 
-def _ax_shrink_rects(
+def ax_shrink_rects(
     ax, fig, ts_data, chrom, y_min, y_max, shrinked_bkg, shrinked_alpha, tag_background
 ):
     """Add shrinked regions rectangles to the plot."""
 
     rects_df = ts_data[chrom].copy()
-    rects_df["cumdelta_end"] = rects_df["cumdelta"]
-    rects_df["cumdelta_start"] = rects_df["cumdelta"].shift(periods=1, fill_value=0)
-    rects_df["Start"] -= rects_df["cumdelta_start"]
-    rects_df["End"] -= rects_df["cumdelta_end"]
+    rects_df["cumdelta_end"] = rects_df[CUM_DELTA_COL]
+    rects_df["cumdelta_start"] = rects_df[CUM_DELTA_COL].shift(periods=1, fill_value=0)
+    rects_df[START_COL] -= rects_df["cumdelta_start"]
+    rects_df[END_COL] -= rects_df["cumdelta_end"]
 
     for a, b, c, d in zip(
-        rects_df["Start"],
-        rects_df["End"],
+        rects_df[START_COL],
+        rects_df[END_COL],
         rects_df["cumdelta_start"],
         rects_df["cumdelta_end"],
     ):
@@ -81,6 +82,7 @@ def create_fig(
     chrmd_df_grouped,
     genesmd_df,
     ts_data,
+    legend_item_d,
     title_chr,
     title_dict_plt,
     plot_background,
@@ -88,19 +90,20 @@ def create_fig(
     grid_color,
     packed,
     legend,
+    y_labels,
     tick_pos_d,
     ori_tick_pos_d,
     tag_background,
     fig_bkg,
     shrinked_bkg,
     shrinked_alpha,
-    v_space,
+    v_spacer,
+    exon_height,
 ):
     """Generate the figure and axes fitting the data."""
 
     # Unify titles and start figure
-    titles = [title_chr.format(**locals()) for chrom in chrmd_df_grouped.index]
-    # titles = list(pd.Series(titles).drop_duplicates())
+    titles = [title_chr.format(**{"chrom": chrom}) for chrom in chrmd_df_grouped.index]
     fig = plt.figure(figsize=(x, y), facecolor=fig_bkg)
 
     gs = gridspec.GridSpec(
@@ -113,18 +116,15 @@ def create_fig(
     axes = []
     for i in range(len(titles)):
         chrom = chrmd_df_grouped.index[i]
-        # chrmd = chrmd_df.loc[chrom]
-        # if isinstance(chrmd, pd.DataFrame):
-        #     chrmd = chrmd.iloc[0]
         axes.append(plt.subplot(gs[i]))
         ax = axes[i]
         # Adjust plot display
-        _ax_display(ax, title_chr, chrom, title_dict_plt, plot_background, plot_border)
+        ax_display(ax, title_chr, chrom, title_dict_plt, plot_background, plot_border)
 
         # set x axis limits
         x_min, x_max = chrmd_df_grouped.loc[chrom]["min_max"]
         x_rang = x_max - x_min
-        _ax_limits(ax, x_min, x_max, x_rang, grid_color)
+        ax_limits(ax, x_min, x_max, x_rang, grid_color)
 
         # consider introns off
         if tick_pos_d:
@@ -132,8 +132,6 @@ def create_fig(
             original_ticks = [
                 int(tick.get_text().replace("−", "-")) for tick in ax.get_xticklabels()
             ][1:]
-
-            jump = original_ticks[1] - original_ticks[0]
 
             # find previous ticks that should be conserved
             to_add_val = []
@@ -175,31 +173,28 @@ def create_fig(
             ax.set_xticklabels(x_ticks_name)
 
         # set y axis limits
-        y_min = 0
+        y_min = 0.5 - exon_height / 2
         y_max = chrmd_df_grouped.loc[chrom]["y_height"]
-        ax.set_ylim(y_min - 0.5 * v_space, y_max + 0.5 * v_space)
-        # gene name as y labels
+        ax.set_ylim(y_min - v_spacer, y_max + v_spacer)
+        # gene name as y labels if not packed and not y_labels
         y_ticks_val = []
         y_ticks_name = []
-        if not packed:
-            y_ticks_val = [(i + 0.5) * v_space for i in range(int(y_max / v_space))]
+        if not packed and not y_labels:
+            y_ticks_val = (
+                genesmd_df[genesmd_df["Chromosome"] == chrom]["ycoord"] + 0.5
+            ).to_list()
             y_ticks_name_d = (
-                genesmd_df[genesmd_df["Chromosome"] == chrom]
-                .groupby("pr_ix", group_keys=False, observed=True)
+                genesmd_df[genesmd_df[CHROM_COL] == chrom]
+                .groupby(PR_INDEX_COL, group_keys=False, observed=True)
                 .groups
             )
-            print(y_ticks_name_d)
             y_ticks_name_d = dict(sorted(y_ticks_name_d.items(), reverse=True))
-            print(y_ticks_name_d)
-            y_ticks_name = [list(id)[::-1] + [""] for id in y_ticks_name_d.values()]
-            y_ticks_name = [item for sublist in y_ticks_name for item in sublist][:-1]
-
-        ax.set_yticks(y_ticks_val)
-        ax.set_yticklabels(list(y_ticks_name))
+            y_ticks_name = [list(id) for id in y_ticks_name_d.values()]
+            y_ticks_name = [item for sublist in y_ticks_name for item in sublist]
 
         # Add shrink rectangles
         if ts_data:
-            _ax_shrink_rects(
+            ax_shrink_rects(
                 ax,
                 fig,
                 ts_data,
@@ -211,29 +206,43 @@ def create_fig(
                 tag_background,
             )
 
+        ax.tick_params(colors=plot_border, which="both")
+
         # Draw lines separating pr objects
         if chrmd_df["pr_line"].drop_duplicates().max() != 0:
             pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
             if isinstance(pr_line_y_l, int):
                 pr_line_y_l = [pr_line_y_l]
+            pr_line_y_l = [y_max + v_spacer] + pr_line_y_l
+            present_pr_l = chrmd_df_grouped.loc[chrom]["present_pr"]
+
             # separate items with horizontal lines
-            for pr_line_y in pr_line_y_l:
+            for j, pr_line_y in enumerate(pr_line_y_l):
                 if pr_line_y != 0:
                     ax.plot(
                         [x_min - 0.1 * x_rang, x_max + 0.1 * x_rang],
-                        [pr_line_y + 0.5 * v_space, pr_line_y + 0.5 * v_space],
+                        [pr_line_y, pr_line_y],
                         color=plot_border,
                         linewidth=1,
                         zorder=1,
                     )
 
-        ax.tick_params(colors=plot_border, which="both")
+                    # add y_label in the middle of the subplot if needed
+                    if y_labels:
+                        if pr_line_y_l[j + 1] != 0:
+                            y_ticks_val.append(((pr_line_y) + (pr_line_y_l[j + 1])) / 2)
+                        else:
+                            y_ticks_val.append((pr_line_y) / 2)
+                        y_ticks_name.append(y_labels[int(present_pr_l[j])])
+
+        ax.set_yticks(y_ticks_val)
+        ax.set_yticklabels(list(y_ticks_name))
 
     plt.subplots_adjust(hspace=0.7)
+
     # Create legend
     if legend:
-        handles = genesmd_df["legend_item"].tolist()
-        labels = genesmd_df.index.tolist()
+        labels, handles = zip(*legend_item_d.items())
         fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1, 1))
 
     return fig, axes

@@ -1,13 +1,49 @@
 import pandas as pd
+from pyranges.core.names import END_COL
+
+from .names import CUM_DELTA_COL
 from .plot_features import (
     plot_features_dict,
     plot_features_dict_in_use,
-    dark_plot_features_dict_in_use,
+    builtin_themes,
 )
 
 
 # CORE FUNCTIONS
-engine = None
+# id_col
+ID_COL = None
+
+
+def set_id_col(name):
+    """
+    Defines the ID column for the data.
+
+    Parameters
+    ----------
+    name: str
+
+         Indicates the name of the ID column to be used when dealing with data.
+
+    Examples
+    --------
+    >>> import pyranges_plot as prp
+
+    >>> prp.set_id_col('gene_id')
+
+    """
+
+    global ID_COL
+    ID_COL = name
+
+
+def get_id_col():
+    """Shows the current defined ID column (id_col)."""
+
+    return ID_COL
+
+
+# engine
+ENGINE = None
 
 
 def set_engine(name):
@@ -27,48 +63,18 @@ def set_engine(name):
 
     """
 
-    global engine
-    engine = name
+    global ENGINE
+    ENGINE = name
 
 
 def get_engine():
     """Shows the current defined engine."""
 
-    return engine
+    return ENGINE
 
 
-id_col = None
-
-
-def set_idcol(name):
-    """
-    Defines the ID column for the data.
-
-    Parameters
-    ----------
-    name: str
-
-         Indicates the name of the ID column to be used when dealing with data.
-
-    Examples
-    --------
-    >>> import pyranges_plot as prp
-
-    >>> prp.set_idcol('gene_id')
-
-    """
-
-    global id_col
-    id_col = name
-
-
-def get_idcol():
-    """Shows the current defined ID column (id_col)."""
-
-    return id_col
-
-
-warnings = True
+# warnings
+WARNINGS = True
 
 
 def set_warnings(option):
@@ -89,51 +95,114 @@ def set_warnings(option):
 
     """
 
-    global warnings
-    warnings = option
+    global WARNINGS
+    WARNINGS = option
 
 
 def get_warnings():
     """Returns the current warnings state."""
 
-    return warnings
+    return WARNINGS
 
 
-# Related to default features
+theme = None
 
 
-def set_default(varname, value):
+def set_theme(name):
     """
-    Define some features of the plot layout.
+    Defines the engine for the plots
 
     Parameters
     ----------
-    varname: str
-
-        Name of the variable to change.
-
-    value:
-
-        New value of the variable to be assigned.
+    name: {str, dict, None}
+        Name of the predefined theme or dictionary with defined options to be set as new default.
+        Currently available themes are "dark" and "light".
 
     Examples
     --------
     >>> import pyranges_plot as prp
 
-    >>> prp.set_default('plot_background', 'magenta')
-
-    >>> prp.set_default('title_size', 20)
+    >>> prp.set_theme("dark")
+    >>> prp.set_theme({"title_color": "goldenrod", "exon_height": 0.8})
 
     """
 
-    plot_features_dict_in_use[varname] = (
-        value,
-        plot_features_dict[varname][1],
-        "*",
-    )  # (value, description, modified tag)
+    global theme
+    theme = name
+
+    if name is None:
+        return
+
+    if isinstance(theme, str):
+        if theme not in builtin_themes.keys():
+            raise Exception(
+                f'The name "{theme}" is not a valid theme name. Accepted themes are: {builtin_themes.keys()}'
+            )
+        else:
+            name = builtin_themes[theme]
+
+    if isinstance(name, dict):
+        for key, value in name.items():
+            # is it different from default?
+            mod_tag = " "
+            if name[key] != plot_features_dict[key][0]:
+                mod_tag = "*"
+
+            plot_features_dict_in_use[key] = (
+                value,
+                plot_features_dict[key][1],
+                mod_tag,
+            )  # (value, description, modified tag)
 
 
-def get_default(varname="all", mode="light"):
+def get_theme():
+    """Shows the current defined engine."""
+
+    return theme
+
+
+# Related to default features (options)
+
+
+def set_options(varname, value=None):
+    """
+    Define some features of the plot layout.
+
+    Parameters
+    ----------
+    varname: {str, dict}
+
+        Name of the variable to change, or dictionary with the variable: value pairs.
+
+    value:
+
+        New value of the variable to be assigned if needed.
+
+    Examples
+    --------
+    >>> import pyranges_plot as prp
+
+    >>> prp.set_options('plot_background', 'magenta')
+
+    >>> prp.set_options('title_size', 20)
+
+    """
+
+    if isinstance(varname, str):
+        varname = {varname: value}
+
+    for key, val in varname.items():
+        mod_tag = " "
+        if varname[key] != plot_features_dict[key][0]:
+            mod_tag = "*"
+        plot_features_dict_in_use[key] = (
+            val,
+            plot_features_dict[key][1],
+            mod_tag,
+        )  # (value, description, modified tag)
+
+
+def get_options(varname="all"):
     """
     Obtain the deafault value for a plot layout variable/s and its description.
 
@@ -141,7 +210,8 @@ def get_default(varname="all", mode="light"):
     ----------
     varname: {str, list}, default 'all'
 
-        Name of the variable/s to get the value and description.
+        Name of the variable/s to get the value and description. Use "values" to get
+        only the variables values excluding the description and modified tag.
 
     """
 
@@ -155,33 +225,29 @@ def get_default(varname="all", mode="light"):
     # all variables
     elif varname == "all":
         return plot_features_dict_in_use
+    elif varname == "values":
+        val_features_dict_in_use = {}
+        for key, val in plot_features_dict_in_use.items():
+            val_features_dict_in_use[key] = val[0]
+        return val_features_dict_in_use
 
     # one variable
     else:
-        try:
-            if mode == "light":
-                if varname in plot_features_dict_in_use:
-                    return plot_features_dict_in_use[varname][0]
-                else:
-                    raise Exception(
-                        f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}"
-                    )
-            elif mode == "dark":
-                return dark_plot_features_dict_in_use[varname][0]
-
-            else:
-                raise Exception(f"The mode '{mode}' is not a valid mode name.")
-        except SystemExit as e:
-            print("An error occured:", e)
+        if varname in plot_features_dict_in_use:
+            return plot_features_dict_in_use[varname][0]
+        else:
+            raise Exception(
+                f"The variable you provided is not customizable. The customizable variables are: {list(plot_features_dict.keys())}"
+            )
 
 
-def get_original_default():
+def get_original_options():
     """Returns the dictionary with the original plot features."""
 
     return plot_features_dict
 
 
-def reset_default(varname="all"):
+def reset_options(varname="all"):
     """
     Reset the deafault value for one, some or all plot layout variables to their original vlaue.
 
@@ -195,19 +261,19 @@ def reset_default(varname="all"):
     --------
     >>> import pyranges_plot as prp
 
-    >>> prp.reset_default()
+    >>> prp.reset_options()
 
-    >>> prp.reset_default('all')
+    >>> prp.reset_options('all')
 
-    >>> prp.reset_default('tag_background')
+    >>> prp.reset_options('tag_bkg')
 
-    >>> prp.reset_default(['title_dict_plt', 'tag_background'])
+    >>> prp.reset_options(['title_size', 'tag_background'])
 
-    >>> prp.reset_default('title_dict_ply')
+    >>> prp.reset_options('title_color')
     """
 
-    plot_features_dict_in_use = get_default()
-    plot_features_dict = get_original_default()
+    plot_features_dict_in_use = get_options()
+    plot_features_dict = get_original_options()
 
     # list of variables
     if isinstance(varname, list):
@@ -247,11 +313,11 @@ def divide_desc(desc, cutoff):
     return lines_l
 
 
-def print_default(return_keys=False):
+def print_options(return_keys=False):
     """Prints the customizable features default values and description."""
 
     # store data
-    plot_features_dict_in_use = get_default()
+    plot_features_dict_in_use = get_options()
 
     # prepare data to print
     if not return_keys:
@@ -271,12 +337,12 @@ def print_default(return_keys=False):
 
         # Function to format row
         def format_row(key, value):
-            if len(value[1]) <= 60:
-                return f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {value[1]:<{desc_sz}} |"
+            if len(value.iloc[1]) <= 60:
+                return f"| {key:^{name_sz}} | {str(value.iloc[0]):^{value_sz}} | {value.iloc[2]:^{mod_sz}} | {value.iloc[1]:<{desc_sz}} |"
 
             else:
-                lines_l = divide_desc(value[1], cutoff=desc_sz)
-                fstr = f"| {key:^{name_sz}} | {str(value[0]):^{value_sz}} | {value[2]:^{mod_sz}} | {lines_l[0]:<{desc_sz}} |"
+                lines_l = divide_desc(value.iloc[1], cutoff=desc_sz)
+                fstr = f"| {key:^{name_sz}} | {str(value.iloc[0]):^{value_sz}} | {value.iloc[2]:^{mod_sz}} | {lines_l[0]:<{desc_sz}} |"
                 empty = " "
                 for i in range(1, len(lines_l)):
                     fstr += f"\n| {empty:^{name_sz}} | {empty:^{value_sz}} | {empty:^{mod_sz}} | {lines_l[i]:<{desc_sz}} |"
@@ -292,6 +358,7 @@ def print_default(return_keys=False):
         extragen_feat_df = feat_df[
             feat_df.index.isin(
                 [
+                    "colormap",
                     "tag_bkg",
                     "fig_bkg",
                     "plot_bkg",
@@ -308,10 +375,10 @@ def print_default(return_keys=False):
         intragen_feat_df = feat_df[
             feat_df.index.isin(
                 [
-                    "exon_width",
-                    "id_ann_pad",
-                    "id_ann_slice",
-                    "v_space",
+                    "exon_height",
+                    "v_spacer",
+                    "text_size",
+                    "text_pad",
                     "arrow_line_width",
                     "arrow_color",
                     "arrow_size",
@@ -361,8 +428,8 @@ def cumdelting(num_l, ts_data, chrom):
         cdel = 0
         # get proper cumdelta
         for ix, row in ts_data[chrom].iterrows():
-            if row["End"] <= num_l[i]:
-                cdel = row["cumdelta"]
+            if row[END_COL] <= num_l[i]:
+                cdel = row[CUM_DELTA_COL]
             else:
                 break
         num_l[i] -= cdel

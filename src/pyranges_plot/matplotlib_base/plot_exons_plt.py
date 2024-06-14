@@ -1,32 +1,34 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+from pyranges.core.names import CHROM_COL, START_COL, END_COL, STRAND_COL
 
-from ._core import plt_popup_warning
-from ._fig_axes import create_fig
-from .plot_vcf_plt import _gby_plot_vcf
-from ._data2plot import (
-    _apply_gene_bridge,
+from .core import plt_popup_warning, coord2percent
+from .fig_axes import create_fig
+from .data2plot import (
+    apply_gene_bridge,
     plot_introns,
 )
+from ..names import PR_INDEX_COL, BORDER_COLOR_COL
 
 arrow_style = "round"
 
 
 def plot_exons_plt(
     subdf,
-    vcf,
     tot_ngenes_l,
     feat_dict,
     genesmd_df,
     chrmd_df,
     chrmd_df_grouped,
     ts_data,
+    legend_item_d,
     id_col,
     max_shown=25,
     transcript_str=False,
-    showinfo=None,
+    tooltip=None,
     legend=False,
-    id_ann=True,
+    y_labels=False,
+    text=True,
     title_chr=None,
     packed=True,
     to_file=None,
@@ -45,11 +47,10 @@ def plot_exons_plt(
     title_dict_plt = feat_dict["title_dict_plt"]
     grid_color = feat_dict["grid_color"]
     exon_border = feat_dict["exon_border"]
-    exon_width = feat_dict["exon_width"]
+    exon_height = feat_dict["exon_height"]
     transcript_utr_width = feat_dict["transcript_utr_width"]
-    id_ann_pad = feat_dict["id_ann_pad"]
-    id_ann_slice = feat_dict["id_ann_slice"]
-    v_space = feat_dict["v_space"]
+    v_spacer = feat_dict["v_spacer"]
+    text_size = feat_dict["text_size"]
     arrow_line_width = feat_dict["arrow_line_width"]
     arrow_color = feat_dict["arrow_color"]
     arrow_size_min = feat_dict["arrow_size_min"]
@@ -59,21 +60,10 @@ def plot_exons_plt(
     shrinked_alpha = feat_dict["shrinked_alpha"]
 
     # Create figure and axes
-    if file_size:
-        x = file_size[0]
-        y = file_size[1]
-    else:
-        x = 20
-        if vcf is None:
-            y = (
-                sum(chrmd_df_grouped["y_height"]) + len(chrmd_df_grouped.index) * 2
-            ) / 2  # height according to genes and add 2 per each chromosome
-        else:
-            y = (
-                sum(chrmd_df_grouped["y_height"])
-                + len(chrmd_df.index.columns.get_loc("Chromosome").drop_duplicates())
-                * 3
-            ) / 2  # increase 1 per chromosome to show variants plot
+    # pixel in inches
+    px = 1 / plt.rcParams["figure.dpi"]
+    x = file_size[0] * px
+    y = file_size[1] * px
 
     fig, axes = create_fig(
         x,
@@ -82,6 +72,7 @@ def plot_exons_plt(
         chrmd_df_grouped,
         genesmd_df,
         ts_data,
+        legend_item_d,
         title_chr,
         title_dict_plt,
         plot_bkg,
@@ -89,18 +80,20 @@ def plot_exons_plt(
         grid_color,
         packed,
         legend,
+        y_labels,
         tick_pos_d,
         ori_tick_pos_d,
         tag_bkg,
         fig_bkg,
         shrinked_bkg,
         shrinked_alpha,
-        v_space,
+        v_spacer,
+        exon_height,
     )
 
     # Plot genes
-    subdf.groupby([id_col, "pr_ix"], group_keys=False, observed=True).apply(
-        lambda subdf: _gby_plot_exons(
+    subdf.groupby(id_col + [PR_INDEX_COL], group_keys=False, observed=True).apply(
+        lambda subdf: gby_plot_exons(
             subdf,
             axes,
             fig,
@@ -109,14 +102,13 @@ def plot_exons_plt(
             genesmd_df,
             ts_data,
             id_col,
-            showinfo,
+            tooltip,
             tag_bkg,
             plot_border,
             transcript_str,
-            id_ann,
-            id_ann_pad,
-            id_ann_slice,
-            exon_width,
+            text,
+            text_size,
+            exon_height,
             exon_border,
             transcript_utr_width,
             arrow_intron_threshold,
@@ -124,7 +116,6 @@ def plot_exons_plt(
             arrow_color,
             arrow_size_min,
             arrow_size,
-            v_space,
         )
     )
 
@@ -151,7 +142,7 @@ def plot_exons_plt(
         plt.savefig(to_file, format=to_file[-3:], dpi=400)
 
 
-def _gby_plot_exons(
+def gby_plot_exons(
     df,
     axes,
     fig,
@@ -164,10 +155,9 @@ def _gby_plot_exons(
     tag_bkg,
     plot_border,
     transcript_str,
-    id_ann,
-    id_ann_pad,
-    id_ann_slice,
-    exon_width,
+    text,
+    text_size,
+    exon_height,
     exon_border,
     transcript_utr_width,
     arrow_intron_threshold,
@@ -175,53 +165,51 @@ def _gby_plot_exons(
     arrow_color,
     arrow_size_min,
     arrow_size,
-    v_space,
 ):
     """Plot elements corresponding to the df rows of one gene."""
 
     # Gene parameters
-    chrom = df["Chromosome"].iloc[0]
+    chrom = df[CHROM_COL].iloc[0]
     chr_ix = chrmd_df_grouped.loc[chrom]["chrom_ix"]
     if isinstance(chr_ix, pd.Series):
         chr_ix = chr_ix.iloc[0]
-    pr_ix = df["pr_ix"].iloc[0]
-    genename = df[id_col].iloc[0]
-    genesmd_df = genesmd_df.loc[genename]  # store data for the gene
+    pr_ix = df[PR_INDEX_COL].iloc[0]
+    genename = df["__id_col_2count__"].iloc[0]
+    genemd = genesmd_df.loc[genename]  # store data for the gene
     # in case same gene in +1 pr
-    if not isinstance(genesmd_df, pd.Series):
-        genesmd_df = genesmd_df[
-            genesmd_df["pr_ix"] == pr_ix
-        ]  # in case same gene in +1 pr
-        gene_ix = genesmd_df["ycoord"].loc[genename] + 0.5 * v_space
-        exon_color = genesmd_df["color"].iloc[0]
-    # in case gene in single pr
-    else:
-        gene_ix = genesmd_df["ycoord"] + 0.5 * v_space
-        exon_color = genesmd_df["color"]
-
+    if not isinstance(genemd, pd.Series):
+        genemd = genemd[genemd[PR_INDEX_COL] == pr_ix]  # in case same gene in +1 pr
+        genemd = pd.Series(genemd.iloc[0])
+    gene_ix = genemd["ycoord"] + 0.5
+    # color of border of first interval will be used as intron color and utr color for simplicity
     if exon_border is None:
-        exon_border = exon_color
+        exon_border = df[BORDER_COLOR_COL].iloc[0]
 
     ax = axes[chr_ix]
-    if "Strand" in df.columns:
-        strand = df["Strand"].unique()[0]
+    if STRAND_COL in df.columns:
+        strand = df[STRAND_COL].unique()[0]
     else:
         strand = ""
 
     # Make gene annotation
     # get the gene information to print on hover
     if strand:
-        geneinfo = f"[{strand}] ({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default with strand
+        geneinfo = f"[{strand}] ({min(df.__oriStart__)}, {max(df.__oriEnd__)})\nID: {genename}"  # default with strand
     else:
-        geneinfo = f"({min(df.oriStart)}, {max(df.oriEnd)})\nID: {genename}"  # default without strand
+        geneinfo = f"({min(df.__oriStart__)}, {max(df.__oriEnd__)})\nID: {genename}"  # default without strand
 
     # Plot INTRON lines
-    sorted_exons = df[["Start", "End"]].sort_values(by="Start")
+    sorted_exons = df[[START_COL, END_COL]].sort_values(by=START_COL)
     sorted_exons["intron_dir_flag"] = [0] * len(sorted_exons)
     if ts_data:
         ts_chrom = ts_data[chrom]
     else:
         ts_chrom = pd.DataFrame()
+
+    if isinstance(arrow_intron_threshold, int):
+        arrow_intron_threshold = coord2percent(ax, 0, arrow_intron_threshold)
+    if isinstance(arrow_size, int):
+        arrow_size = coord2percent(ax, 0, arrow_size)
 
     dir_flag = plot_introns(
         sorted_exons,
@@ -231,10 +219,10 @@ def _gby_plot_exons(
         geneinfo,
         tag_bkg,
         gene_ix,
-        exon_color,
+        exon_border,
         strand,
         arrow_intron_threshold,
-        exon_width,
+        exon_height,
         arrow_color,
         arrow_style,
         arrow_line_width,
@@ -242,28 +230,26 @@ def _gby_plot_exons(
     )
 
     # Plot the gene rows as EXONS
-    _apply_gene_bridge(
+    apply_gene_bridge(
         transcript_str,
-        id_ann,
-        id_ann_pad,
-        id_ann_slice,
+        text,
+        text_size,
         df,
         fig,
         ax,
         strand,
         gene_ix,
-        exon_color,
+        exon_border,  # this works as "exon_color" used for utr (not interval)
         exon_border,
         tag_bkg,
         plot_border,
         genename,
         showinfo,
-        exon_width,
+        exon_height,
         transcript_utr_width,
         arrow_size_min,
         arrow_color,
         arrow_style,
         arrow_line_width,
         dir_flag,
-        arrow_size,
     )
