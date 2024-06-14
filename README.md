@@ -7,7 +7,8 @@ Gene visualization package for dataframe objects generated with [PyRanges](https
 ## Overview
 The goal is getting a plot displaying a series of genes, transcripts, or any kind
 of ranges contained in a PyRanges object. It displays the genes' intron-exon structure 
-in its corresponding chromosome, enabling easy visualization of your PyRanges data.
+in its corresponding chromosome, enabling easy visualization of your PyRanges data. The 
+Pyranges version compatible with Pyranges Plot is >= 1.0.0.
 
 To obtain the plot there are some features to be defined by the user, one is the 
 **engine** since it can be based on Matplotlib or Plotly, the other is the name 
@@ -34,11 +35,26 @@ to it while the non-specified ones will be colored in black.
 
 
 ## Installation
-PyRanges-Plot can be installed using pip:
+PyRanges-Plot can be installed using pip. To install all dependencies in order to be able to 
+use all the functionalities of the package and both engines the `[all]` option must be 
+specified:
 
 ```
-pip install pyranges-plot
+pip install pyranges-plot[all]
 ```
+
+If the user wishes to use only one of the engines, the installation af all dependencies 
+can be avoided by using the engine-specific installation option:
+```
+# For matplotlib
+pip install pyranges-plot[plt]
+
+# For plotly
+pip install pyranges-plot[plotly]
+```
+
+Note that the minimal installation by `pip install pyranges-plot` is not able to produce plots 
+since the plot dependencies are not installed.
 
 
 
@@ -51,7 +67,7 @@ For that we will be using a PyRanges object generated from a dictionary.
 import pyranges as pr
 import pyranges_plot as prp
 
-p = pr.from_dict({"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3],
+p = pr.PyRanges({"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3],
                   "Strand": ["+", "+", "-", "-", "+", "+", "+", "+"],
                   "Start": [1, 40, 10, 70, 85, 110, 150, 140],
                   "End": [11, 60, 25, 80, 100, 115, 180, 152], 
@@ -62,21 +78,19 @@ print(p)
 
 ```
 ```
-+--------------+--------------+-----------+-----------+-----------------+------------+------------+
-|   Chromosome | Strand       |     Start |       End | transcript_id   | feature1   | feature2   |
-|   (category) | (category)   |   (int64) |   (int64) | (object)        | (object)   | (object)   |
-|--------------+--------------+-----------+-----------+-----------------+------------+------------|
-|            1 | +            |         1 |        11 | t1              | a          | A          |
-|            1 | +            |        40 |        60 | t1              | a          | A          |
-|            2 | +            |        85 |       100 | t3              | c          | C          |
-|            2 | +            |       110 |       115 | t3              | c          | C          |
-|            2 | +            |       150 |       180 | t3              | c          | C          |
-|            2 | -            |        10 |        25 | t2              | b          | B          |
-|            2 | -            |        70 |        80 | t2              | b          | B          |
-|            3 | +            |       140 |       152 | t4              | d          | D          |
-+--------------+--------------+-----------+-----------+-----------------+------------+------------+
-Stranded PyRanges object has 8 rows and 7 columns from 3 chromosomes.
-For printing, the PyRanges was sorted on Chromosome and Strand.
+  index  |      Chromosome  Strand      Start      End  transcript_id    feature1    feature2
+  int64  |           int64  object      int64    int64  object           object      object
+-------  ---  ------------  --------  -------  -------  ---------------  ----------  ----------
+      0  |               1  +               1       11  t1               a           A
+      1  |               1  +              40       60  t1               a           A
+      2  |               2  -              10       25  t2               b           B
+      3  |               2  -              70       80  t2               b           B
+      4  |               2  +              85      100  t3               c           C
+      5  |               2  +             110      115  t3               c           C
+      6  |               2  +             150      180  t3               c           C
+      7  |               3  +             140      152  t4               d           D
+PyRanges with 8 rows, 7 columns, and 1 index columns.
+Contains 3 chromosomes and 2 strands.
 ```
 
 
@@ -99,12 +113,10 @@ The output is an interactive Matplotlib plot. To obtain it we just need to provi
 the engine and the name of the ID column. However, the engine and the ID column can be set 
 previously so there is no need to specify them anymore while plotting:
 
-
-
 ```python
 # As engine use 'plotly' or 'ply' for Plotly plots and 'matplotlib' or 'plt' for Matplotlib plots
 prp.set_engine('plotly')
-prp.set_idcol('transcript_id')
+prp.set_id_col('transcript_id')
 ```
 
 Now the plots will be based on Plotly because we set it as the engine, though they will look 
@@ -131,7 +143,7 @@ will appear.
 
 
 ```python
-prp.plot(p, max_ngenes=2)
+prp.plot(p, max_shown=2)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex02.png">
@@ -154,7 +166,7 @@ be provided as a dictionary, tuple or PyRanges object:
 
 
 ```python
-prp.plot(p, limits={"1": (None, 100), "2": (60, 200), "3": None})
+prp.plot(p, limits={1: (None, 100), 2: (60, 200), 3: None})
 prp.plot(p, limits=(0,300))
 ```
 <p align="center">
@@ -236,18 +248,16 @@ prp.plot(p, packed=False, legend = True)
 In interactive plots there is the option of showing information about the gene when the mouse is 
 placed over its structure. This information always shows the gene's strand if it exists, the start and 
 end coordinates and the ID. To add information contained in other dataframe columns to the tooltip, 
-a string should be given to the ``showinfo`` parameter. This string must contain the desired column 
+a string should be given to the ``tooltip`` parameter. This string must contain the desired column 
 names within curly brackets as shown in the example. Similarly, the title of the chromosome plots can be customized giving the desired string to 
 the `title_chr` parameter, where the correspondent chromosome value of the data is referred 
-to as {chrom}. An example could be the following: 
-
-
+to as {chrom}. An example could be the following:
 
 ```python
 prp.plot(
-    p, 
-    showinfo="first feature: {feature1}\nsecond feature: {feature2}",
-    title_chr = 'Chr: {chrom}'
+ p,
+ tooltip="first feature: {feature1}\nsecond feature: {feature2}",
+ title_chr='Chr: {chrom}'
 )
 ```
 <p align="center">
@@ -264,18 +274,18 @@ wider rectangles than UTR regions. For that the proper information should be sto
 
 ```python
 pp = pr.from_dict({
-	"Chromosome": [1, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 4],
-	"Strand": ["+", "+", "-", "-", "+", "+", "+", "+", "-", "-", "-", "-", "+", "+"],
-	"Start": [1, 40, 10, 70, 85, 110, 150, 140, 30100, 30150, 30500, 30647, 29850, 29970],
-	"End": [11, 60, 25, 80, 100, 115, 180, 152, 30300, 30300, 30700, 30700, 29900, 30000],
-	"transcript_id":["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4", "t5", "t5", "t5", "t5", "t6", "t6"],
-	"feature1": ["1", "1", "1", "1", "1", "2", "2", "2", "2", "2", "2", "2", "2", "2"],
-	"feature2": ["A", "A", "B", "B", "C", "C", "C", "D", "E", "E", "E", "E", "F", "F"],
-	"Feature": ["exon", "exon", "CDS", "CDS", "CDS", "CDS", "CDS", "exon", "exon", "CDS", "CDS", "exon", "CDS", "CDS"]
-    
+ "Chromosome": [1, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 4],
+ "Strand": ["+", "+", "-", "-", "+", "+", "+", "+", "-", "-", "-", "-", "+", "+"],
+ "Start": [1, 40, 10, 70, 85, 110, 150, 140, 30100, 30150, 30500, 30647, 29850, 29970],
+ "End": [11, 60, 25, 80, 100, 115, 180, 152, 30300, 30300, 30700, 30700, 29900, 30000],
+ "transcript_id": ["t1", "t1", "t2", "t2", "t3", "t3", "t3", "t4", "t5", "t5", "t5", "t5", "t6", "t6"],
+ "feature1": ["1", "1", "1", "1", "1", "2", "2", "2", "2", "2", "2", "2", "2", "2"],
+ "feature2": ["A", "A", "B", "B", "C", "C", "C", "D", "E", "E", "E", "E", "F", "F"],
+ "Feature": ["exon", "exon", "CDS", "CDS", "CDS", "CDS", "CDS", "exon", "exon", "CDS", "CDS", "exon", "CDS", "CDS"]
+
 })
 
-prp.plot(pp, transcript_str = True)
+prp.plot(pp, thick_cds=True)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex12.png">
@@ -284,24 +294,28 @@ prp.plot(pp, transcript_str = True)
 #### :dizzy: Reduce intron size
 
 In order to facilitate visualization, pyranges_plot offers the option to reduce the introns 
-which exceed a given threshold size. For that the `introns_off` parameter should be used. 
-Additionally, the threshold can be defined by the user through kargs or setting the default
+which exceed a given threshold size. For that the `shrink` parameter should be used. 
+Additionally, the threshold can be defined by the user through kargs or setting the default options 
 as explained in the next section, using `shrink_threshold`, when a float is provided as 
 shrink_threshold it will be interpreted as a fraction of the original coordinate range, 
 while when an int is given it will be interpreted as number of base pairs.
 
 ```python
-ppp = pr.from_dict({'Chromosome': ['1']*10 + ['2']*10,
- 'Strand': ['+','+','+','+','-','-','-','-','+','+'] + ["+", "+", "+", "+", "-", "-", "-", "-", "+", "+"],
- 'Start': [90,61,104,228,9,142,52,149,218,151] + [5, 27, 37, 47, 1, 7, 42, 37, 60, 80],
- 'End': [92,64,113,229,12,147,57,155,224,153] + [8, 32, 40, 50, 5, 10, 46, 40, 70, 90],
- 'transcript_id': ['t1','t1','t1','t1','t2','t2','t2','t2','t3','t3'] + ["t4", "t4", "t4", "t4", "t5", "t5", "t5", "t5", "t6", "t6"],
- 'Feature': ["exon"]*20
+ppp = pr.from_dict({'Chromosome': ['1'] * 10 + ['2'] * 10,
+                    'Strand': ['+', '+', '+', '+', '-', '-', '-', '-', '+', '+'] + ["+", "+", "+", "+", "-", "-", "-",
+                                                                                    "-", "+", "+"],
+                    'Start': [90, 61, 104, 228, 9, 142, 52, 149, 218, 151] + [5, 27, 37, 47, 1, 7, 42, 37, 60, 80],
+                    'End': [92, 64, 113, 229, 12, 147, 57, 155, 224, 153] + [8, 32, 40, 50, 5, 10, 46, 40, 70, 90],
+                    'transcript_id': ['t1', 't1', 't1', 't1', 't2', 't2', 't2', 't2', 't3', 't3'] + ["t4", "t4", "t4",
+                                                                                                     "t4", "t5", "t5",
+                                                                                                     "t5", "t5", "t6",
+                                                                                                     "t6"],
+                    'Feature': ["exon"] * 20
                     }
                    )
 
-prp.plot(ppp, introns_off=True)
-prp.plot(ppp, introns_off=True, shrink_threshold=0.2)
+prp.plot(ppp, shrink=True)
+prp.plot(ppp, shrink=True, shrink_threshold=0.2)
 ```
 <p align="center">
     <img src="https://github.com/emunozdc/pyranges_plot/raw/main/images/prplot_ex13.png">
@@ -315,15 +329,14 @@ prp.plot(ppp, introns_off=True, shrink_threshold=0.2)
 
 There are some features of the plot appearance which can also be customized, like the 
 background, plot border or titles. To check these customizable features and its default 
-values, the `print_default` function should be used. These values con be modified for all 
-the following plots through the `set_default` function; However, for a single plot, these 
+options values, the `print_options` function should be used. These values con be modified for all 
+the following plots through the `set_options` function; However, for a single plot, these 
 features can be given as kargs to the `plot` function (see `shrink_threshold` in the example 
 above).
 
-
 ```python
-# Check the default values
-prp.print_default()
+# Check the default options values
+prp.print_options()
 ```
 ```
 +------------------------+-------+---------+--------------------------------------------------------------+
@@ -346,7 +359,7 @@ prp.print_default()
 |                        |       |         | percentage.                                                  |
 +------------------------+-------+---------+--------------------------------------------------------------+
 |    shrink_threshold    | 0.05  |         | Minimum lenght of an intron in order for it to be shrinked   |
-|                        |       |         | while using the introns_off feature. When threshold is       |
+|                        |       |         | while using the shrink feature. When threshold is       |
 |                        |       |         | float, it represents the percentage of the plot space,       |
 |                        |       |         | while an int threshold represents number of positions or     |
 |                        |       |         | base pairs.                                                  |
@@ -360,10 +373,10 @@ Once you found the feature you would like to customize, it can be modified:
 
 ```python
 
-# Change the default values
-prp.set_default('plot_background', 'rgb(173, 216, 230)')
-prp.set_default('plot_border', '#808080')
-prp.set_default('title_color', 'magenta')
+# Change the default options values
+prp.set_options('plot_background', 'rgb(173, 216, 230)')
+prp.set_options('plot_border', '#808080')
+prp.set_options('title_color', 'magenta')
 
 # Make the customized plot
 prp.plot(p)
@@ -373,11 +386,10 @@ prp.plot(p)
 </p>
 
 
-Now the modified values will be marked when checking the default values:
-
+Now the modified values will be marked when checking the options values:
 
 ```python
-prp.print_default()
+prp.print_options()
 ```
 ```
 +------------------------+--------------------+---------+--------------------------------------------------------------+
@@ -400,7 +412,7 @@ prp.print_default()
 |                        |                    |         | percentage.                                                  |
 +------------------------+--------------------+---------+--------------------------------------------------------------+
 |    shrink_threshold    |        0.05        |         | Minimum lenght of an intron in order for it to be shrinked   |
-|                        |                    |         | while using the introns_off feature. When threshold is       |
+|                        |                    |         | while using the shrink feature. When threshold is       |
 |                        |                    |         | float, it represents the percentage of the plot space,       |
 |                        |                    |         | while an int threshold represents number of positions or     |
 |                        |                    |         | base pairs.                                                  |
@@ -409,16 +421,14 @@ prp.print_default()
 
 ```
 
-To return to the original appearance of the plot, the `reset_default` function can restore 
+To return to the original appearance of the plot, the `reset_options` function can restore 
 all or some parameters. By default, it will reset all the features, but it also accepts a 
 string for resetting a single feature or a list of strings to reset a few.
 
-
-
 ```python
-prp.reset_default()  # reset all
-prp.reset_default('plot_background')  # reset one feature
-prp.reset_default(['plot_border', 'title_color'])  # reset a few features
+prp.reset_options()  # reset all
+prp.reset_options('plot_background')  # reset one feature
+prp.reset_options(['plot_border', 'title_color'])  # reset a few features
 ```
 
 
