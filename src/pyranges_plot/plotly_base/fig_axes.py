@@ -166,49 +166,6 @@ def create_fig(
             y_ticks_name = [list(id) for id in y_ticks_name_d.values()]
             y_ticks_name = [item for sublist in y_ticks_name for item in sublist]
 
-        # Draw lines separating pr objects if +1
-        if chrmd_df["pr_line"].drop_duplicates().max() != 0:
-            pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
-            if isinstance(pr_line_y_l, int):
-                pr_line_y_l = [pr_line_y_l]
-            pr_line_y_l = [y_max + v_spacer] + pr_line_y_l
-            present_pr_l = chrmd_df_grouped.loc[chrom]["present_pr"]
-
-            # separate items with horizontal lines
-            for j, pr_line_y in enumerate(pr_line_y_l):
-                if pr_line_y != 0:
-                    # draw line
-                    fig.add_hline(
-                        y=pr_line_y,
-                        line=dict(color=plot_border, width=1, dash="solid"),
-                        row=i + 1,
-                        col=1,
-                    )
-
-                    # add y_label in the middle of the subplot y axis if needed
-                    if y_labels:
-                        if pr_line_y_l[j + 1] != 0:
-                            y_ticks_val.append(((pr_line_y) + (pr_line_y_l[j + 1])) / 2)
-                        else:
-                            y_ticks_val.append((pr_line_y) / 2)
-                        y_ticks_name.append(y_labels[int(present_pr_l[j])])
-
-        else:
-            # pr names in y axis
-            if y_labels:
-                y_ticks_val = [y_max / 2]
-                y_ticks_name = [str(y_labels)]
-
-        fig.update_yaxes(
-            range=[y_min - v_spacer, y_max + v_spacer],
-            fixedrange=True,
-            tickvals=y_ticks_val,
-            ticktext=y_ticks_name,
-            showgrid=False,
-            row=i + 1,
-            col=1,
-        )
-
         # Add shrink rectangles
         if ts_data:
             rects_df = ts_data[chrom]
@@ -244,5 +201,51 @@ def create_fig(
                     row=i + 1,
                     col=1,
                 )
+
+            # Draw lines separating pr objects if +1
+            if chrmd_df["pr_line"].drop_duplicates().max() != 0:
+                pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
+                if isinstance(pr_line_y_l, int):
+                    pr_line_y_l = [pr_line_y_l]
+                pr_line_y_l = [y_max + v_spacer] + pr_line_y_l
+                present_pr_l = chrmd_df_grouped.loc[chrom]["present_pr"]
+
+                # separate items with horizontal lines
+                for j, pr_line_y in enumerate(pr_line_y_l):
+                    if pr_line_y != 0:
+                        # draw line
+                        fig.add_hline(
+                            y=pr_line_y,
+                            line=dict(color=plot_border, width=1, dash="solid"),
+                            row=i + 1,
+                            col=1,
+                        )
+
+                        # add y_label in the middle of the subplot y axis if needed
+                        if y_labels:
+                            if pr_line_y_l[j + 1] != 0:
+                                y_ticks_val.append(
+                                    ((pr_line_y) + (pr_line_y_l[j + 1])) / 2
+                                )
+                            else:
+                                y_ticks_val.append((pr_line_y) / 2)
+                            y_ticks_name.append(y_labels[int(present_pr_l[j])])
+
+            else:
+                # pr names in y axis
+                if y_labels:
+                    y_ticks_val = [y_max / 2]
+                    y_ticks_name = [str(y_labels)]
+
+            fig.update_yaxes(
+                range=[y_min - v_spacer, y_max + v_spacer],
+                fixedrange=True,
+                tickvals=y_ticks_val,
+                ticktext=y_ticks_name,
+                showgrid=False,
+                zeroline=False,
+                row=i + 1,
+                col=1,
+            )
 
     return fig

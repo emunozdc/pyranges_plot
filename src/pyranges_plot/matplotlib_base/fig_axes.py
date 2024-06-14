@@ -192,6 +192,22 @@ def create_fig(
             y_ticks_name = [list(id) for id in y_ticks_name_d.values()]
             y_ticks_name = [item for sublist in y_ticks_name for item in sublist]
 
+        # Add shrink rectangles
+        if ts_data:
+            ax_shrink_rects(
+                ax,
+                fig,
+                ts_data,
+                chrom,
+                y_min,
+                y_max,
+                shrinked_bkg,
+                shrinked_alpha,
+                tag_background,
+            )
+
+        ax.tick_params(colors=plot_border, which="both")
+
         # Draw lines separating pr objects
         if chrmd_df["pr_line"].drop_duplicates().max() != 0:
             pr_line_y_l = chrmd_df.loc[chrom]["pr_line"].tolist()
@@ -221,22 +237,6 @@ def create_fig(
 
         ax.set_yticks(y_ticks_val)
         ax.set_yticklabels(list(y_ticks_name))
-
-        # Add shrink rectangles
-        if ts_data:
-            ax_shrink_rects(
-                ax,
-                fig,
-                ts_data,
-                chrom,
-                y_min,
-                y_max,
-                shrinked_bkg,
-                shrinked_alpha,
-                tag_background,
-            )
-
-        ax.tick_params(colors=plot_border, which="both")
 
     plt.subplots_adjust(hspace=0.7)
 
