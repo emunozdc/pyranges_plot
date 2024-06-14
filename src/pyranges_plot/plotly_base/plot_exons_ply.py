@@ -73,6 +73,7 @@ def plot_exons_ply(
         shrinked_alpha,
         v_spacer,
         exon_height,
+        plot_border,
     )
 
     # Plot genes

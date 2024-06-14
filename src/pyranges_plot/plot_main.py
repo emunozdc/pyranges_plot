@@ -46,7 +46,6 @@ from .names import (
 def plot(
     data,
     *,
-    engine=None,
     id_col=None,
     warnings=None,
     max_shown=25,
@@ -71,10 +70,6 @@ def plot(
     ----------
     data: {pyranges.PyRanges or list of pyranges.PyRanges}
         Pyranges, derived dataframe or list of them with annotation data.
-
-    engine: str, default None
-        Library in which the plot should be built, it accepts either Matplotlib ['matplotlib'/'plt'] or
-        Plotly ['ply'/'plotly'].
 
     id_col: str, default None
         Name of the column containing gene ID.
@@ -222,8 +217,7 @@ def plot(
         warnings = get_warnings()
 
     # Deal with engine
-    if engine is None:
-        engine = get_engine()
+    engine = get_engine()
 
     # PREPARE DATA for plot
     # Deal with plot features as kargs

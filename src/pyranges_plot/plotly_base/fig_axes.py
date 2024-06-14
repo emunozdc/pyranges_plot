@@ -62,6 +62,7 @@ def create_fig(
     shrinked_alpha,
     v_spacer,
     exon_height,
+    plot_border,
 ):
     """Generate the figure and axes fitting the data."""
 
@@ -179,7 +180,7 @@ def create_fig(
                     # draw line
                     fig.add_hline(
                         y=pr_line_y,
-                        line=dict(color="black", width=1, dash="solid"),
+                        line=dict(color=plot_border, width=1, dash="solid"),
                         row=i + 1,
                         col=1,
                     )
